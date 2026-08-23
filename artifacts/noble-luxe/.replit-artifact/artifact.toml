@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "Noble Luxe Store"
+description = "A full luxury streetwear storefront for browsing branded apparel, managing a cart, completing manual-transfer checkout, uploading payment proof, and submitting orders for review."
+version = "1.0.0"
+id = "artifacts/noble-luxe"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 22959
+
+[services.development]
+run = "pnpm --filter @workspace/noble-luxe run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/noble-luxe", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/noble-luxe/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "22959"
+BASE_PATH = "/"
