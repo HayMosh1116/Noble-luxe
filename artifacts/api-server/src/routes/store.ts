@@ -2,8 +2,66 @@ import { Router, type IRouter } from "express";
 import { CreateOrderBody, ListProductsQueryParams, ListProductsResponse, CreateOrderResponse } from "@workspace/api-zod";
 import { db } from "@workspace/db";
 import { ordersTable } from "@workspace/db";
+import { ReplitConnectors } from "@replit/connectors-sdk";
 
 const router: IRouter = Router();
+const connectors = new ReplitConnectors();
+
+async function notifyGmail(data: typeof CreateOrderBody._output, orderId: string) {
+  const profileResponse = await connectors.proxy("google-mail", "/gmail/v1/users/me/profile", { method: "GET" });
+  if (!profileResponse.ok) throw new Error(`Gmail profile request failed with ${profileResponse.status}`);
+  const profile = await profileResponse.json() as { emailAddress?: string };
+  const recipient = process.env.ORDER_NOTIFICATION_EMAIL || profile.emailAddress;
+  if (!recipient) throw new Error("No order notification email is configured");
+
+  const screenshotMatch = data.paymentScreenshot.match(/^data:([^;]+);base64,(.+)$/);
+  const contentType = screenshotMatch?.[1] || "image/png";
+  const screenshot = screenshotMatch?.[2] || data.paymentScreenshot;
+  const boundary = `noble-luxe-${orderId.toLowerCase()}`;
+  const lines = [
+    `From: ${recipient}`,
+    `To: ${recipient}`,
+    `Subject: NOBLE LUXE — NEW ORDER ${orderId}`,
+    "MIME-Version: 1.0",
+    `Content-Type: multipart/mixed; boundary="${boundary}"`,
+    "",
+    `--${boundary}`,
+    "Content-Type: text/plain; charset=UTF-8",
+    "Content-Transfer-Encoding: 8bit",
+    "",
+    "NOBLE LUXE — NEW ORDER",
+    "",
+    `Order ID: ${orderId}`,
+    `Customer: ${data.customerName}`,
+    `Phone: ${data.phone}`,
+    `Email: ${data.email}`,
+    `Address: ${data.address}`,
+    "",
+    "Items:",
+    ...data.items.map((item) => `${item.productName} — ${item.size} — Qty ${item.quantity} — ₦${item.price.toLocaleString()}`),
+    "",
+    `Payment: ${data.paymentMethod}`,
+    `Total: ₦${data.total.toLocaleString()}`,
+    "",
+    "Payment screenshot is attached.",
+    "",
+    `--${boundary}`,
+    `Content-Type: ${contentType}; name="payment-screenshot"`,
+    "Content-Transfer-Encoding: base64",
+    'Content-Disposition: attachment; filename="payment-screenshot"',
+    "",
+    screenshot,
+    `--${boundary}--`,
+    "",
+  ].join("\r\n");
+  const raw = Buffer.from(lines, "utf8").toString("base64url");
+  const sendResponse = await connectors.proxy("google-mail", "/gmail/v1/users/me/messages/send", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ raw }),
+  });
+  if (!sendResponse.ok) throw new Error(`Gmail send failed with ${sendResponse.status}`);
+}
 
 const products = [
   { id: "nl-001", name: "Signature Sleeveless Tee", category: "Tops", price: 28500, imageUrl: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=900&q=85", description: "A sculpted sleeveless essential with the Noble Luxe mark.", sizes: ["S", "M", "L", "XL"], colors: ["Onyx", "Gold"], featured: true },
@@ -53,7 +111,12 @@ router.post("/orders", async (req, res) => {
   });
 
   req.log.info({ orderId, paymentMethod: data.paymentMethod, total: data.total }, "Noble Luxe order received");
-  req.log.warn({ orderId }, "Gmail notification is pending secure Gmail connection setup");
+  try {
+    await notifyGmail(data, orderId);
+    req.log.info({ orderId }, "Order notification sent to Gmail");
+  } catch (error) {
+    req.log.error({ err: error, orderId }, "Order recorded but Gmail notification failed");
+  }
   res.status(201).json(CreateOrderResponse.parse({
     orderId,
     receivedAt: new Date(),
