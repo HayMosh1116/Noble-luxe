@@ -174,14 +174,23 @@ export default function Storefront({ cart, onAdd, onUpdate, onRemove }: Storefro
             <div><p className="font-mono-brand text-[10px] uppercase tracking-[0.2em] text-primary">The current edit</p><h2 className="mt-3 font-display text-5xl tracking-[-.04em] lg:text-7xl">Objects of intent.</h2></div>
             <div className="flex w-full flex-col gap-4 lg:w-auto lg:items-end"><div className="flex items-center border-b border-border pb-2 focus-within:border-primary"><Search className="mr-2 h-4 w-4 text-muted-foreground" /><input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search the house" className="w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground/70 lg:w-56" data-testid="input-search-products" /></div><button onClick={() => setFilterOpen((open) => !open)} className="flex items-center gap-2 self-start font-mono-brand text-[10px] uppercase tracking-[0.16em] text-muted-foreground hover:text-primary lg:hidden" data-testid="button-toggle-filters"><SlidersHorizontal className="h-3.5 w-3.5" /> Filter edit</button><div className={`${filterOpen ? 'flex' : 'hidden'} flex-wrap gap-2 lg:flex`}>{categories.map((item) => <button key={item} onClick={() => setCategory(item)} className={`whitespace-nowrap px-3 py-2 font-mono-brand text-[9px] uppercase tracking-[0.12em] transition ${category === item ? 'bg-primary text-primary-foreground' : 'border border-border text-muted-foreground hover:border-primary hover:text-primary'}`} data-testid={`button-filter-${item.toLowerCase().replace(' ', '-')}`}>{item}</button>)}</div></div>
           </div>
-          {isLoading ? <div className="grid gap-x-5 gap-y-14 sm:grid-cols-2 lg:grid-cols-3">{[1, 2, 3, 4, 5, 6].map((item) => <div key={item}><div className="skeleton aspect-[.79]" /><div className="skeleton mt-4 h-5 w-2/3" /><div className="skeleton mt-3 h-3 w-full" /></div>)}</div> : isError && !products.length ? <div className="border border-destructive/50 px-6 py-16 text-center"><p className="font-display text-2xl">The edit is temporarily private.</p><p className="mt-2 text-sm text-muted-foreground">We couldn't reach the showroom catalog.</p><button onClick={() => productQuery.refetch()} className="mt-6 border border-primary px-5 py-3 text-[10px] uppercase tracking-widest text-primary hover:bg-primary hover:text-primary-foreground" data-testid="button-retry-products">Try again</button></div> : products.length ? <div className="grid gap-x-5 gap-y-14 sm:grid-cols-2 lg:grid-cols-3">{products.map((product) => <ProductCard key={product.id} product={product} onAdd={(item, size) => {
+          {isLoading ? <div className="grid gap-x-5 gap-y-14 sm:grid-cols-2 lg:grid-cols-3">{[1, 2, 3, 4, 5, 6].map((item) => <div key={item}><div className="skeleton aspect-[.79]" /><div className="skeleton mt-4 h-5 w-2/3" /><div className="skeleton mt-3 h-3 w-full" /></div>)}</div> : isError && !products.length ? <div className="border border-destructive/50 px-6 py-16 text-center"><p className="font-display text-2xl">The edit is temporarily private.</p><p className="mt-2 text-sm text-muted-foreground">We couldn't reach the showroom catalog.</p><button onClick={() => productQuery.refetch()} className="mt-6 border border-primary px-5 py-3 text-[10px] uppercase tracking-widest text-primary hover:bg-primary hover:text-primary-foreground" data-testid="button-retry-products">Try again</button></div> : products.length ? <div className="grid gap-x-5 gap-y-14 sm:grid-cols-2 lg:grid-cols-3">{products.map((product) => (
+<ProductCard
+key={product.id}
+product={product}
+onAdd={(item, size) => {
 onAdd(item, size);
-setAddedItem(`${item.name}${size ? ` — Size ${size}` : ''}`);
+
+setAddedItem(
+`${item.name}${size ? ` — Size ${size}` : ''}`
+);
 
 window.setTimeout(() => {
 setAddedItem(null);
 }, 2500);
-    }} />)}</div> : <div className="py-24 text-center"><Sparkles className="mx-auto mb-5 h-6 w-6 text-primary" /><p className="font-display text-2xl">No piece matches that search.</p><button onClick={() => { setSearch(''); setCategory('All pieces'); }} className="mt-5 text-[10px] uppercase tracking-widest text-primary hover:text-accent" data-testid="button-clear-filters">Clear filters</button></div>}
+}}
+/>
+))} </div> : <div className="py-24 text-center"><Sparkles className="mx-auto mb-5 h-6 w-6 text-primary" /><p className="font-display text-2xl">No piece matches that search.</p><button onClick={() => { setSearch(''); setCategory('All pieces'); }} className="mt-5 text-[10px] uppercase tracking-widest text-primary hover:text-accent" data-testid="button-clear-filters">Clear filters</button></div>}
         </section>
 
         <section id="journal" className="border-y border-border bg-[#161512]">
