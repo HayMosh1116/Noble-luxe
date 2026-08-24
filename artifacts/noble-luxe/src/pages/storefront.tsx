@@ -202,7 +202,7 @@ onRemove={onRemove}
 
 {addedItem && (
 <div
-className="fixed bottom-6 left-1/2 z-[100] -translate-x-1/2 animate-reveal-in"
+className="fixed bottom-6 left-1/2 z-[9999] -translate-x-1/2"
 role="status"
 >
 <div className="flex min-w-[280px] items-center gap-4 border border-primary/40 bg-card/95 px-5 py-4 shadow-2xl backdrop-blur-xl">
@@ -222,3 +222,6 @@ Added to bag
 </div>
 </div>
 )}
+    </div>
+    );
+}
