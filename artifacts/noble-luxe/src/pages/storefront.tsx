@@ -222,7 +222,3 @@ Added to bag
 </div>
 </div>
 )}
-
-</div>
-);
-}
