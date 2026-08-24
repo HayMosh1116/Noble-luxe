@@ -74,7 +74,6 @@ data-testid={`button-add-product-${product.id}`}
 >
 Add to bag
 </button>
-
       </div>
       <div className="flex items-start justify-between gap-4 pt-4">
         <div>
@@ -126,6 +125,7 @@ export default function Storefront({ cart, onAdd, onUpdate, onRemove }: Storefro
   const [category, setCategory] = useState('All pieces');
   const [cartOpen, setCartOpen] = useState(false);
   const [filterOpen, setFilterOpen] = useState(false);
+  const [addedItem, setAddedItem] = useState<string | null>(null);
   const params = useMemo(() => ({ ...(category !== 'All pieces' ? { category } : {}), ...(search ? { search } : {}) }), [category, search]);
   const productQuery = useListProducts(params, { query: { queryKey: getListProductsQueryKey(params) } });
   const featuredQuery = useListFeaturedProducts({ query: { queryKey: getListFeaturedProductsQueryKey() } });
@@ -144,7 +144,7 @@ export default function Storefront({ cart, onAdd, onUpdate, onRemove }: Storefro
   const cartCount = cart.reduce((sum, item) => sum + item.quantity, 0);
 
   return (
-    <div className="noble-noise min-h-[100dvh] overflow-hidden">
+    <div className="noble-noise min-h-[100dvh] overflow-hidden pt-[74px]">
       <Header cartCount={cartCount} onCart={() => setCartOpen(true)} />
       <main>
         <section className="relative mx-auto grid min-h-[calc(100dvh-74px)] max-w-[1440px] items-end px-5 pb-14 pt-16 lg:grid-cols-[1.05fr_.95fr] lg:items-center lg:px-10 lg:pb-20 lg:pt-10">
@@ -174,7 +174,14 @@ export default function Storefront({ cart, onAdd, onUpdate, onRemove }: Storefro
             <div><p className="font-mono-brand text-[10px] uppercase tracking-[0.2em] text-primary">The current edit</p><h2 className="mt-3 font-display text-5xl tracking-[-.04em] lg:text-7xl">Objects of intent.</h2></div>
             <div className="flex w-full flex-col gap-4 lg:w-auto lg:items-end"><div className="flex items-center border-b border-border pb-2 focus-within:border-primary"><Search className="mr-2 h-4 w-4 text-muted-foreground" /><input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search the house" className="w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground/70 lg:w-56" data-testid="input-search-products" /></div><button onClick={() => setFilterOpen((open) => !open)} className="flex items-center gap-2 self-start font-mono-brand text-[10px] uppercase tracking-[0.16em] text-muted-foreground hover:text-primary lg:hidden" data-testid="button-toggle-filters"><SlidersHorizontal className="h-3.5 w-3.5" /> Filter edit</button><div className={`${filterOpen ? 'flex' : 'hidden'} flex-wrap gap-2 lg:flex`}>{categories.map((item) => <button key={item} onClick={() => setCategory(item)} className={`whitespace-nowrap px-3 py-2 font-mono-brand text-[9px] uppercase tracking-[0.12em] transition ${category === item ? 'bg-primary text-primary-foreground' : 'border border-border text-muted-foreground hover:border-primary hover:text-primary'}`} data-testid={`button-filter-${item.toLowerCase().replace(' ', '-')}`}>{item}</button>)}</div></div>
           </div>
-          {isLoading ? <div className="grid gap-x-5 gap-y-14 sm:grid-cols-2 lg:grid-cols-3">{[1, 2, 3, 4, 5, 6].map((item) => <div key={item}><div className="skeleton aspect-[.79]" /><div className="skeleton mt-4 h-5 w-2/3" /><div className="skeleton mt-3 h-3 w-full" /></div>)}</div> : isError && !products.length ? <div className="border border-destructive/50 px-6 py-16 text-center"><p className="font-display text-2xl">The edit is temporarily private.</p><p className="mt-2 text-sm text-muted-foreground">We couldn't reach the showroom catalog.</p><button onClick={() => productQuery.refetch()} className="mt-6 border border-primary px-5 py-3 text-[10px] uppercase tracking-widest text-primary hover:bg-primary hover:text-primary-foreground" data-testid="button-retry-products">Try again</button></div> : products.length ? <div className="grid gap-x-5 gap-y-14 sm:grid-cols-2 lg:grid-cols-3">{products.map((product) => <ProductCard key={product.id} product={product} onAdd={(item, size) => { onAdd(item, size); setCartOpen(true); }} />)}</div> : <div className="py-24 text-center"><Sparkles className="mx-auto mb-5 h-6 w-6 text-primary" /><p className="font-display text-2xl">No piece matches that search.</p><button onClick={() => { setSearch(''); setCategory('All pieces'); }} className="mt-5 text-[10px] uppercase tracking-widest text-primary hover:text-accent" data-testid="button-clear-filters">Clear filters</button></div>}
+          {isLoading ? <div className="grid gap-x-5 gap-y-14 sm:grid-cols-2 lg:grid-cols-3">{[1, 2, 3, 4, 5, 6].map((item) => <div key={item}><div className="skeleton aspect-[.79]" /><div className="skeleton mt-4 h-5 w-2/3" /><div className="skeleton mt-3 h-3 w-full" /></div>)}</div> : isError && !products.length ? <div className="border border-destructive/50 px-6 py-16 text-center"><p className="font-display text-2xl">The edit is temporarily private.</p><p className="mt-2 text-sm text-muted-foreground">We couldn't reach the showroom catalog.</p><button onClick={() => productQuery.refetch()} className="mt-6 border border-primary px-5 py-3 text-[10px] uppercase tracking-widest text-primary hover:bg-primary hover:text-primary-foreground" data-testid="button-retry-products">Try again</button></div> : products.length ? <div className="grid gap-x-5 gap-y-14 sm:grid-cols-2 lg:grid-cols-3">{products.map((product) => <ProductCard key={product.id} product={product} onAdd={(item, size) => {
+onAdd(item, size);
+setAddedItem(`${item.name}${size ? ` — Size ${size}` : ''}`);
+
+window.setTimeout(() => {
+setAddedItem(null);
+}, 2500);
+    }} />)}</div> : <div className="py-24 text-center"><Sparkles className="mx-auto mb-5 h-6 w-6 text-primary" /><p className="font-display text-2xl">No piece matches that search.</p><button onClick={() => { setSearch(''); setCategory('All pieces'); }} className="mt-5 text-[10px] uppercase tracking-widest text-primary hover:text-accent" data-testid="button-clear-filters">Clear filters</button></div>}
         </section>
 
         <section id="journal" className="border-y border-border bg-[#161512]">
@@ -185,7 +192,37 @@ export default function Storefront({ cart, onAdd, onUpdate, onRemove }: Storefro
         </section>
         <footer className="mx-auto flex max-w-[1440px] flex-col gap-8 px-5 py-12 text-[10px] text-muted-foreground sm:flex-row sm:items-center sm:justify-between lg:px-10"><BrandMark compact /><p className="font-mono-brand uppercase tracking-[0.15em]">Private showroom / Est. 2025</p><p className="font-mono-brand uppercase tracking-[0.15em]">{health.data?.status === 'ok' ? 'Showroom online' : 'By appointment only'}</p></footer>
       </main>
-      <CartDrawer cart={cart} open={cartOpen} onClose={() => setCartOpen(false)} onUpdate={onUpdate} onRemove={onRemove} />
-    </div>
-  );
+      <CartDrawer
+cart={cart}
+open={cartOpen}
+onClose={() => setCartOpen(false)}
+onUpdate={onUpdate}
+onRemove={onRemove}
+/>
+
+{addedItem && (
+<div
+className="fixed bottom-6 left-1/2 z-[100] -translate-x-1/2 animate-reveal-in"
+role="status"
+>
+<div className="flex min-w-[280px] items-center gap-4 border border-primary/40 bg-card/95 px-5 py-4 shadow-2xl backdrop-blur-xl">
+<span className="flex h-7 w-7 items-center justify-center bg-primary text-primary-foreground">
+✓
+</span>
+
+<div>
+<p className="font-mono-brand text-[9px] uppercase tracking-[0.18em] text-primary">
+Added to bag
+</p>
+
+<p className="mt-1 font-display text-sm text-foreground">
+{addedItem}
+</p>
+</div>
+</div>
+</div>
+)}
+
+</div>
+);
 }
