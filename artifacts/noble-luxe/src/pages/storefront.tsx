@@ -67,9 +67,14 @@ function ProductCard({ product, onAdd }: { product: Product; onAdd: (product: Pr
         <button onClick={() => setSaved((value) => !value)} className="absolute right-4 top-4 flex h-9 w-9 items-center justify-center rounded-full border border-foreground/25 bg-background/75 text-foreground backdrop-blur-sm transition hover:border-primary hover:text-primary" data-testid={`button-favorite-${product.id}`} aria-label={`Save ${product.name}`}>
           <Heart className={`h-4 w-4 ${saved ? 'fill-primary text-primary' : ''}`} strokeWidth={1.4} />
         </button>
-        <button onClick={() => onAdd(product, size)} className="absolute bottom-4 left-4 right-4 translate-y-3 bg-primary py-3 text-[10px] font-bold uppercase tracking-[0.19em] text-primary-foreground opacity-0 transition duration-300 group-hover:translate-y-0 group-hover:opacity-100 hover:bg-accent" data-testid={`button-add-product-${product.id}`}>
-          Add to bag
-        </button>
+<button
+onClick={() => onAdd(product, size)}
+className="absolute bottom-4 left-4 right-4 bg-primary py-3 text-[10px] font-bold uppercase tracking-[0.19em] text-primary-foreground transition duration-300 hover:bg-accent"
+data-testid={`button-add-product-${product.id}`}
+>
+Add to bag
+</button>
+
       </div>
       <div className="flex items-start justify-between gap-4 pt-4">
         <div>
