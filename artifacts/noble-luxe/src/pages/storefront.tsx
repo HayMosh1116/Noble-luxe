@@ -33,7 +33,7 @@ function BrandMark({ compact = false }: { compact?: boolean }) {
 function Header({ cartCount, onCart }: { cartCount: number; onCart: () => void }) {
   const [menuOpen, setMenuOpen] = useState(false);
   return (
-    <header className="sticky top-0 z-40 border-b border-border/70 bg-background/92 backdrop-blur-xl">
+    <header className="fixed inset-x-0 top-0 z-40 border-b border-border/70 bg-background/92 backdrop-blur-xl">
       <div className="mx-auto flex h-[74px] max-w-[1440px] items-center justify-between px-5 lg:px-10">
         <button className="flex items-center gap-2 text-xs uppercase tracking-[0.22em] text-muted-foreground md:hidden" onClick={() => setMenuOpen((open) => !open)} data-testid="button-toggle-menu">
           <span className="flex w-5 flex-col gap-1"><i className="h-px w-full bg-current" /><i className="h-px w-3 bg-current" /></span>
@@ -44,6 +44,8 @@ function Header({ cartCount, onCart }: { cartCount: number; onCart: () => void }
           <a href="#collection" className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground transition-colors hover:text-primary" data-testid="link-collection">Collection</a>
           <a href="#manifesto" className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground transition-colors hover:text-primary" data-testid="link-manifesto">Manifesto</a>
           <a href="#journal" className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground transition-colors hover:text-primary" data-testid="link-journal">Journal</a>
+          <Link href="/contact" className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground transition-colors hover:text-primary">Contact</Link>
+          <Link href="/account" className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground transition-colors hover:text-primary">Account</Link>
         </nav>
         <button className="relative flex items-center gap-2 text-[11px] uppercase tracking-[0.2em] text-foreground transition-colors hover:text-primary" onClick={onCart} data-testid="button-open-cart">
           <ShoppingBag className="h-[18px] w-[18px]" strokeWidth={1.3} />
@@ -67,7 +69,7 @@ function ProductCard({ product, onAdd }: { product: Product; onAdd: (product: Pr
         <button onClick={() => setSaved((value) => !value)} className="absolute right-4 top-4 flex h-9 w-9 items-center justify-center rounded-full border border-foreground/25 bg-background/75 text-foreground backdrop-blur-sm transition hover:border-primary hover:text-primary" data-testid={`button-favorite-${product.id}`} aria-label={`Save ${product.name}`}>
           <Heart className={`h-4 w-4 ${saved ? 'fill-primary text-primary' : ''}`} strokeWidth={1.4} />
         </button>
-        <button onClick={() => onAdd(product, size)} className="absolute bottom-4 left-4 right-4 translate-y-3 bg-primary py-3 text-[10px] font-bold uppercase tracking-[0.19em] text-primary-foreground opacity-0 transition duration-300 group-hover:translate-y-0 group-hover:opacity-100 hover:bg-accent" data-testid={`button-add-product-${product.id}`}>
+        <button onClick={() => onAdd(product, size)} className="absolute bottom-4 left-4 right-4 bg-primary py-3 text-[10px] font-bold uppercase tracking-[0.19em] text-primary-foreground transition duration-300 hover:bg-accent" data-testid={`button-add-product-${product.id}`}>
           Add to bag
         </button>
       </div>
@@ -120,6 +122,7 @@ export default function Storefront({ cart, onAdd, onUpdate, onRemove }: Storefro
   const [search, setSearch] = useState('');
   const [category, setCategory] = useState('All pieces');
   const [cartOpen, setCartOpen] = useState(false);
+  const [addedMessage, setAddedMessage] = useState('');
   const [filterOpen, setFilterOpen] = useState(false);
   const params = useMemo(() => ({ ...(category !== 'All pieces' ? { category } : {}), ...(search ? { search } : {}) }), [category, search]);
   const productQuery = useListProducts(params, { query: { queryKey: getListProductsQueryKey(params) } });
@@ -141,6 +144,8 @@ export default function Storefront({ cart, onAdd, onUpdate, onRemove }: Storefro
   return (
     <div className="noble-noise min-h-[100dvh] overflow-hidden">
       <Header cartCount={cartCount} onCart={() => setCartOpen(true)} />
+      <div className="h-[74px]" aria-hidden="true" />
+      {addedMessage && <div className="fixed right-5 top-24 z-50 border border-primary bg-card px-5 py-4 font-mono-brand text-[10px] uppercase tracking-[.14em] text-primary shadow-2xl">{addedMessage}</div>}
       <main>
         <section className="relative mx-auto grid min-h-[calc(100dvh-74px)] max-w-[1440px] items-end px-5 pb-14 pt-16 lg:grid-cols-[1.05fr_.95fr] lg:items-center lg:px-10 lg:pb-20 lg:pt-10">
           <div className="relative z-10 animate-rise-in lg:pb-10">
@@ -169,7 +174,7 @@ export default function Storefront({ cart, onAdd, onUpdate, onRemove }: Storefro
             <div><p className="font-mono-brand text-[10px] uppercase tracking-[0.2em] text-primary">The current edit</p><h2 className="mt-3 font-display text-5xl tracking-[-.04em] lg:text-7xl">Objects of intent.</h2></div>
             <div className="flex w-full flex-col gap-4 lg:w-auto lg:items-end"><div className="flex items-center border-b border-border pb-2 focus-within:border-primary"><Search className="mr-2 h-4 w-4 text-muted-foreground" /><input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search the house" className="w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground/70 lg:w-56" data-testid="input-search-products" /></div><button onClick={() => setFilterOpen((open) => !open)} className="flex items-center gap-2 self-start font-mono-brand text-[10px] uppercase tracking-[0.16em] text-muted-foreground hover:text-primary lg:hidden" data-testid="button-toggle-filters"><SlidersHorizontal className="h-3.5 w-3.5" /> Filter edit</button><div className={`${filterOpen ? 'flex' : 'hidden'} flex-wrap gap-2 lg:flex`}>{categories.map((item) => <button key={item} onClick={() => setCategory(item)} className={`whitespace-nowrap px-3 py-2 font-mono-brand text-[9px] uppercase tracking-[0.12em] transition ${category === item ? 'bg-primary text-primary-foreground' : 'border border-border text-muted-foreground hover:border-primary hover:text-primary'}`} data-testid={`button-filter-${item.toLowerCase().replace(' ', '-')}`}>{item}</button>)}</div></div>
           </div>
-          {isLoading ? <div className="grid gap-x-5 gap-y-14 sm:grid-cols-2 lg:grid-cols-3">{[1, 2, 3, 4, 5, 6].map((item) => <div key={item}><div className="skeleton aspect-[.79]" /><div className="skeleton mt-4 h-5 w-2/3" /><div className="skeleton mt-3 h-3 w-full" /></div>)}</div> : isError && !products.length ? <div className="border border-destructive/50 px-6 py-16 text-center"><p className="font-display text-2xl">The edit is temporarily private.</p><p className="mt-2 text-sm text-muted-foreground">We couldn't reach the showroom catalog.</p><button onClick={() => productQuery.refetch()} className="mt-6 border border-primary px-5 py-3 text-[10px] uppercase tracking-widest text-primary hover:bg-primary hover:text-primary-foreground" data-testid="button-retry-products">Try again</button></div> : products.length ? <div className="grid gap-x-5 gap-y-14 sm:grid-cols-2 lg:grid-cols-3">{products.map((product) => <ProductCard key={product.id} product={product} onAdd={(item, size) => { onAdd(item, size); setCartOpen(true); }} />)}</div> : <div className="py-24 text-center"><Sparkles className="mx-auto mb-5 h-6 w-6 text-primary" /><p className="font-display text-2xl">No piece matches that search.</p><button onClick={() => { setSearch(''); setCategory('All pieces'); }} className="mt-5 text-[10px] uppercase tracking-widest text-primary hover:text-accent" data-testid="button-clear-filters">Clear filters</button></div>}
+          {isLoading ? <div className="grid gap-x-5 gap-y-14 sm:grid-cols-2 lg:grid-cols-3">{[1, 2, 3, 4, 5, 6].map((item) => <div key={item}><div className="skeleton aspect-[.79]" /><div className="skeleton mt-4 h-5 w-2/3" /><div className="skeleton mt-3 h-3 w-full" /></div>)}</div> : isError && !products.length ? <div className="border border-destructive/50 px-6 py-16 text-center"><p className="font-display text-2xl">The edit is temporarily private.</p><p className="mt-2 text-sm text-muted-foreground">We couldn't reach the showroom catalog.</p><button onClick={() => productQuery.refetch()} className="mt-6 border border-primary px-5 py-3 text-[10px] uppercase tracking-widest text-primary hover:bg-primary hover:text-primary-foreground" data-testid="button-retry-products">Try again</button></div> : products.length ? <div className="grid gap-x-5 gap-y-14 sm:grid-cols-2 lg:grid-cols-3">{products.map((product) => <ProductCard key={product.id} product={product} onAdd={(item, size) => { onAdd(item, size); setCartOpen(true); setAddedMessage('Item added to bag'); window.setTimeout(() => setAddedMessage(''), 2200); }} />)}</div> : <div className="py-24 text-center"><Sparkles className="mx-auto mb-5 h-6 w-6 text-primary" /><p className="font-display text-2xl">No piece matches that search.</p><button onClick={() => { setSearch(''); setCategory('All pieces'); }} className="mt-5 text-[10px] uppercase tracking-widest text-primary hover:text-accent" data-testid="button-clear-filters">Clear filters</button></div>}
         </section>
 
         <section id="journal" className="border-y border-border bg-[#161512]">

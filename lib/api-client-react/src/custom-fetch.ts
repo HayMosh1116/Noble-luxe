@@ -16,7 +16,7 @@ const DEFAULT_JSON_ACCEPT = "application/json, application/problem+json";
 // ---------------------------------------------------------------------------
 
 let _baseUrl: string | null =
-  "https://73e93527-1cbe-42bc-b195-685acef1fe0e-00-2dq4w74re8b7m.picard.replit.dev";
+  "https://noble-luxe-store--ibrahimhaywhy.replit.app";
 let _authTokenGetter: AuthTokenGetter | null = null;
 
 /**

@@ -3,6 +3,8 @@ import { CreateOrderBody, ListProductsQueryParams, ListProductsResponse, CreateO
 import { db } from "@workspace/db";
 import { ordersTable } from "@workspace/db";
 import { ReplitConnectors } from "@replit/connectors-sdk";
+import { getAuth } from "@clerk/express";
+import { eq, desc } from "drizzle-orm";
 
 const router: IRouter = Router();
 const connectors = new ReplitConnectors();
@@ -63,6 +65,23 @@ async function notifyGmail(data: typeof CreateOrderBody._output, orderId: string
   if (!sendResponse.ok) throw new Error(`Gmail send failed with ${sendResponse.status}`);
 }
 
+async function notifyCustomer(email: string, orderId: string, status: string, statusMessage?: string | null) {
+  const subject = `NOBLE LUXE — ${orderId} update`;
+  const body = [
+    "NOBLE LUXE",
+    "",
+    `Your order ${orderId} is now ${status.replaceAll("_", " ")}.`,
+    statusMessage || "We will keep you updated as your order moves through the atelier.",
+    "",
+    "Thank you for choosing Noble Luxe.",
+  ].join("\n");
+  const raw = Buffer.from(`To: ${email}\r\nSubject: ${subject}\r\nContent-Type: text/plain; charset=UTF-8\r\n\r\n${body}`, "utf8").toString("base64url");
+  const response = await connectors.proxy("google-mail", "/gmail/v1/users/me/messages/send", {
+    method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ raw }),
+  });
+  if (!response.ok) throw new Error(`Customer notification failed with ${response.status}`);
+}
+
 const products = [
   { id: "nl-001", name: "Signature Sleeveless Tee", category: "Tops", price: 28500, imageUrl: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=900&q=85", description: "A sculpted sleeveless essential with the Noble Luxe mark.", sizes: ["S", "M", "L", "XL"], colors: ["Onyx", "Gold"], featured: true },
   { id: "nl-002", name: "Noble Heavyweight Hoodie", category: "Hoodies", price: 52000, imageUrl: "https://images.unsplash.com/photo-1556821840-3a63f95609a7?auto=format&fit=crop&w=900&q=85", description: "Dense cotton fleece, relaxed fit, signature chest embroidery.", sizes: ["S", "M", "L", "XL", "XXL"], colors: ["Onyx", "Bone"], featured: true },
@@ -89,7 +108,38 @@ router.get("/products/featured", (_req, res) => {
   res.json(ListProductsResponse.parse(products.filter((product) => product.featured)));
 });
 
-router.post("/orders", async (req, res) => {
+router.get("/orders/me", async (req, res): Promise<void> => {
+  const { userId } = getAuth(req);
+  if (!userId) { res.status(401).json({ error: "Please sign in to view your orders." }); return; }
+  const orders = await db.select({
+    orderId: ordersTable.orderId, total: ordersTable.total, paymentMethod: ordersTable.paymentMethod,
+    status: ordersTable.status, statusMessage: ordersTable.statusMessage, createdAt: ordersTable.createdAt, updatedAt: ordersTable.updatedAt,
+  }).from(ordersTable).where(eq(ordersTable.userId, userId)).orderBy(desc(ordersTable.createdAt));
+  res.json(orders);
+});
+
+router.get("/orders/admin", async (req, res): Promise<void> => {
+  const { userId } = getAuth(req);
+  if (!userId || !process.env.ORDER_ADMIN_EMAIL || req.query.adminEmail !== process.env.ORDER_ADMIN_EMAIL) { res.status(403).json({ error: "Admin access required." }); return; }
+  const orders = await db.select().from(ordersTable).orderBy(desc(ordersTable.createdAt));
+  res.json(orders);
+});
+
+router.patch("/orders/:orderId/status", async (req, res): Promise<void> => {
+  const { userId } = getAuth(req);
+  const adminEmail = process.env.ORDER_ADMIN_EMAIL;
+  if (!userId || !adminEmail || req.body?.adminEmail !== adminEmail) { res.status(403).json({ error: "Admin access required." }); return; }
+  const allowed = ["pending", "confirmed", "processing", "out_for_delivery", "delivered", "cancelled"];
+  if (!allowed.includes(req.body?.status)) { res.status(400).json({ error: "Invalid order status." }); return; }
+  const [updated] = await db.update(ordersTable).set({ status: req.body.status, statusMessage: req.body.statusMessage || null, updatedAt: new Date() }).where(eq(ordersTable.orderId, req.params.orderId)).returning();
+  if (!updated) { res.status(404).json({ error: "Order not found." }); return; }
+  try { await notifyCustomer(updated.email, updated.orderId, updated.status, updated.statusMessage); } catch (error) { req.log.error({ err: error, orderId: updated.orderId }, "Customer status email failed"); }
+  res.json({ orderId: updated.orderId, status: updated.status, statusMessage: updated.statusMessage });
+});
+
+router.post("/orders", async (req, res): Promise<void> => {
+  const { userId } = getAuth(req);
+  if (!userId) { res.status(401).json({ error: "Please sign in before placing an order." }); return; }
   const parsed = CreateOrderBody.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: "Please complete every order field and attach a payment screenshot." });
@@ -100,6 +150,7 @@ router.post("/orders", async (req, res) => {
   const orderId = `NL-${Date.now().toString(36).toUpperCase().slice(-6)}`;
   await db.insert(ordersTable).values({
     orderId,
+    userId: userId!,
     customerName: data.customerName,
     phone: data.phone,
     email: data.email,
@@ -108,6 +159,8 @@ router.post("/orders", async (req, res) => {
     total: data.total.toFixed(2),
     paymentMethod: data.paymentMethod,
     paymentScreenshot: data.paymentScreenshot,
+    status: "pending",
+    statusMessage: "Payment received. Our team is reviewing your transfer.",
   });
 
   req.log.info({ orderId, paymentMethod: data.paymentMethod, total: data.total }, "Noble Luxe order received");

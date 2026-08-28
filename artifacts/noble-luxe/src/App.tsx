@@ -1,4 +1,5 @@
 import { type ReactNode, useEffect, useState } from 'react';
+import { ClerkProvider, SignIn, SignUp } from '@clerk/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from '@/components/ui/toaster';
 import { TooltipProvider } from '@/components/ui/tooltip';
@@ -9,6 +10,9 @@ import NotFound from '@/pages/not-found';
 import Storefront from '@/pages/storefront';
 import Checkout from '@/pages/checkout';
 import Confirmation from '@/pages/confirmation';
+import Contact from '@/pages/contact';
+import Account from '@/pages/account';
+import AdminOrders from '@/pages/admin-orders';
 import type { CartItem } from '@/lib/catalog';
 
 const queryClient = new QueryClient();
@@ -31,7 +35,8 @@ function useCart() {
 
 function Router() {
   const cart = useCart();
-  return <RoutedErrorBoundary><Switch><Route path="/" component={() => <Storefront cart={cart.cart} onAdd={cart.add} onUpdate={cart.update} onRemove={cart.remove} />} /><Route path="/checkout" component={() => <Checkout cart={cart.cart} onUpdate={cart.update} onRemove={cart.remove} />} /><Route path="/confirmation/:orderId" component={Confirmation} /><Route component={NotFound} /></Switch></RoutedErrorBoundary>;
+  const basePath = import.meta.env.BASE_URL.replace(/\/$/, '');
+  return <RoutedErrorBoundary><Switch><Route path="/" component={() => <Storefront cart={cart.cart} onAdd={cart.add} onUpdate={cart.update} onRemove={cart.remove} />} /><Route path="/checkout" component={() => <Checkout cart={cart.cart} onUpdate={cart.update} onRemove={cart.remove} />} /><Route path="/confirmation/:orderId" component={Confirmation} /><Route path="/contact" component={Contact} /><Route path="/account" component={Account} /><Route path="/admin/orders" component={AdminOrders} /><Route path="/sign-in/*?" component={() => <div className="min-h-screen bg-background p-5 pt-24"><SignIn routing="path" path={`${basePath}/sign-in`} /></div>} /><Route path="/sign-up/*?" component={() => <div className="min-h-screen bg-background p-5 pt-24"><SignUp routing="path" path={`${basePath}/sign-up`} /></div>} /><Route component={NotFound} /></Switch></RoutedErrorBoundary>;
 }
 
 function RoutedErrorBoundary({ children }: { children: ReactNode }) {
@@ -40,5 +45,6 @@ function RoutedErrorBoundary({ children }: { children: ReactNode }) {
 }
 
 export default function App() {
-  return <QueryClientProvider client={queryClient}><TooltipProvider><WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, '')}><Router /></WouterRouter><Toaster /></TooltipProvider></QueryClientProvider>;
+  const basePath = import.meta.env.BASE_URL.replace(/\/$/, '');
+  return <ClerkProvider publishableKey={import.meta.env.VITE_CLERK_PUBLISHABLE_KEY} signInUrl={`${basePath}/sign-in`} signUpUrl={`${basePath}/sign-up`}><QueryClientProvider client={queryClient}><TooltipProvider><WouterRouter base={basePath}><Router /></WouterRouter><Toaster /></TooltipProvider></QueryClientProvider></ClerkProvider>;
 }
