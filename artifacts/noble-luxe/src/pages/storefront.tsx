@@ -145,7 +145,7 @@ export default function Storefront({ cart, onAdd, onUpdate, onRemove }: Storefro
 
   return (
     <div className="noble-noise min-h-[100dvh] overflow-hidden pt-[74px]">
-      <Header cartCount={cartCount} onCart={() => setCartOpen(false)} />
+      <Header cartCount={cartCount} onCart={() => setCartOpen(true)} />
       <main>
         <section className="relative mx-auto grid min-h-[calc(100dvh-74px)] max-w-[1440px] items-end px-5 pb-14 pt-16 lg:grid-cols-[1.05fr_.95fr] lg:items-center lg:px-10 lg:pb-20 lg:pt-10">
           <div className="relative z-10 animate-rise-in lg:pb-10">
@@ -211,26 +211,25 @@ onRemove={onRemove}
 
 {addedItem && (
 <div
-className="fixed bottom-6 left-1/2 z-[9999] -translate-x-1/2"
-role="status"
+className="fixed left-1/2 top-24 z-[99999] -translate-x-1/2"
+role="alert"
+aria-live="assertive"
 >
-<div className="flex min-w-[280px] items-center gap-4 border border-primary/40 bg-card/95 px-5 py-4 shadow-2xl backdrop-blur-xl">
-<span className="flex h-7 w-7 items-center justify-center bg-primary text-primary-foreground">
-✓
-</span>
+<div className="flex w-[min(90vw,380px)] items-center gap-4 border border-primary bg-[#11110f] px-5 py-4 shadow-[0_20px_60px_rgba(0,0,0,0.5)]">
 
-<div>
-<p className="font-mono-brand text-[9px] uppercase tracking-[0.18em] text-primary">
+<div className="flex h-9 w-9 shrink-0 items-center justify-center bg-primary text-black">
+✓
+</div>
+
+<div className="min-w-0">
+<p className="font-mono-brand text-[10px] font-bold uppercase tracking-[0.2em] text-primary">
 Added to bag
 </p>
 
-<p className="mt-1 font-display text-sm text-foreground">
+<p className="mt-1 truncate font-display text-sm text-white">
 {addedItem}
 </p>
 </div>
-</div>
-</div>
-)}
     </div>
     );
 }
