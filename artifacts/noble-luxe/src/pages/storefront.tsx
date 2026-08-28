@@ -126,6 +126,17 @@ export default function Storefront({ cart, onAdd, onUpdate, onRemove }: Storefro
   const [cartOpen, setCartOpen] = useState(false);
   const [filterOpen, setFilterOpen] = useState(false);
   const [addedItem, setAddedItem] = useState<string | null>(null);
+  const handleAddToBag = (product: Product, size?: string) => {
+onAdd(product, size);
+
+setAddedItem(
+`${product.name}${size ? ` — Size ${size}` : ''}`
+);
+
+setTimeout(() => {
+setAddedItem(null);
+}, 2500);
+};
   const params = useMemo(() => ({ ...(category !== 'All pieces' ? { category } : {}), ...(search ? { search } : {}) }), [category, search]);
   const productQuery = useListProducts(params, { query: { queryKey: getListProductsQueryKey(params) } });
   const featuredQuery = useListFeaturedProducts({ query: { queryKey: getListFeaturedProductsQueryKey() } });
@@ -178,17 +189,7 @@ export default function Storefront({ cart, onAdd, onUpdate, onRemove }: Storefro
 <ProductCard
 key={product.id}
 product={product}
-onAdd={(item, size) => {
-onAdd(item, size);
-
-setAddedItem(
-`${item.name}${size ? ` — Size ${size}` : ''}`
-);
-
-window.setTimeout(() => {
-setAddedItem(null);
-}, 2500);
-}}
+onAdd={handleAddToBag}
 />
 ))} </div> : <div className="py-24 text-center"><Sparkles className="mx-auto mb-5 h-6 w-6 text-primary" /><p className="font-display text-2xl">No piece matches that search.</p><button onClick={() => { setSearch(''); setCategory('All pieces'); }} className="mt-5 text-[10px] uppercase tracking-widest text-primary hover:text-accent" data-testid="button-clear-filters">Clear filters</button></div>}
         </section>
@@ -208,14 +209,13 @@ onClose={() => setCartOpen(false)}
 onUpdate={onUpdate}
 onRemove={onRemove}
 />
-
 {addedItem && (
 <div
 className="fixed left-1/2 top-24 z-[99999] -translate-x-1/2"
 role="alert"
 aria-live="assertive"
 >
-<div className="flex w-[min(90vw,380px)] items-center gap-4 border border-primary bg-[#11110f] px-5 py-4 shadow-[0_20px_60px_rgba(0,0,0,0.5)]">
+<div className="flex w-[min(90vw,380px)] items-center gap-4 border border-primary bg-[#11110f] px-5 py-4 shadow-2xl">
 
 <div className="flex h-9 w-9 shrink-0 items-center justify-center bg-primary text-black">
 ✓
@@ -233,7 +233,7 @@ Added to bag
 
 <button
 onClick={() => setAddedItem(null)}
-className="ml-auto text-lg text-white/50 transition hover:text-primary"
+className="ml-auto text-lg text-white/50 hover:text-primary"
 aria-label="Dismiss notification"
 >
 ×
