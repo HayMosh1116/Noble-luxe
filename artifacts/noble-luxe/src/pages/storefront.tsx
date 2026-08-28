@@ -144,7 +144,7 @@ export default function Storefront({ cart, onAdd, onUpdate, onRemove }: Storefro
   const cartCount = cart.reduce((sum, item) => sum + item.quantity, 0);
 
   return (
-    <div className="noble-noise min-h-[100dvh] overflow-hidden pt-[74px]">
+    <div className="noble-noise min-h-[100dvh]  pt-[74px]">
       <Header cartCount={cartCount} onCart={() => setCartOpen(true)} />
       <main>
         <section className="relative mx-auto grid min-h-[calc(100dvh-74px)] max-w-[1440px] items-end px-5 pb-14 pt-16 lg:grid-cols-[1.05fr_.95fr] lg:items-center lg:px-10 lg:pb-20 lg:pt-10">
@@ -230,6 +230,18 @@ Added to bag
 {addedItem}
 </p>
 </div>
+
+<button
+onClick={() => setAddedItem(null)}
+className="ml-auto text-lg text-white/50 transition hover:text-primary"
+aria-label="Dismiss notification"
+>
+×
+</button>
+
+</div>
+</div>
+)}
     </div>
     );
 }
