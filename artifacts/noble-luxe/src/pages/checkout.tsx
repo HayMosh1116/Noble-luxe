@@ -58,7 +58,7 @@ alert('Unable to copy account number.');
       <header className="border-b border-border"><div className="mx-auto flex h-[74px] max-w-[1440px] items-center justify-between px-5 lg:px-10"><Link href="/" className="inline-flex items-center gap-3 text-[10px] uppercase tracking-[0.18em] text-muted-foreground transition hover:text-primary" data-testid="link-back-store"><ArrowLeft className="h-4 w-4" /> Return to showroom</Link><Link href="/" className="font-display text-lg tracking-[0.15em]" data-testid="link-checkout-brand">NOBLE LUXE</Link><span className="flex items-center gap-2 font-mono-brand text-[9px] uppercase tracking-widest text-primary"><LockKeyhole className="h-3.5 w-3.5" /> Secure order</span></div></header>
       {!cart.length ? <div className="mx-auto max-w-lg px-5 py-32 text-center"><p className="font-display text-3xl">Your bag is empty.</p><Link href="/" className="mt-6 inline-flex bg-primary px-5 py-3 text-[10px] uppercase tracking-widest text-primary-foreground" data-testid="link-return-shopping">Return to the edit</Link></div> : <main className="mx-auto max-w-[1440px] px-5 py-12 lg:px-10 lg:py-20"><div className="mb-12"><p className="font-mono-brand text-[10px] uppercase tracking-[0.22em] text-primary">The final detail</p><h1 className="mt-3 font-display text-5xl tracking-[-.04em] lg:text-7xl">Make it yours.</h1></div><div className="grid gap-14 lg:grid-cols-[1fr_.72fr] lg:gap-24"><form onSubmit={submit} className="space-y-12">
         <section><div className="mb-6 flex items-center gap-4"><span className="font-mono-brand text-xs text-primary">01</span><h2 className="font-display text-2xl">Where should we send it?</h2></div><div className="grid gap-5 sm:grid-cols-2"><label className="sm:col-span-2"><span className="field-label">Full name</span><input required value={form.customerName} onChange={(event) => setField('customerName', event.target.value)} className="field" placeholder="Your name" data-testid="input-customer-name" /></label><label><span className="field-label">Phone</span><input required value={form.phone} onChange={(event) => setField('phone', event.target.value)} className="field" placeholder="+234" data-testid="input-customer-phone" /></label><label><span className="field-label">Email</span><input required type="email" value={form.email} onChange={(event) => setField('email', event.target.value)} className="field" placeholder="you@example.com" data-testid="input-customer-email" /></label><label className="sm:col-span-2"><span className="field-label">Delivery address</span><textarea required value={form.address} onChange={(event) => setField('address', event.target.value)} className="field min-h-28 resize-y" placeholder="Street, area, city" data-testid="input-customer-address" /></label></div></section>
-        <section>
+<section>
 <div className="mb-6 flex items-center gap-4">
 <span className="font-mono-brand text-xs text-primary">02</span>
 <h2 className="font-display text-2xl">Choose your transfer</h2>
@@ -66,18 +66,17 @@ alert('Unable to copy account number.');
 
 <div className="grid gap-3 sm:grid-cols-2">
 {(['OPay', 'PalmPay'] as const).map((method) => (
-<button
-type="button"
+<div
 key={method}
 onClick={() => setField('paymentMethod', method)}
-className={`border p-5 text-left transition ${
+className={`cursor-pointer border p-5 text-left transition ${
 form.paymentMethod === method
 ? 'border-primary bg-primary/10'
 : 'border-border hover:border-primary/60'
 }`}
-data-testid={`button-payment-${method.toLowerCase()}`}
+data-testid={`payment-option-${method.toLowerCase()}`}
 >
-<span className="flex items-center justify-between">
+<div className="flex items-center justify-between">
 <span className="font-display text-xl">{method}</span>
 
 <span
@@ -87,9 +86,11 @@ form.paymentMethod === method
 : 'border-muted-foreground'
 }`}
 >
-{form.paymentMethod === method && <Check className="h-3 w-3" />}
+{form.paymentMethod === method && (
+<Check className="h-3 w-3" />
+)}
 </span>
-</span>
+</div>
 
 <div className="mt-4">
 <span className="block font-mono-brand text-[9px] leading-relaxed text-muted-foreground">
@@ -111,7 +112,7 @@ data-testid={`button-copy-account-${method.toLowerCase()}`}
 Copy account number
 </button>
 </div>
-</button>
+</div>
 ))}
 </div>
 </section>
