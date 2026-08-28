@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
 import { Link, useLocation } from 'wouter';
-import { ArrowLeft, ArrowRight, Check, FileImage, LockKeyhole, Minus, Plus, ShieldCheck, Upload, X } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Check, copy, FileImage, LockKeyhole, Minus, Plus, ShieldCheck, Upload, X } from 'lucide-react';
 import { useCreateOrder } from '@workspace/api-client-react';
 import type { OrderInput } from '@workspace/api-client-react';
 import type { CartItem } from '@/lib/catalog';
@@ -24,7 +24,18 @@ export default function Checkout({ cart, onUpdate, onRemove }: CheckoutProps) {
 
   useEffect(() => { if (!cart.length) setLocation('/'); }, [cart.length, setLocation]);
 
-  const setField = (field: keyof FormState, value: string) => setForm((current) => ({ ...current, [field]: value }));
+const setField = (field: keyof FormState, value: string) =>
+setForm((current) => ({ ...current, [field]: value }));
+
+const copyAccountNumber = async () => {
+try {
+await navigator.clipboard.writeText('702 698 7674');
+alert('Account number copied!');
+} catch {
+alert('Unable to copy account number.');
+}
+};
+  
   const handleFile = (file?: File) => {
     if (!file) return;
     if (!file.type.startsWith('image/')) { setFileError('Please choose an image file.'); return; }
@@ -80,11 +91,26 @@ form.paymentMethod === method
 </span>
 </span>
 
-<span className="mt-4 block font-mono-brand text-[9px] leading-relaxed text-muted-foreground">
+<div className="mt-4">
+<span className="block font-mono-brand text-[9px] leading-relaxed text-muted-foreground">
 Account Name: NOJEEB OLAMILEKAN IBRAHIM
 <br />
 Account Number: 702 698 7674
 </span>
+
+<button
+type="button"
+onClick={(event) => {
+event.stopPropagation();
+copyAccountNumber();
+}}
+className="mt-3 inline-flex items-center gap-2 border border-border px-3 py-2 font-mono-brand text-[9px] uppercase tracking-widest text-primary transition hover:border-primary hover:bg-primary/10"
+data-testid={`button-copy-account-${method.toLowerCase()}`}
+>
+<Copy className="h-3 w-3" />
+Copy account number
+</button>
+</div>
 </button>
 ))}
 </div>
