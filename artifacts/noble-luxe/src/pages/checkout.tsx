@@ -17,6 +17,7 @@ export default function Checkout({ cart, onUpdate, onRemove }: CheckoutProps) {
   const [screenshot, setScreenshot] = useState('');
   const [fileName, setFileName] = useState('');
   const [fileError, setFileError] = useState('');
+  const [copiedMethod, setCopiedMethod] = useState<'OPay' | 'PalmPay' | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const createOrder = useCreateOrder();
   const total = useMemo(() => cart.reduce((sum, item) => sum + item.price * item.quantity, 0), [cart]);
@@ -27,12 +28,13 @@ export default function Checkout({ cart, onUpdate, onRemove }: CheckoutProps) {
 const setField = (field: keyof FormState, value: string) =>
 setForm((current) => ({ ...current, [field]: value }));
 
-const copyAccountNumber = async () => {
+const copyAccountNumber = async (method: 'OPay' | 'PalmPay') => {
 try {
 await navigator.clipboard.writeText('702 698 7674');
-alert('Account number copied!');
+setCopiedMethod(method);
+setTimeout(() => setCopiedMethod(null), 2000);
 } catch {
-alert('Unable to copy account number.');
+setCopiedMethod(null);
 }
 };
   
@@ -58,11 +60,16 @@ alert('Unable to copy account number.');
       <header className="border-b border-border"><div className="mx-auto flex h-[74px] max-w-[1440px] items-center justify-between px-5 lg:px-10"><Link href="/" className="inline-flex items-center gap-3 text-[10px] uppercase tracking-[0.18em] text-muted-foreground transition hover:text-primary" data-testid="link-back-store"><ArrowLeft className="h-4 w-4" /> Return to showroom</Link><Link href="/" className="font-display text-lg tracking-[0.15em]" data-testid="link-checkout-brand">NOBLE LUXE</Link><span className="flex items-center gap-2 font-mono-brand text-[9px] uppercase tracking-widest text-primary"><LockKeyhole className="h-3.5 w-3.5" /> Secure order</span></div></header>
       {!cart.length ? <div className="mx-auto max-w-lg px-5 py-32 text-center"><p className="font-display text-3xl">Your bag is empty.</p><Link href="/" className="mt-6 inline-flex bg-primary px-5 py-3 text-[10px] uppercase tracking-widest text-primary-foreground" data-testid="link-return-shopping">Return to the edit</Link></div> : <main className="mx-auto max-w-[1440px] px-5 py-12 lg:px-10 lg:py-20"><div className="mb-12"><p className="font-mono-brand text-[10px] uppercase tracking-[0.22em] text-primary">The final detail</p><h1 className="mt-3 font-display text-5xl tracking-[-.04em] lg:text-7xl">Make it yours.</h1></div><div className="grid gap-14 lg:grid-cols-[1fr_.72fr] lg:gap-24"><form onSubmit={submit} className="space-y-12">
         <section><div className="mb-6 flex items-center gap-4"><span className="font-mono-brand text-xs text-primary">01</span><h2 className="font-display text-2xl">Where should we send it?</h2></div><div className="grid gap-5 sm:grid-cols-2"><label className="sm:col-span-2"><span className="field-label">Full name</span><input required value={form.customerName} onChange={(event) => setField('customerName', event.target.value)} className="field" placeholder="Your name" data-testid="input-customer-name" /></label><label><span className="field-label">Phone</span><input required value={form.phone} onChange={(event) => setField('phone', event.target.value)} className="field" placeholder="+234" data-testid="input-customer-phone" /></label><label><span className="field-label">Email</span><input required type="email" value={form.email} onChange={(event) => setField('email', event.target.value)} className="field" placeholder="you@example.com" data-testid="input-customer-email" /></label><label className="sm:col-span-2"><span className="field-label">Delivery address</span><textarea required value={form.address} onChange={(event) => setField('address', event.target.value)} className="field min-h-28 resize-y" placeholder="Street, area, city" data-testid="input-customer-address" /></label></div></section>
-<section>
+        <section>
 <div className="mb-6 flex items-center gap-4">
 <span className="font-mono-brand text-xs text-primary">02</span>
 <h2 className="font-display text-2xl">Choose your transfer</h2>
 </div>
+
+<p className="mb-5 max-w-md text-sm leading-relaxed text-muted-foreground">
+Select your preferred payment method below. Transfer the exact order total,
+then upload your payment receipt in the next step.
+</p>
 
 <div className="grid gap-3 sm:grid-cols-2">
 {(['OPay', 'PalmPay'] as const).map((method) => (
@@ -92,30 +99,65 @@ form.paymentMethod === method
 </span>
 </div>
 
-<div className="mt-4">
-<span className="block font-mono-brand text-[9px] leading-relaxed text-muted-foreground">
-Account Name: NOJEEB OLAMILEKAN IBRAHIM
-<br />
-Account Number: 702 698 7674
+<div className="mt-5 border-t border-border/60 pt-4">
+<span className="block font-mono-brand text-[9px] uppercase tracking-wider text-muted-foreground">
+Account name
+</span>
+
+<span className="mt-1 block font-mono-brand text-[10px] text-foreground">
+NOJEEB OLAMILEKAN IBRAHIM
+</span>
+
+<span className="mt-4 block font-mono-brand text-[9px] uppercase tracking-wider text-muted-foreground">
+Account number
+</span>
+
+<div className="mt-1 flex items-center justify-between gap-3">
+<span className="font-mono-brand text-sm tracking-wider text-primary">
+702 698 7674
 </span>
 
 <button
 type="button"
 onClick={(event) => {
 event.stopPropagation();
-copyAccountNumber();
+copyAccountNumber(method);
 }}
-className="mt-3 inline-flex items-center gap-2 border border-border px-3 py-2 font-mono-brand text-[9px] uppercase tracking-widest text-primary transition hover:border-primary hover:bg-primary/10"
+className="inline-flex shrink-0 items-center gap-2 border border-border px-3 py-2 font-mono-brand text-[9px] uppercase tracking-widest text-primary transition hover:border-primary hover:bg-primary/10"
 data-testid={`button-copy-account-${method.toLowerCase()}`}
 >
+{copiedMethod === method ? (
+<>
+<Check className="h-3 w-3" />
+Copied
+</>
+) : (
+<>
 <Copy className="h-3 w-3" />
-Copy account number
+Copy
+</>
+)}
 </button>
 </div>
+</div>
+
+{form.paymentMethod === method && (
+<div className="mt-5 border-t border-primary/20 pt-4">
+<p className="font-mono-brand text-[9px] uppercase tracking-[0.12em] text-primary">
+Selected payment method
+</p>
+
+<p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+Transfer your order total to this account, then continue below
+to upload your payment receipt.
+</p>
+</div>
+)}
 </div>
 ))}
 </div>
 </section>
+
         <section><div className="mb-6 flex items-center gap-4"><span className="font-mono-brand text-xs text-primary">03</span><h2 className="font-display text-2xl">Show us the receipt</h2></div>  <div className="mb-5 max-w-md border border-primary/20 bg-primary/5 p-4">
 <p className="font-mono-brand text-[10px] font-bold uppercase tracking-[0.15em] text-primary">
 I've made the transfer
