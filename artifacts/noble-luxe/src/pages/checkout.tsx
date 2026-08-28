@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
 import { Link, useLocation } from 'wouter';
-import { ArrowLeft, ArrowRight, Check, copy, FileImage, LockKeyhole, Minus, Plus, ShieldCheck, Upload, X } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Check, Copy, FileImage, LockKeyhole, Minus, Plus, ShieldCheck, Upload, X } from 'lucide-react';
 import { useCreateOrder } from '@workspace/api-client-react';
 import type { OrderInput } from '@workspace/api-client-react';
 import type { CartItem } from '@/lib/catalog';
