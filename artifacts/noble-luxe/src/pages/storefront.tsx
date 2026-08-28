@@ -145,7 +145,7 @@ export default function Storefront({ cart, onAdd, onUpdate, onRemove }: Storefro
 
   return (
     <div className="noble-noise min-h-[100dvh] overflow-hidden pt-[74px]">
-      <Header cartCount={cartCount} onCart={() => setCartOpen(true)} />
+      <Header cartCount={cartCount} onCart={() => setCartOpen(false)} />
       <main>
         <section className="relative mx-auto grid min-h-[calc(100dvh-74px)] max-w-[1440px] items-end px-5 pb-14 pt-16 lg:grid-cols-[1.05fr_.95fr] lg:items-center lg:px-10 lg:pb-20 lg:pt-10">
           <div className="relative z-10 animate-rise-in lg:pb-10">
