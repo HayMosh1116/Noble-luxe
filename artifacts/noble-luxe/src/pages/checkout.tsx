@@ -179,4 +179,4 @@ Make sure the transaction details and amount are visible so we can verify your p
     </div>
   );
 }
-}
+
