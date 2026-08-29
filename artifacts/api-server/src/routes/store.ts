@@ -3,11 +3,8 @@ import { CreateOrderBody, ListProductsQueryParams, ListProductsResponse, CreateO
 import { db } from "@workspace/db";
 import { ordersTable } from "@workspace/db";
 import { ReplitConnectors } from "@replit/connectors-sdk";
-<<<<<<< HEAD
 import { getAuth } from "@clerk/express";
 import { eq, desc } from "drizzle-orm";
-=======
->>>>>>> origin/main
 
 const router: IRouter = Router();
 const connectors = new ReplitConnectors();
@@ -68,7 +65,6 @@ async function notifyGmail(data: typeof CreateOrderBody._output, orderId: string
   if (!sendResponse.ok) throw new Error(`Gmail send failed with ${sendResponse.status}`);
 }
 
-<<<<<<< HEAD
 async function notifyCustomer(email: string, orderId: string, status: string, statusMessage?: string | null) {
   const subject = `NOBLE LUXE — ${orderId} update`;
   const body = [
@@ -86,8 +82,6 @@ async function notifyCustomer(email: string, orderId: string, status: string, st
   if (!response.ok) throw new Error(`Customer notification failed with ${response.status}`);
 }
 
-=======
->>>>>>> origin/main
 const products = [
   { id: "nl-001", name: "Signature Sleeveless Tee", category: "Tops", price: 28500, imageUrl: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=900&q=85", description: "A sculpted sleeveless essential with the Noble Luxe mark.", sizes: ["S", "M", "L", "XL"], colors: ["Onyx", "Gold"], featured: true },
   { id: "nl-002", name: "Noble Heavyweight Hoodie", category: "Hoodies", price: 52000, imageUrl: "https://images.unsplash.com/photo-1556821840-3a63f95609a7?auto=format&fit=crop&w=900&q=85", description: "Dense cotton fleece, relaxed fit, signature chest embroidery.", sizes: ["S", "M", "L", "XL", "XXL"], colors: ["Onyx", "Bone"], featured: true },
@@ -114,7 +108,6 @@ router.get("/products/featured", (_req, res) => {
   res.json(ListProductsResponse.parse(products.filter((product) => product.featured)));
 });
 
-<<<<<<< HEAD
 router.get("/orders/me", async (req, res): Promise<void> => {
   const { userId } = getAuth(req);
   if (!userId) { res.status(401).json({ error: "Please sign in to view your orders." }); return; }
@@ -147,9 +140,6 @@ router.patch("/orders/:orderId/status", async (req, res): Promise<void> => {
 router.post("/orders", async (req, res): Promise<void> => {
   const { userId } = getAuth(req);
   if (!userId) { res.status(401).json({ error: "Please sign in before placing an order." }); return; }
-=======
-router.post("/orders", async (req, res) => {
->>>>>>> origin/main
   const parsed = CreateOrderBody.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: "Please complete every order field and attach a payment screenshot." });
@@ -160,10 +150,7 @@ router.post("/orders", async (req, res) => {
   const orderId = `NL-${Date.now().toString(36).toUpperCase().slice(-6)}`;
   await db.insert(ordersTable).values({
     orderId,
-<<<<<<< HEAD
     userId: userId!,
-=======
->>>>>>> origin/main
     customerName: data.customerName,
     phone: data.phone,
     email: data.email,
@@ -172,11 +159,8 @@ router.post("/orders", async (req, res) => {
     total: data.total.toFixed(2),
     paymentMethod: data.paymentMethod,
     paymentScreenshot: data.paymentScreenshot,
-<<<<<<< HEAD
     status: "pending",
     statusMessage: "Payment received. Our team is reviewing your transfer.",
-=======
->>>>>>> origin/main
   });
 
   req.log.info({ orderId, paymentMethod: data.paymentMethod, total: data.total }, "Noble Luxe order received");

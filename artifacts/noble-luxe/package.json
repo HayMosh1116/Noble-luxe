@@ -73,11 +73,5 @@
     "vite": "catalog:",
     "wouter": "^3.3.5",
     "zod": "catalog:"
-<<<<<<< HEAD
-  },
-  "dependencies": {
-    "@clerk/react": "^6.14.5"
-=======
->>>>>>> origin/main
   }
 }

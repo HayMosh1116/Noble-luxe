@@ -35,7 +35,6 @@ function Header({ cartCount, onCart }: { cartCount: number; onCart: () => void }
   const [menuOpen, setMenuOpen] = useState(false);
   return (
     <header className="fixed inset-x-0 top-0 z-40 border-b border-border/70 bg-background/92 backdrop-blur-xl">
-    <header className="fixed left-0 right-0 top-0 z-40 border-b border-border/70 bg-background/92 backdrop-blur-xl">
       <div className="mx-auto flex h-[74px] max-w-[1440px] items-center justify-between px-5 lg:px-10">
         <button className="flex items-center gap-2 text-xs uppercase tracking-[0.22em] text-muted-foreground md:hidden" onClick={() => setMenuOpen((open) => !open)} data-testid="button-toggle-menu">
           <span className="flex w-5 flex-col gap-1"><i className="h-px w-full bg-current" /><i className="h-px w-3 bg-current" /></span>
@@ -75,13 +74,6 @@ function ProductCard({ product, onAdd }: { product: Product; onAdd: (product: Pr
         <button onClick={() => onAdd(product, size)} className="absolute bottom-4 left-4 right-4 bg-primary py-3 text-[10px] font-bold uppercase tracking-[0.19em] text-primary-foreground transition duration-300 hover:bg-accent" data-testid={`button-add-product-${product.id}`}>
           Add to bag
         </button>
-<button
-onClick={() => onAdd(product, size)}
-className="absolute bottom-4 left-4 right-4 bg-primary py-3 text-[10px] font-bold uppercase tracking-[0.19em] text-primary-foreground transition duration-300 hover:bg-accent"
-data-testid={`button-add-product-${product.id}`}
->
-Add to bag
-</button>
       </div>
       <div className="flex items-start justify-between gap-4 pt-4">
         <div>
@@ -134,15 +126,8 @@ export default function Storefront({ cart, onAdd, onUpdate, onRemove }: Storefro
   const [cartOpen, setCartOpen] = useState(false);
   const [addedMessage, setAddedMessage] = useState('');
   const { toast } = useToast();
-  const [search, setSearch] = useState('');
-  const [category, setCategory] = useState('All pieces');
-  const [cartOpen, setCartOpen] = useState(false);
   const [filterOpen, setFilterOpen] = useState(false);
   const params = useMemo(() => ({ ...(category !== 'All pieces' ? { category } : {}), ...(search ? { search } : {}) }), [category, search]);
-  const productQuery = useListProducts(params, { query: { queryKey: getListProductsQueryKey(params) } });
-  const featuredQuery = useListFeaturedProducts({ query: { queryKey: getListFeaturedProductsQueryKey() } });
-  const health = useHealthCheck({ query: { queryKey: getHealthCheckQueryKey() } });
-  const apiProducts = (productQuery.data as Product[] | undefined) || [];
   const sourceProducts = productQuery.isError ? FALLBACK_PRODUCTS : apiProducts;
   const products = sourceProducts.filter((product) => {
     const matchesCategory = category === 'All pieces' || product.category.toLowerCase() === category.toLowerCase();

@@ -15,12 +15,8 @@ const DEFAULT_JSON_ACCEPT = "application/json, application/problem+json";
 // Module-level configuration
 // ---------------------------------------------------------------------------
 
-<<<<<<< HEAD
 let _baseUrl: string | null =
   "https://noble-luxe-store--ibrahimhaywhy.replit.app";
-=======
-let _baseUrl: string | null = "https://noble-luxe-store--ibrahimhaywhy.replit.app";
->>>>>>> origin/main
 let _authTokenGetter: AuthTokenGetter | null = null;
 
 /**
@@ -53,14 +49,7 @@ function isRequest(input: RequestInfo | URL): input is Request {
   return typeof Request !== "undefined" && input instanceof Request;
 }
 
-<<<<<<< HEAD
-function resolveMethod(
-  input: RequestInfo | URL,
-  explicitMethod?: string,
-): string {
-=======
 function resolveMethod(input: RequestInfo | URL, explicitMethod?: string): string {
->>>>>>> origin/main
   if (explicitMethod) return explicitMethod.toUpperCase();
   if (isRequest(input)) return input.method.toUpperCase();
   return "GET";
@@ -109,14 +98,11 @@ function getMediaType(headers: Headers): string | null {
 }
 
 function isJsonMediaType(mediaType: string | null): boolean {
-<<<<<<< HEAD
   return (
     mediaType === "application/json" || Boolean(mediaType?.endsWith("+json"))
   );
-=======
-  return mediaType === "application/json" || Boolean(mediaType?.endsWith("+json"));
->>>>>>> origin/main
 }
+
 
 function isTextMediaType(mediaType: string | null): boolean {
   return Boolean(
@@ -269,14 +255,7 @@ async function parseJsonBody(
   }
 }
 
-<<<<<<< HEAD
-async function parseErrorBody(
-  response: Response,
-  method: string,
-): Promise<unknown> {
-=======
 async function parseErrorBody(response: Response, method: string): Promise<unknown> {
->>>>>>> origin/main
   if (hasNoBody(response, method)) {
     return null;
   }
@@ -285,13 +264,10 @@ async function parseErrorBody(response: Response, method: string): Promise<unkno
 
   // Fall back to text when blob() is unavailable (e.g. some React Native builds).
   if (mediaType && !isJsonMediaType(mediaType) && !isTextMediaType(mediaType)) {
-<<<<<<< HEAD
     return typeof response.blob === "function"
       ? response.blob()
       : response.text();
-=======
     return typeof response.blob === "function" ? response.blob() : response.text();
->>>>>>> origin/main
   }
 
   const raw = await response.text();
@@ -346,11 +322,7 @@ async function parseSuccessBody(
       if (typeof response.blob !== "function") {
         throw new TypeError(
           "Blob responses are not supported in this runtime. " +
-<<<<<<< HEAD
             'Use responseType "json" or "text" instead.',
-=======
-            "Use responseType \"json\" or \"text\" instead.",
->>>>>>> origin/main
         );
       }
       return response.blob();
@@ -370,14 +342,10 @@ export async function customFetch<T = unknown>(
     throw new TypeError(`customFetch: ${method} requests cannot have a body.`);
   }
 
-<<<<<<< HEAD
   const headers = mergeHeaders(
     isRequest(input) ? input.headers : undefined,
     headersInit,
   );
-=======
-  const headers = mergeHeaders(isRequest(input) ? input.headers : undefined, headersInit);
->>>>>>> origin/main
 
   if (
     typeof init.body === "string" &&

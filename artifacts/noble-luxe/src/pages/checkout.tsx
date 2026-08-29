@@ -28,7 +28,6 @@ export default function Checkout({ cart, onUpdate, onRemove }: CheckoutProps) {
   useEffect(() => { if (!cart.length) setLocation('/'); }, [cart.length, setLocation]);
 
   const setField = (field: keyof FormState, value: string) => setForm((current) => ({ ...current, [field]: value }));
-const setField = (field: keyof FormState, value: string) =>
 setForm((current) => ({ ...current, [field]: value }));
 
 const copyAccountNumber = async (method: 'OPay' | 'PalmPay') => {
