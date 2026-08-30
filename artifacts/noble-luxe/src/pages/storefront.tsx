@@ -12,15 +12,12 @@ import {
   Sparkles,
   X,
 } from 'lucide-react';
-
 import {
   useHealthCheck,
   useListFeaturedProducts,
   useListProducts,
 } from '@workspace/api-client-react';
-
 import type { Product } from '@workspace/api-client-react';
-
 import {
   FALLBACK_PRODUCTS,
   formatCurrency,
@@ -31,7 +28,6 @@ import {
   type CatalogColor,
   type CatalogProduct,
 } from '@/lib/catalog';
-
 type StorefrontProps = {
   cart: CartItem[];
   onAdd: (
@@ -41,10 +37,16 @@ type StorefrontProps = {
     colorFront?: string,
     colorBack?: string,
   ) => void;
-  onUpdate: (id: string, size: string, delta: number) => void;
-  onRemove: (id: string, size: string) => void;
+  onUpdate: (
+    id: string,
+    size: string,
+    delta: number,
+  ) => void;
+  onRemove: (
+    id: string,
+    size: string,
+  ) => void;
 };
-
 const categories = [
   'All pieces',
   'Outerwear',
@@ -53,110 +55,11 @@ const categories = [
   'Footwear',
   'Accessories',
 ];
-
-/*
- * =========================================================
- * COLOUR VISUALIZER
- * =========================================================
- *
- * This gives the customer a visual colour change without
- * requiring a separate image URL for every colour.
- *
- * For Black/Onyx/Obsidian we leave the original image
- * mostly untouched.
- *
- * For other colours we apply a controlled CSS filter.
- */
-function getColorFilter(color?: string): string {
-  if (!color) return 'none';
-
-  const value = color.toLowerCase();
-
-  if (
-    value.includes('black') ||
-    value.includes('onyx') ||
-    value.includes('obsidian') ||
-    value.includes('coal') ||
-    value.includes('ink')
-  ) {
-    return 'brightness(0.72) contrast(1.08) saturate(0.85)';
-  }
-
-  if (
-    value.includes('white') ||
-    value.includes('ivory') ||
-    value.includes('cream')
-  ) {
-    return 'brightness(1.28) contrast(0.92) saturate(0.72)';
-  }
-
-  if (
-    value.includes('red') ||
-    value.includes('burgundy') ||
-    value.includes('wine')
-  ) {
-    return 'sepia(0.45) saturate(4) hue-rotate(305deg) brightness(0.78)';
-  }
-
-  if (
-    value.includes('blue') ||
-    value.includes('navy') ||
-    value.includes('cobalt')
-  ) {
-    return 'sepia(0.35) saturate(3.2) hue-rotate(165deg) brightness(0.78)';
-  }
-
-  if (
-    value.includes('green') ||
-    value.includes('olive')
-  ) {
-    return 'sepia(0.55) saturate(2.4) hue-rotate(55deg) brightness(0.78)';
-  }
-
-  if (
-    value.includes('brown') ||
-    value.includes('tan') ||
-    value.includes('camel')
-  ) {
-    return 'sepia(0.8) saturate(1.7) hue-rotate(345deg) brightness(0.9)';
-  }
-
-  if (
-    value.includes('gold') ||
-    value.includes('yellow')
-  ) {
-    return 'sepia(0.85) saturate(3) hue-rotate(350deg) brightness(1.02)';
-  }
-
-  if (
-    value.includes('purple') ||
-    value.includes('violet')
-  ) {
-    return 'sepia(0.5) saturate(3.2) hue-rotate(245deg) brightness(0.78)';
-  }
-
-  if (value.includes('pink')) {
-    return 'sepia(0.45) saturate(3) hue-rotate(295deg) brightness(1.02)';
-  }
-
-  if (
-    value.includes('grey') ||
-    value.includes('gray') ||
-    value.includes('ash')
-  ) {
-    return 'grayscale(0.65) brightness(0.9) contrast(1.02)';
-  }
-
-  return 'none';
-}
-
-/*
- * =========================================================
- * BRAND
- * =========================================================
- */
-
-function BrandMark({ compact = false }: { compact?: boolean }) {
+function BrandMark({
+  compact = false,
+}: {
+  compact?: boolean;
+}) {
   return (
     <Link
       href="/"
@@ -164,20 +67,12 @@ function BrandMark({ compact = false }: { compact?: boolean }) {
       data-testid="link-brand-home"
     >
       <span className="mr-2 inline-block h-2 w-2 rotate-45 bg-primary transition-transform duration-500 group-hover:rotate-90" />
-
       <span className="font-display text-[1.25rem] font-semibold tracking-[0.16em] text-foreground">
         {compact ? 'NL' : 'NOBLE LUXE'}
       </span>
     </Link>
   );
 }
-
-/*
- * =========================================================
- * HEADER
- * =========================================================
- */
-
 function Header({
   cartCount,
   onCart,
@@ -186,14 +81,14 @@ function Header({
   onCart: () => void;
 }) {
   const [menuOpen, setMenuOpen] = useState(false);
-
   return (
     <header className="fixed inset-x-0 top-0 z-40 border-b border-border/70 bg-background/92 backdrop-blur-xl">
       <div className="mx-auto flex h-[74px] max-w-[1440px] items-center justify-between px-5 lg:px-10">
-
         <button
           className="flex items-center gap-2 text-xs uppercase tracking-[0.22em] text-muted-foreground md:hidden"
-          onClick={() => setMenuOpen((open) => !open)}
+          onClick={() =>
+            setMenuOpen((open) => !open)
+          }
           data-testid="button-toggle-menu"
         >
           <span className="flex w-5 flex-col gap-1">
@@ -202,12 +97,12 @@ function Header({
           </span>
           Menu
         </button>
-
         <BrandMark />
-
         <nav
           className={`${
-            menuOpen ? 'absolute left-0 top-[74px] flex' : 'hidden'
+            menuOpen
+              ? 'absolute left-0 top-[74px] flex'
+              : 'hidden'
           } w-full flex-col gap-5 border-b border-border bg-background px-5 py-6 md:static md:flex md:w-auto md:flex-row md:border-0 md:bg-transparent md:p-0`}
           aria-label="Primary navigation"
         >
@@ -217,28 +112,24 @@ function Header({
           >
             Collection
           </a>
-
           <a
             href="#manifesto"
             className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground transition-colors hover:text-primary"
           >
             Manifesto
           </a>
-
           <a
             href="#journal"
             className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground transition-colors hover:text-primary"
           >
             Journal
           </a>
-
           <Link
             href="/contact"
             className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground transition-colors hover:text-primary"
           >
             Contact
           </Link>
-
           <Link
             href="/account"
             className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground transition-colors hover:text-primary"
@@ -246,7 +137,6 @@ function Header({
             Account
           </Link>
         </nav>
-
         <button
           className="relative flex items-center gap-2 text-[11px] uppercase tracking-[0.2em] text-foreground transition-colors hover:text-primary"
           onClick={onCart}
@@ -256,9 +146,9 @@ function Header({
             className="h-[18px] w-[18px]"
             strokeWidth={1.3}
           />
-
-          <span className="hidden sm:inline">Bag</span>
-
+          <span className="hidden sm:inline">
+            Bag
+          </span>
           <span
             className="absolute -right-3 -top-3 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 font-mono-brand text-[9px] text-primary-foreground"
             data-testid="text-cart-count"
@@ -270,13 +160,6 @@ function Header({
     </header>
   );
 }
-
-/*
- * =========================================================
- * PRODUCT CARD
- * =========================================================
- */
-
 function ProductCard({
   product,
   onAdd,
@@ -290,62 +173,55 @@ function ProductCard({
     colorBack?: string,
   ) => void;
 }) {
-  const catalogProduct = product as CatalogProduct;
-
-  const availableColors = getProductColors(product);
-
+  const catalogProduct =
+    product as CatalogProduct;
+  const availableColors =
+    getProductColors(product);
   const [size, setSize] = useState(
     product.sizes?.[0] || 'One size',
   );
-
-  const [selectedColor, setSelectedColor] = useState(
-    availableColors[0]?.name ||
-      product.colors?.[0] ||
-      'Default',
-  );
-
-  const [showBack, setShowBack] = useState(false);
-  const [saved, setSaved] = useState(false);
-  const [showTapHint, setShowTapHint] = useState(true);
-
-  const selectedImages = getColorImages(
-    product,
-    selectedColor,
-  );
-
-  const colorFilter = getColorFilter(selectedColor);
-
+  const [selectedColor, setSelectedColor] =
+    useState(
+      availableColors[0]?.name ||
+        product.colors?.[0] ||
+        'Default',
+    );
+  const [showBack, setShowBack] =
+    useState(false);
+  const [saved, setSaved] =
+    useState(false);
+  const [showTapHint, setShowTapHint] =
+    useState(true);
+  const selectedImages =
+    getColorImages(
+      product,
+      selectedColor,
+    );
   useEffect(() => {
     setShowBack(false);
     setShowTapHint(true);
   }, [selectedColor]);
-
   useEffect(() => {
-    if (!selectedImages.back) {
-      setShowTapHint(false);
-      return;
-    }
-
     const timer = window.setTimeout(() => {
       setShowTapHint(false);
-    }, 8000);
-
-    return () => window.clearTimeout(timer);
-  }, [selectedImages.back]);
-
+    }, 7000);
+    return () =>
+      window.clearTimeout(timer);
+  }, []);
   const handleProductTap = () => {
     if (!selectedImages.back) return;
-
-    setShowBack((current) => !current);
+    setShowBack(
+      (current) => !current,
+    );
     setShowTapHint(false);
   };
-
-  const handleColorChange = (color: CatalogColor) => {
+  const handleColorChange = (
+    color: CatalogColor,
+  ) => {
     setSelectedColor(color.name);
     setShowBack(false);
     setShowTapHint(true);
   };
-
   return (
     <article
       className="group animate-reveal-in"
@@ -354,8 +230,16 @@ function ProductCard({
       <div
         className="relative aspect-[.79] cursor-pointer overflow-hidden bg-secondary"
         onClick={handleProductTap}
-        role={selectedImages.back ? 'button' : undefined}
-        tabIndex={selectedImages.back ? 0 : undefined}
+        role={
+          selectedImages.back
+            ? 'button'
+            : undefined
+        }
+        tabIndex={
+          selectedImages.back
+            ? 0
+            : undefined
+        }
         onKeyDown={(event) => {
           if (
             selectedImages.back &&
@@ -369,32 +253,29 @@ function ProductCard({
       >
         <img
           src={
-            showBack && selectedImages.back
+            showBack &&
+            selectedImages.back
               ? selectedImages.back
               : selectedImages.front
           }
           alt={`${product.name} ${
             showBack ? 'back' : 'front'
           }`}
-          className="h-full w-full object-cover transition duration-700 group-hover:scale-[1.025]"
-          style={{
-            filter: colorFilter,
-          }}
+          className="h-full w-full object-cover grayscale-[18%] transition duration-500 group-hover:scale-[1.025] group-hover:grayscale-0"
           loading="lazy"
         />
-
-        <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-background/65 via-transparent to-transparent opacity-90" />
-
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-background/55 via-transparent to-transparent opacity-80" />
         {product.featured && (
-          <span className="absolute left-4 top-4 border border-primary/60 bg-background/85 px-2 py-1 font-mono-brand text-[9px] uppercase tracking-[0.18em] text-primary backdrop-blur-md">
+          <span className="absolute left-4 top-4 border border-primary/60 bg-background/80 px-2 py-1 font-mono-brand text-[9px] uppercase tracking-[0.18em] text-primary">
             House pick
           </span>
         )}
-
         <button
           onClick={(event) => {
             event.stopPropagation();
-            setSaved((value) => !value);
+            setSaved(
+              (value) => !value,
+            );
           }}
           className="absolute right-4 top-4 flex h-9 w-9 items-center justify-center rounded-full border border-foreground/25 bg-background/75 text-foreground backdrop-blur-sm transition hover:border-primary hover:text-primary"
           data-testid={`button-favorite-${product.id}`}
@@ -409,47 +290,32 @@ function ProductCard({
             strokeWidth={1.4}
           />
         </button>
-
         {selectedImages.back && (
           <div
-            className={`pointer-events-none absolute left-1/2 top-1/2 w-[calc(100%-48px)] -translate-x-1/2 -translate-y-1/2 transition-all duration-500 ${
+            className={`pointer-events-none absolute left-1/2 top-1/2 z-20 -translate-x-1/2 -translate-y-1/2 transition-all duration-500 ${
               showTapHint
                 ? 'scale-100 opacity-100'
                 : 'scale-95 opacity-0'
             }`}
           >
-            <div className="relative overflow-hidden border border-primary bg-background/90 px-5 py-4 text-center shadow-[0_0_35px_rgba(0,0,0,0.45)] backdrop-blur-xl">
-
-              <div className="absolute inset-0 animate-pulse bg-primary/10" />
-
-              <div className="relative">
-                <div className="mx-auto mb-2 flex h-8 w-8 items-center justify-center rounded-full border border-primary text-primary">
-                  <span className="text-sm">↕</span>
-                </div>
-
+            <div className="animate-pulse border-2 border-primary bg-background/95 px-6 py-4 text-center shadow-2xl backdrop-blur-xl">
+              <div className="mb-2 flex items-center justify-center gap-2">
+                <span className="h-2 w-2 animate-ping rounded-full bg-primary" />
                 <p className="font-mono-brand text-[11px] font-bold uppercase tracking-[0.2em] text-primary">
-                  TAP TO SEE BACK
-                </p>
-
-                <p className="mt-1 text-[9px] uppercase tracking-[0.15em] text-foreground">
-                  Front & Back View Available
+                  Tap to see back
                 </p>
               </div>
+              <p className="text-[10px] font-medium uppercase tracking-[0.14em] text-foreground">
+                Front ↔ Back view available
+              </p>
             </div>
           </div>
         )}
-
-        {selectedImages.back && !showTapHint && (
-          <div className="pointer-events-none absolute bottom-[72px] left-1/2 -translate-x-1/2 border border-primary/60 bg-background/80 px-3 py-2 font-mono-brand text-[8px] uppercase tracking-[0.15em] text-primary backdrop-blur-md">
-            {showBack
-              ? 'Tap to see front'
-              : 'Tap to see back'}
-          </div>
-        )}
-
         <div
           className="absolute bottom-4 left-4 right-4"
-          onClick={(event) => event.stopPropagation()}
+          onClick={(event) =>
+            event.stopPropagation()
+          }
         >
           <button
             onClick={() =>
@@ -468,68 +334,56 @@ function ProductCard({
           </button>
         </div>
       </div>
-
       <div className="flex items-start justify-between gap-4 pt-4">
         <div>
           <p className="mb-1 font-mono-brand text-[9px] uppercase tracking-[0.15em] text-muted-foreground">
             {product.category}
           </p>
-
           <h3 className="font-display text-[1.1rem] text-foreground">
             {product.name}
           </h3>
-
           <p className="mt-1 max-w-[250px] text-xs leading-relaxed text-muted-foreground">
             {product.description}
           </p>
         </div>
-
         <p className="shrink-0 font-mono-brand text-xs text-primary">
           {formatCurrency(product.price)}
         </p>
       </div>
-
       {availableColors.length > 0 && (
         <div className="mt-4">
           <p className="mb-2 font-mono-brand text-[9px] uppercase tracking-[0.15em] text-muted-foreground">
             Colour
           </p>
-
           <div className="flex flex-wrap gap-2">
-            {availableColors.map((color) => {
-              const active =
-                selectedColor === color.name;
-
-              return (
+            {availableColors.map(
+              (color) => (
                 <button
                   key={color.name}
                   type="button"
                   onClick={() =>
-                    handleColorChange(color)
+                    handleColorChange(
+                      color,
+                    )
                   }
-                  className={`relative overflow-hidden border px-2.5 py-1.5 font-mono-brand text-[9px] uppercase transition-all duration-300 ${
-                    active
-                      ? 'border-primary bg-primary text-primary-foreground shadow-[0_0_14px_rgba(255,255,255,0.08)]'
+                  className={`border px-2.5 py-1 font-mono-brand text-[9px] uppercase transition ${
+                    selectedColor ===
+                    color.name
+                      ? 'border-primary bg-primary text-primary-foreground'
                       : 'border-border text-muted-foreground hover:border-primary hover:text-primary'
                   }`}
                   data-testid={`button-color-${product.id}-${color.name}`}
                 >
-                  {active && (
-                    <span className="mr-1.5 inline-block h-1.5 w-1.5 rounded-full bg-current align-middle" />
-                  )}
-
                   {color.name}
                 </button>
-              );
-            })}
+              ),
+            )}
           </div>
-
-          <p className="mt-2 font-mono-brand text-[8px] uppercase tracking-[0.1em] text-muted-foreground">
+          <p className="mt-2 font-mono-brand text-[8px] uppercase tracking-[0.12em] text-muted-foreground">
             Selected: {selectedColor}
           </p>
         </div>
       )}
-
       <div className="mt-3 flex items-center gap-2 overflow-x-auto pb-1">
         {(product.sizes?.length
           ? product.sizes
@@ -542,14 +396,15 @@ function ProductCard({
                 ? 'border-primary bg-primary text-primary-foreground'
                 : 'border-border text-muted-foreground hover:border-primary hover:text-primary'
             }`}
-            onClick={() => setSize(item)}
+            onClick={() =>
+              setSize(item)
+            }
             data-testid={`button-size-${product.id}-${item}`}
           >
             {item}
           </button>
         ))}
       </div>
-
       {selectedImages.back && (
         <p className="mt-2 font-mono-brand text-[8px] uppercase tracking-[0.12em] text-muted-foreground">
           {showBack
@@ -560,13 +415,6 @@ function ProductCard({
     </article>
   );
 }
-
-/*
- * =========================================================
- * CART DRAWER
- * =========================================================
- */
-
 function CartDrawer({
   cart,
   open,
@@ -582,14 +430,18 @@ function CartDrawer({
     size: string,
     delta: number,
   ) => void;
-  onRemove: (id: string, size: string) => void;
+  onRemove: (
+    id: string,
+    size: string,
+  ) => void;
 }) {
   const total = cart.reduce(
     (sum, item) =>
-      sum + item.price * item.quantity,
+      sum +
+      item.price *
+        item.quantity,
     0,
   );
-
   return (
     <>
       {open && (
@@ -600,7 +452,6 @@ function CartDrawer({
           data-testid="button-close-cart-overlay"
         />
       )}
-
       <aside
         className={`fixed bottom-0 right-0 top-0 z-50 flex w-full max-w-[470px] flex-col border-l border-border bg-card shadow-2xl transition-transform duration-500 ${
           open
@@ -614,7 +465,6 @@ function CartDrawer({
             <p className="font-mono-brand text-[10px] uppercase tracking-[0.2em] text-primary">
               Private selection
             </p>
-
             <h2 className="mt-1 font-display text-2xl">
               Your bag{' '}
               <span className="font-sans text-sm text-muted-foreground">
@@ -622,7 +472,6 @@ function CartDrawer({
               </span>
             </h2>
           </div>
-
           <button
             onClick={onClose}
             className="flex h-9 w-9 items-center justify-center border border-border transition hover:border-primary hover:text-primary"
@@ -631,7 +480,6 @@ function CartDrawer({
             <X className="h-4 w-4" />
           </button>
         </div>
-
         <div className="flex-1 overflow-y-auto px-6 py-4">
           {cart.length === 0 ? (
             <div className="flex h-full flex-col items-center justify-center text-center">
@@ -639,11 +487,9 @@ function CartDrawer({
                 className="mb-5 h-8 w-8 text-primary"
                 strokeWidth={1}
               />
-
               <p className="font-display text-xl">
                 The bag is quiet.
               </p>
-
               <p className="mt-2 max-w-[220px] text-sm leading-relaxed text-muted-foreground">
                 Add a considered piece from the collection to begin.
               </p>
@@ -662,19 +508,12 @@ function CartDrawer({
                   }
                   alt=""
                   className="h-24 w-[76px] object-cover"
-                  style={{
-                    filter: getColorFilter(
-                      item.selectedColor,
-                    ),
-                  }}
                 />
-
                 <div className="min-w-0 flex-1">
                   <div className="flex justify-between gap-2">
                     <p className="font-display text-base">
                       {item.name}
                     </p>
-
                     <button
                       onClick={() =>
                         onRemove(
@@ -688,17 +527,14 @@ function CartDrawer({
                       <X className="h-3.5 w-3.5" />
                     </button>
                   </div>
-
                   <p className="mt-1 font-mono-brand text-[9px] uppercase tracking-wider text-muted-foreground">
                     Size {item.selectedSize}
                   </p>
-
                   {item.selectedColor && (
                     <p className="mt-1 font-mono-brand text-[9px] uppercase tracking-wider text-primary">
                       Colour {item.selectedColor}
                     </p>
                   )}
-
                   <div className="mt-4 flex items-center justify-between">
                     <div className="flex items-center border border-border">
                       <button
@@ -714,11 +550,9 @@ function CartDrawer({
                       >
                         <Minus className="h-3 w-3" />
                       </button>
-
                       <span className="w-7 text-center font-mono-brand text-xs">
                         {item.quantity}
                       </span>
-
                       <button
                         className="p-1.5 text-muted-foreground hover:text-primary"
                         onClick={() =>
@@ -733,7 +567,6 @@ function CartDrawer({
                         <Plus className="h-3 w-3" />
                       </button>
                     </div>
-
                     <span className="font-mono-brand text-xs text-primary">
                       {formatCurrency(
                         item.price *
@@ -746,14 +579,12 @@ function CartDrawer({
             ))
           )}
         </div>
-
         {cart.length > 0 && (
           <div className="border-t border-border px-6 py-6">
             <div className="mb-5 flex justify-between text-sm">
               <span className="text-muted-foreground">
                 Subtotal
               </span>
-
               <span
                 className="font-mono-brand text-primary"
                 data-testid="text-cart-total"
@@ -761,7 +592,6 @@ function CartDrawer({
                 {formatCurrency(total)}
               </span>
             </div>
-
             <Link
               href="/checkout"
               onClick={onClose}
@@ -771,7 +601,6 @@ function CartDrawer({
               Proceed to checkout
               <ArrowUpRight className="ml-2 h-4 w-4" />
             </Link>
-
             <p className="mt-4 text-center text-[10px] text-muted-foreground">
               Complimentary delivery across Nigeria
             </p>
@@ -781,162 +610,121 @@ function CartDrawer({
     </>
   );
 }
-
-/*
- * =========================================================
- * STOREFRONT
- * =========================================================
- */
-
 export default function Storefront({
   cart,
   onAdd,
   onUpdate,
   onRemove,
 }: StorefrontProps) {
-  const [search, setSearch] = useState('');
+  const [search, setSearch] =
+    useState('');
   const [category, setCategory] =
     useState('All pieces');
-  const [cartOpen, setCartOpen] = useState(false);
+  const [cartOpen, setCartOpen] =
+    useState(false);
   const [addedMessage, setAddedMessage] =
     useState('');
   const [filterOpen, setFilterOpen] =
     useState(false);
-
   const { toast } = useToast();
-
   const params = useMemo(
     () => ({
-      ...(category !== 'All pieces'
+      ...(category !==
+      'All pieces'
         ? { category }
         : {}),
-      ...(search ? { search } : {}),
+      ...(search
+        ? { search }
+        : {}),
     }),
     [category, search],
   );
-
   const productQuery =
     useListProducts(params);
-
   const featuredQuery =
     useListFeaturedProducts();
-
-  const health = useHealthCheck();
-
+  const health =
+    useHealthCheck();
   const apiProducts =
-    (productQuery.data as Product[] | undefined) ||
-    [];
-
+    (productQuery.data as
+      | Product[]
+      | undefined) || [];
   /*
-   * =======================================================
-   * IMPORTANT FIX
-   * =======================================================
+   * IMPORTANT:
+   * Merge API products with the local catalogue.
    *
-   * API products and local products are now combined.
-   *
-   * Previously:
-   *
-   * apiProducts.length > 0
-   *     ? apiProducts
-   *     : FALLBACK_PRODUCTS
-   *
-   * meant that ONE API product could hide all of the
-   * locally-created products.
+   * The API no longer replaces the local
+   * Noble Luxe products.
    */
-
-  const mergedProducts = useMemo(() => {
-    const combined = [
-      ...apiProducts,
+  const mergedProducts =
+    [
       ...FALLBACK_PRODUCTS,
-    ];
-
-    const seen = new Set<string>();
-
-    return combined.filter((product) => {
-      if (seen.has(product.id)) {
-        return false;
-      }
-
-      seen.add(product.id);
-      return true;
-    });
-  }, [apiProducts]);
-
-  const products = useMemo(() => {
-    return mergedProducts.filter((product) => {
-      const matchesCategory =
-        category === 'All pieces' ||
-        product.category === category;
-
-      const normalizedSearch =
-        search.trim().toLowerCase();
-
-      const matchesSearch =
-        !normalizedSearch ||
-        product.name
-          .toLowerCase()
-          .includes(normalizedSearch) ||
-        product.description
-          .toLowerCase()
-          .includes(normalizedSearch) ||
-        product.category
-          .toLowerCase()
-          .includes(normalizedSearch);
-
-      return (
-        matchesCategory &&
-        matchesSearch
-      );
-    });
-  }, [
-    mergedProducts,
-    category,
-    search,
-  ]);
-
-  /*
-   * Featured products also use the local catalogue
-   * if the API doesn't contain the corresponding item.
-   */
-
-  const apiFeatured =
-    (featuredQuery.data as Product[] | undefined) ||
-    [];
-
-  const featured = useMemo(() => {
-    const combined = [
-      ...apiFeatured,
-      ...FALLBACK_PRODUCTS.filter(
-        (product) => product.featured,
-      ),
-    ];
-
-    const seen = new Set<string>();
-
-    return combined.filter((product) => {
-      if (seen.has(product.id)) {
-        return false;
-      }
-
-      seen.add(product.id);
-      return true;
-    });
-  }, [apiFeatured]);
-
+      ...apiProducts,
+    ].reduce<Product[]>(
+      (unique, product) => {
+        const existingIndex =
+          unique.findIndex(
+            (item) =>
+              item.id ===
+              product.id,
+          );
+        if (
+          existingIndex === -1
+        ) {
+          unique.push(product);
+        } else {
+          unique[
+            existingIndex
+          ] = product;
+        }
+        return unique;
+      },
+      [],
+    );
+  const products =
+    mergedProducts.filter(
+      (product) => {
+        const matchesCategory =
+          category ===
+            'All pieces' ||
+          product.category ===
+            category;
+        const matchesSearch =
+          !search ||
+          product.name
+            .toLowerCase()
+            .includes(
+              search.toLowerCase(),
+            ) ||
+          product.description
+            .toLowerCase()
+            .includes(
+              search.toLowerCase(),
+            );
+        return (
+          matchesCategory &&
+          matchesSearch
+        );
+      },
+    );
+  const featured =
+    mergedProducts.filter(
+      (product) =>
+        product.featured,
+    );
   const isLoading =
     productQuery.isLoading &&
     !productQuery.data;
-
   const isError =
     productQuery.isError &&
     !productQuery.data;
-
-  const cartCount = cart.reduce(
-    (sum, item) =>
-      sum + item.quantity,
-    0,
-  );
-
+  const cartCount =
+    cart.reduce(
+      (sum, item) =>
+        sum +
+        item.quantity,
+      0,
+    );
   const handleAdd = (
     product: Product,
     size?: string,
@@ -951,55 +739,51 @@ export default function Storefront({
       colorFront,
       colorBack,
     );
-
     toast({
       title: 'Added to bag',
       description: `${product.name}${
-        color ? ` — ${color}` : ''
-      }${size ? ` — Size ${size}` : ''}`,
+        color
+          ? ` — ${color}`
+          : ''
+      }${
+        size
+          ? ` — Size ${size}`
+          : ''
+      }`,
     });
-
     setAddedMessage(
       `${product.name}${
-        color ? ` · ${color}` : ''
+        color
+          ? ` · ${color}`
+          : ''
       } added to your bag`,
     );
-
     window.setTimeout(
-      () => setAddedMessage(''),
+      () =>
+        setAddedMessage(''),
       2500,
     );
   };
-
   return (
     <div className="noble-noise min-h-[100dvh] pt-[74px]">
-
       {addedMessage && (
         <div className="fixed right-5 top-24 z-50 border border-primary bg-card px-5 py-4 font-mono-brand text-[10px] uppercase tracking-[.14em] text-primary shadow-2xl">
           {addedMessage}
         </div>
       )}
-
       <Header
         cartCount={cartCount}
         onCart={() =>
           setCartOpen(true)
         }
       />
-
       <main>
-
-        {/* HERO */}
-
         <section className="relative mx-auto grid min-h-[calc(100dvh-74px)] max-w-[1440px] items-end px-5 pb-14 pt-16 lg:grid-cols-[1.05fr_.95fr] lg:items-center lg:px-10 lg:pb-20 lg:pt-10">
-
           <div className="relative z-10 animate-rise-in lg:pb-10">
-
             <p className="mb-8 flex items-center gap-3 font-mono-brand text-[10px] uppercase tracking-[0.25em] text-primary">
               <span className="h-px w-10 bg-primary" />
-              Lagos / House 2025
+              Lagos / House 2026
             </p>
-
             <h1 className="max-w-[720px] font-display text-[clamp(4.2rem,10vw,9.8rem)] font-medium leading-[.84] tracking-[-.065em] text-foreground">
               Dress
               <br />
@@ -1009,14 +793,9 @@ export default function Storefront({
               <br />
               ordinary.
             </h1>
-
             <p className="mt-9 max-w-[370px] text-sm leading-[1.8] text-muted-foreground">
-              A private edit of considered
-              streetwear for people who
-              leave an impression before
-              they speak.
+              A private edit of considered streetwear for people who leave an impression before they speak.
             </p>
-
             <a
               href="#collection"
               className="mt-10 inline-flex items-center border-b border-primary pb-2 text-[10px] font-bold uppercase tracking-[0.21em] text-primary transition hover:border-accent hover:text-accent"
@@ -1025,17 +804,16 @@ export default function Storefront({
               <ArrowUpRight className="ml-2 h-4 w-4" />
             </a>
           </div>
-
           <div
             className="relative mt-14 h-[58vh] min-h-[450px] animate-reveal-in lg:mt-0 lg:h-[76vh]"
             style={{
-              animationDelay: '180ms',
+              animationDelay:
+                '180ms',
             }}
           >
             <div className="absolute -left-4 top-1/2 z-10 -translate-y-1/2 [writing-mode:vertical-rl] font-mono-brand text-[9px] uppercase tracking-[0.32em] text-muted-foreground">
               Noble Luxe / Form follows presence
             </div>
-
             <img
               src={productImage(
                 featured[0] ||
@@ -1044,83 +822,55 @@ export default function Storefront({
               alt="Noble Luxe signature outerwear"
               className="h-full w-full object-cover object-center grayscale-[12%]"
             />
-
             <div className="absolute inset-0 border border-primary/25" />
-
             <div className="absolute bottom-6 left-6 right-6 flex items-end justify-between">
               <span className="font-mono-brand text-[9px] uppercase tracking-[0.2em] text-foreground/80">
                 01 — Signature edit
               </span>
-
               <span className="font-display text-2xl text-primary">
                 N/L
               </span>
             </div>
           </div>
         </section>
-
-        {/* MANIFESTO */}
-
         <section
           id="manifesto"
           className="border-y border-border bg-card/50"
         >
           <div className="mx-auto grid max-w-[1440px] gap-12 px-5 py-20 lg:grid-cols-[.75fr_1.25fr] lg:px-10 lg:py-28">
-
             <p className="font-mono-brand text-[10px] uppercase tracking-[0.2em] text-primary">
               The house note / 001
             </p>
-
             <div>
-
               <p className="max-w-3xl font-display text-[clamp(2rem,4vw,4.5rem)] leading-[1.03] tracking-[-.035em]">
-                Luxury is not a volume.
-                It is the{' '}
+                Luxury is not a volume. It is the{' '}
                 <span className="text-primary">
                   precision
                 </span>{' '}
                 of the choice.
               </p>
-
               <p className="mt-8 max-w-lg text-sm leading-[1.9] text-muted-foreground">
-                NOBLE LUXE makes fewer,
-                better things. Every cut is
-                intentional. Every finish earns
-                its place. Built in Lagos,
-                worn everywhere.
+                NOBLE LUXE makes fewer, better things. Every cut is intentional. Every finish earns its place. Built in Lagos, worn everywhere.
               </p>
-
             </div>
           </div>
         </section>
-
-        {/* COLLECTION */}
-
         <section
           id="collection"
           className="mx-auto max-w-[1440px] px-5 py-20 lg:px-10 lg:py-28"
         >
-
           <div className="mb-12 flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
-
             <div>
-
               <p className="font-mono-brand text-[10px] uppercase tracking-[0.2em] text-primary">
                 The current edit
               </p>
-
               <h2 className="mt-3 font-display text-5xl tracking-[-.04em] lg:text-7xl">
                 Objects of intent.
               </h2>
-
             </div>
-
             <div className="flex w-full flex-col gap-4 lg:w-auto lg:items-end">
-
               <div className="flex items-center border-b border-border pb-2 focus-within:border-primary">
-
                 <Search className="mr-2 h-4 w-4 text-muted-foreground" />
-
                 <input
                   value={search}
                   onChange={(event) =>
@@ -1132,13 +882,12 @@ export default function Storefront({
                   className="w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground/70 lg:w-56"
                   data-testid="input-search-products"
                 />
-
               </div>
-
               <button
                 onClick={() =>
                   setFilterOpen(
-                    (open) => !open,
+                    (open) =>
+                      !open,
                   )
                 }
                 className="flex items-center gap-2 self-start font-mono-brand text-[10px] uppercase tracking-[0.16em] text-muted-foreground hover:text-primary lg:hidden"
@@ -1147,7 +896,6 @@ export default function Storefront({
                 <SlidersHorizontal className="h-3.5 w-3.5" />
                 Filter edit
               </button>
-
               <div
                 className={`${
                   filterOpen
@@ -1160,17 +908,20 @@ export default function Storefront({
                     <button
                       key={item}
                       onClick={() =>
-                        setCategory(item)
+                        setCategory(
+                          item,
+                        )
                       }
                       className={`whitespace-nowrap px-3 py-2 font-mono-brand text-[9px] uppercase tracking-[0.12em] transition ${
-                        category === item
+                        category ===
+                        item
                           ? 'bg-primary text-primary-foreground'
                           : 'border border-border text-muted-foreground hover:border-primary hover:text-primary'
                       }`}
                       data-testid={`button-filter-${item
                         .toLowerCase()
                         .replace(
-                          /\s+/g,
+                          ' ',
                           '-',
                         )}`}
                     >
@@ -1179,41 +930,29 @@ export default function Storefront({
                   ),
                 )}
               </div>
-
             </div>
           </div>
-
           {isLoading ? (
             <div className="grid gap-x-5 gap-y-14 sm:grid-cols-2 lg:grid-cols-3">
-
-              {[1, 2, 3, 4, 5, 6].map(
-                (item) => (
-                  <div key={item}>
-
-                    <div className="skeleton aspect-[.79]" />
-
-                    <div className="skeleton mt-4 h-5 w-2/3" />
-
-                    <div className="skeleton mt-3 h-3 w-full" />
-
-                  </div>
-                ),
-              )}
-
+              {[
+                1, 2, 3, 4, 5, 6,
+              ].map((item) => (
+                <div key={item}>
+                  <div className="skeleton aspect-[.79]" />
+                  <div className="skeleton mt-4 h-5 w-2/3" />
+                  <div className="skeleton mt-3 h-3 w-full" />
+                </div>
+              ))}
             </div>
           ) : isError &&
             !products.length ? (
             <div className="border border-destructive/50 px-6 py-16 text-center">
-
               <p className="font-display text-2xl">
                 The edit is temporarily private.
               </p>
-
               <p className="mt-2 text-sm text-muted-foreground">
-                We couldn't reach the
-                showroom catalog.
+                We couldn't reach the showroom catalog.
               </p>
-
               <button
                 onClick={() =>
                   productQuery.refetch()
@@ -1223,34 +962,31 @@ export default function Storefront({
               >
                 Try again
               </button>
-
             </div>
           ) : products.length ? (
-
             <div className="grid gap-x-5 gap-y-14 sm:grid-cols-2 lg:grid-cols-3">
-
               {products.map(
                 (product) => (
                   <ProductCard
-                    key={product.id}
-                    product={product}
-                    onAdd={handleAdd}
+                    key={
+                      product.id
+                    }
+                    product={
+                      product
+                    }
+                    onAdd={
+                      handleAdd
+                    }
                   />
                 ),
               )}
-
             </div>
-
           ) : (
-
             <div className="py-24 text-center">
-
               <Sparkles className="mx-auto mb-5 h-6 w-6 text-primary" />
-
               <p className="font-display text-2xl">
                 No piece matches that search.
               </p>
-
               <button
                 onClick={() => {
                   setSearch('');
@@ -1263,58 +999,42 @@ export default function Storefront({
               >
                 Clear filters
               </button>
-
             </div>
           )}
-
         </section>
-
-        {/* JOURNAL */}
-
         <section
           id="journal"
           className="border-y border-border bg-[#161512]"
         >
           <div className="mx-auto grid max-w-[1440px] gap-10 px-5 py-20 lg:grid-cols-[1.2fr_.8fr] lg:items-center lg:px-10 lg:py-28">
-
             <div>
-
               <p className="font-mono-brand text-[10px] uppercase tracking-[0.2em] text-primary">
                 From the journal
               </p>
-
               <h2 className="mt-4 max-w-xl font-display text-[clamp(2.8rem,5vw,5rem)] leading-[.98]">
                 The city is a canvas.{' '}
                 <span className="italic text-primary">
                   Wear the mark.
                 </span>
               </h2>
-
               <p className="mt-7 max-w-md text-sm leading-[1.8] text-muted-foreground">
-                A study in contrast:
-                sun on concrete, gold
-                in shadow, a silhouette
-                that knows where it is
-                going.
+                A study in contrast: sun on concrete, gold in shadow, a silhouette that knows where it is going.
               </p>
-
               <button
                 className="mt-9 inline-flex items-center border-b border-primary pb-2 text-[10px] font-bold uppercase tracking-[0.2em] text-primary hover:text-accent"
                 onClick={() =>
                   window.scrollTo({
                     top: 0,
-                    behavior: 'smooth',
+                    behavior:
+                      'smooth',
                   })
                 }
               >
                 Read the field notes
                 <ArrowUpRight className="ml-2 h-4 w-4" />
               </button>
-
             </div>
-
             <div className="relative aspect-[1.15] overflow-hidden">
-
               <img
                 src={productImage(
                   featured[1] ||
@@ -1323,38 +1043,26 @@ export default function Storefront({
                 alt="Noble Luxe atelier detail"
                 className="h-full w-full object-cover grayscale-[25%] transition duration-700 hover:scale-105 hover:grayscale-0"
               />
-
               <div className="absolute inset-0 border border-primary/30" />
-
               <p className="absolute bottom-5 left-5 font-mono-brand text-[9px] uppercase tracking-[0.2em]">
                 Lagos, 06:42 PM
               </p>
-
             </div>
           </div>
         </section>
-
-        {/* FOOTER */}
-
         <footer className="mx-auto flex max-w-[1440px] flex-col gap-8 px-5 py-12 text-[10px] text-muted-foreground sm:flex-row sm:items-center sm:justify-between lg:px-10">
-
           <BrandMark compact />
-
           <p className="font-mono-brand uppercase tracking-[0.15em]">
-            Private showroom / Est. 2025
+            Private showroom / Est. 2026
           </p>
-
           <p className="font-mono-brand uppercase tracking-[0.15em]">
             {health.data?.status ===
             'ok'
               ? 'Showroom online'
               : 'By appointment only'}
           </p>
-
         </footer>
-
       </main>
-
       <CartDrawer
         cart={cart}
         open={cartOpen}
@@ -1364,7 +1072,6 @@ export default function Storefront({
         onUpdate={onUpdate}
         onRemove={onRemove}
       />
-
     </div>
   );
 }
