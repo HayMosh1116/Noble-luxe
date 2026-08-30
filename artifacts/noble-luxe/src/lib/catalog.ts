@@ -1,10 +1,10 @@
 import type { Product } from '@workspace/api-client-react';
 export type CartItem = Product & {
   selectedSize: string;
-  quantity: number;
   selectedColor?: string;
   selectedColorFront?: string;
   selectedColorBack?: string;
+  quantity: number;
 };
 export type CatalogColor = {
   name: string;
@@ -14,22 +14,34 @@ export type CatalogColor = {
 export type CatalogProduct = Product & {
   colorImages?: Record<string, CatalogColor>;
 };
+const HOODIE_FRONT =
+  'https://i.ibb.co/qLYHR0DP/Qcct5d-JUA5.jpg';
+const HOODIE_BACK =
+  'https://i.ibb.co/tTMqjXmG/w-UIs-AX27v-A.jpg';
+const JOGGERS_FRONT =
+  'https://i.ibb.co/YFR5bGd2/jboafl7g-GJ.jpg';
+const JOGGERS_BACK =
+  'https://i.ibb.co/bgh0qRbq/IZJsk-Ghb-I4.jpg';
+const GIRLS_TOP_FRONT =
+  'https://i.ibb.co/HLKZWS68/I5kw-WDymih.jpg';
+const GIRLS_TOP_BACK =
+  'https://i.ibb.co/TxpTRCvf/O92i-O39-IIb.jpg';
 /*
-|--------------------------------------------------------------------------
-| NOBLE LUXE PRODUCT IMAGES
-|--------------------------------------------------------------------------
-|
-| To add/change colours later:
-|
-| {
-|   name: 'Blue',
-|   front: 'FRONT IMAGE URL',
-|   back: 'BACK IMAGE URL'
-| }
-|
-| If a colour has no back image, simply remove "back".
-|
-*/
+ * =========================================================
+ * NOBLE LUXE LOCAL CATALOGUE
+ * =========================================================
+ *
+ * To add another colour later, simply add another entry:
+ *
+ * Blue: {
+ *   name: 'Blue',
+ *   front: 'FRONT IMAGE URL',
+ *   back: 'BACK IMAGE URL',
+ * }
+ *
+ * This means colours can later be moved into the admin
+ * dashboard without changing the storefront design.
+ */
 export const FALLBACK_PRODUCTS: CatalogProduct[] = [
   {
     id: 'nl-001',
@@ -44,105 +56,40 @@ export const FALLBACK_PRODUCTS: CatalogProduct[] = [
     colors: ['Obsidian', 'Antique Gold'],
     featured: true,
   },
-  /*
-  |--------------------------------------------------------------------------
-  | HOODIE
-  |--------------------------------------------------------------------------
-  */
   {
     id: 'nl-002',
     name: 'Atelier 03 Hoodie',
     category: 'Essentials',
     price: 78000,
-    imageUrl:
-      'https://i.ibb.co/qLYHR0DP/Qcct5d-JUA5.jpg',
+    imageUrl: HOODIE_FRONT,
     description:
-      'Heavyweight streetwear hoodie with a structured silhouette and signature Noble Luxe finish.',
+      'Heavyweight brushed cotton with an offset monogram and a softly structured hood.',
     sizes: ['S', 'M', 'L', 'XL'],
-    colors: ['Black', 'Blue'],
+    colors: ['Black'],
+    featured: true,
     colorImages: {
       Black: {
         name: 'Black',
-        front:
-          'https://i.ibb.co/qLYHR0DP/Qcct5d-JUA5.jpg',
-        back:
-          'https://i.ibb.co/tTMqjXmG/w-UIs-AX27v-A.jpg',
+        front: HOODIE_FRONT,
+        back: HOODIE_BACK,
       },
-      /*
-       * ADD THE BLUE FRONT/BACK URLs HERE LATER.
-       *
-       * Example:
-       *
-       * Blue: {
-       *   name: 'Blue',
-       *   front: 'YOUR BLUE FRONT URL',
-       *   back: 'YOUR BLUE BACK URL',
-       * }
-       */
     },
-    featured: true,
   },
-  /*
-  |--------------------------------------------------------------------------
-  | JOGGERS
-  |--------------------------------------------------------------------------
-  */
   {
     id: 'nl-003',
-    name: 'Monument Joggers',
+    name: 'Monument Cargo Trouser',
     category: 'Trousers',
     price: 92500,
     imageUrl:
-      'https://i.ibb.co/YFR5bGd2/jboafl7g-GJ.jpg',
+      'https://images.pexels.com/photos/6765164/pexels-photo-6765164.jpeg?auto=compress&cs=tinysrgb&w=1200',
     description:
-      'Relaxed utility joggers designed for movement, comfort and a clean modern silhouette.',
-    sizes: ['S', 'M', 'L', 'XL'],
-    colors: ['Black'],
-    colorImages: {
-      Black: {
-        name: 'Black',
-        front:
-          'https://i.ibb.co/YFR5bGd2/jboafl7g-GJ.jpg',
-        back:
-          'https://i.ibb.co/bgh0qRbq/IZJsk-Ghb-I4.jpg',
-      },
-    },
+      'Relaxed utility trousers with articulated knees, hidden hardware and a clean tapered break.',
+    sizes: ['28', '30', '32', '34', '36'],
+    colors: ['Coal'],
     featured: false,
   },
-  /*
-  |--------------------------------------------------------------------------
-  | GIRL'S TOP
-  |--------------------------------------------------------------------------
-  */
   {
     id: 'nl-004',
-    name: "Noble Girl's Top",
-    category: 'Essentials',
-    price: 55000,
-    imageUrl:
-      'https://i.ibb.co/HLKZWS68/I5kw-WDymih.jpg',
-    description:
-      'A refined everyday top with a clean silhouette and effortless Noble Luxe character.',
-    sizes: ['XS', 'S', 'M', 'L'],
-    colors: ['Black'],
-    colorImages: {
-      Black: {
-        name: 'Black',
-        front:
-          'https://i.ibb.co/HLKZWS68/I5kw-WDymih.jpg',
-        back:
-          'https://i.ibb.co/TxpTRCvf/O92i-O39-IIb.jpg',
-      },
-    },
-    featured: true,
-  },
-  /*
-  |--------------------------------------------------------------------------
-  | SIGNET LEATHER RUNNER
-  |--------------------------------------------------------------------------
-  */
-  {
-    id: 'nl-005',
     name: 'Signet Leather Runner',
     category: 'Footwear',
     price: 112000,
@@ -154,14 +101,9 @@ export const FALLBACK_PRODUCTS: CatalogProduct[] = [
     colors: ['Ink', 'Ivory'],
     featured: true,
   },
-  /*
-  |--------------------------------------------------------------------------
-  | NOCTURNE RIB TEE
-  |--------------------------------------------------------------------------
-  */
   {
-    id: 'nl-006',
-    name: 'Nocturne Rib Tee',
+    id: 'nl-005',
+    name: "Nocturne Rib Tee",
     category: 'Essentials',
     price: 42000,
     imageUrl:
@@ -172,13 +114,8 @@ export const FALLBACK_PRODUCTS: CatalogProduct[] = [
     colors: ['Onyx', 'Ash'],
     featured: false,
   },
-  /*
-  |--------------------------------------------------------------------------
-  | SUNGLASSES
-  |--------------------------------------------------------------------------
-  */
   {
-    id: 'nl-007',
+    id: 'nl-006',
     name: 'Noble Frame Sunglasses',
     category: 'Accessories',
     price: 55000,
@@ -190,12 +127,74 @@ export const FALLBACK_PRODUCTS: CatalogProduct[] = [
     colors: ['Black / Gold'],
     featured: false,
   },
+  /*
+   * =========================================================
+   * NEW PRODUCTS
+   * =========================================================
+   */
+  {
+    id: 'nl-007',
+    name: 'Noble Luxe Hoodie',
+    category: 'Essentials',
+    price: 78000,
+    imageUrl: HOODIE_FRONT,
+    description:
+      'A signature Noble Luxe hoodie with a clean silhouette and heavyweight streetwear finish.',
+    sizes: ['S', 'M', 'L', 'XL'],
+    colors: ['Black'],
+    featured: true,
+    colorImages: {
+      Black: {
+        name: 'Black',
+        front: HOODIE_FRONT,
+        back: HOODIE_BACK,
+      },
+    },
+  },
+  {
+    id: 'nl-008',
+    name: 'Noble Luxe Joggers',
+    category: 'Trousers',
+    price: 65000,
+    imageUrl: JOGGERS_FRONT,
+    description:
+      'Relaxed Noble Luxe joggers designed for a clean, comfortable streetwear silhouette.',
+    sizes: ['S', 'M', 'L', 'XL'],
+    colors: ['Black'],
+    featured: true,
+    colorImages: {
+      Black: {
+        name: 'Black',
+        front: JOGGERS_FRONT,
+        back: JOGGERS_BACK,
+      },
+    },
+  },
+  {
+    id: 'nl-009',
+    name: "Noble Luxe Girl's Top",
+    category: 'Essentials',
+    price: 45000,
+    imageUrl: GIRLS_TOP_FRONT,
+    description:
+      'A refined Noble Luxe top with a clean silhouette and statement finish.',
+    sizes: ['S', 'M', 'L'],
+    colors: ['Black'],
+    featured: true,
+    colorImages: {
+      Black: {
+        name: 'Black',
+        front: GIRLS_TOP_FRONT,
+        back: GIRLS_TOP_BACK,
+      },
+    },
+  },
 ];
 /*
-|--------------------------------------------------------------------------
-| CURRENCY
-|--------------------------------------------------------------------------
-*/
+ * =========================================================
+ * HELPERS
+ * =========================================================
+ */
 export const formatCurrency = (value: number) =>
   new Intl.NumberFormat('en-NG', {
     style: 'currency',
@@ -203,70 +202,61 @@ export const formatCurrency = (value: number) =>
     maximumFractionDigits: 0,
   }).format(value);
 /*
-|--------------------------------------------------------------------------
-| PRODUCT IMAGE
-|--------------------------------------------------------------------------
-*/
-export const productImage = (product: Product) =>
-  product.imageUrl ||
-  FALLBACK_PRODUCTS.find(
-    (item) => item.id === product.id,
-  )?.imageUrl ||
-  FALLBACK_PRODUCTS[0].imageUrl;
-/*
-|--------------------------------------------------------------------------
-| GET AVAILABLE COLOURS
-|--------------------------------------------------------------------------
-|
-| This allows the storefront to understand colours from
-| colorImages first, then fall back to product.colors.
-|
-*/
+ * Return all colours configured for a product.
+ *
+ * If a product does not have the new colourImages system,
+ * we create simple fallback colours from product.colors.
+ */
 export const getProductColors = (
   product: Product,
 ): CatalogColor[] => {
   const catalogProduct = product as CatalogProduct;
-  if (
-    catalogProduct.colorImages &&
-    Object.keys(catalogProduct.colorImages).length > 0
-  ) {
+  if (catalogProduct.colorImages) {
     return Object.values(catalogProduct.colorImages);
   }
   return (product.colors || []).map((color) => ({
     name: color,
-    front: product.imageUrl || '',
+    front: product.imageUrl || FALLBACK_PRODUCTS[0].imageUrl,
   }));
 };
 /*
-|--------------------------------------------------------------------------
-| GET FRONT + BACK IMAGES FOR SELECTED COLOUR
-|--------------------------------------------------------------------------
-*/
+ * Return the correct front/back image for the selected colour.
+ */
 export const getColorImages = (
   product: Product,
   color?: string,
 ): { front: string; back?: string } => {
   const catalogProduct = product as CatalogProduct;
-  /*
-   * First check our custom colour configuration.
-   */
-  if (
-    color &&
-    catalogProduct.colorImages?.[color]
-  ) {
+  const colors = catalogProduct.colorImages;
+  if (colors && color && colors[color]) {
     return {
-      front:
-        catalogProduct.colorImages[color].front ||
-        productImage(product),
-      back:
-        catalogProduct.colorImages[color].back,
+      front: colors[color].front,
+      back: colors[color].back,
     };
   }
-  /*
-   * If there is no custom colour configuration,
-   * use the normal product image.
-   */
+  if (colors) {
+    const firstColor = Object.values(colors)[0];
+    if (firstColor) {
+      return {
+        front: firstColor.front,
+        back: firstColor.back,
+      };
+    }
+  }
   return {
-    front: productImage(product),
+    front:
+      product.imageUrl ||
+      FALLBACK_PRODUCTS[0].imageUrl,
   };
 };
+/*
+ * Main product image helper.
+ */
+export const productImage = (
+  product: Product,
+): string =>
+  product.imageUrl ||
+  FALLBACK_PRODUCTS.find(
+    (item) => item.id === product.id,
+  )?.imageUrl ||
+  FALLBACK_PRODUCTS[0].imageUrl;
