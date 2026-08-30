@@ -1,5 +1,4 @@
 import type { Product } from '@workspace/api-client-react';
-
 export type CartItem = Product & {
   selectedSize: string;
   selectedColor?: string;
@@ -7,35 +6,26 @@ export type CartItem = Product & {
   selectedColorBack?: string;
   quantity: number;
 };
-
 export type CatalogColor = {
   name: string;
   front: string;
   back?: string;
 };
-
 export type CatalogProduct = Product & {
   colorImages?: Record<string, CatalogColor>;
 };
-
 const HOODIE_FRONT =
   'https://i.ibb.co/qLYHR0DP/Qcct5d-JUA5.jpg';
-
 const HOODIE_BACK =
   'https://i.ibb.co/tTMqjXmG/w-UIs-AX27v-A.jpg';
-
 const JOGGERS_FRONT =
   'https://i.ibb.co/YFR5bGd2/jboafl7g-GJ.jpg';
-
 const JOGGERS_BACK =
   'https://i.ibb.co/bgh0qRbq/IZJsk-Ghb-I4.jpg';
-
 const GIRLS_TOP_FRONT =
   'https://i.ibb.co/HLKZWS68/I5kw-WDymih.jpg';
-
 const GIRLS_TOP_BACK =
   'https://i.ibb.co/TxpTRCvf/O92i-O39-IIb.jpg';
-
 export const FALLBACK_PRODUCTS: CatalogProduct[] = [
   {
     id: 'nl-001',
@@ -50,7 +40,6 @@ export const FALLBACK_PRODUCTS: CatalogProduct[] = [
     colors: ['Obsidian', 'Antique Gold'],
     featured: true,
   },
-
   {
     id: 'nl-002',
     name: 'Atelier 03 Hoodie',
@@ -70,7 +59,6 @@ export const FALLBACK_PRODUCTS: CatalogProduct[] = [
       },
     },
   },
-
   {
     id: 'nl-003',
     name: 'Monument Cargo Trouser',
@@ -84,7 +72,6 @@ export const FALLBACK_PRODUCTS: CatalogProduct[] = [
     colors: ['Coal'],
     featured: false,
   },
-
   {
     id: 'nl-004',
     name: 'Signet Leather Runner',
@@ -98,7 +85,6 @@ export const FALLBACK_PRODUCTS: CatalogProduct[] = [
     colors: ['Ink', 'Ivory'],
     featured: true,
   },
-
   {
     id: 'nl-005',
     name: 'Nocturne Rib Tee',
@@ -112,7 +98,6 @@ export const FALLBACK_PRODUCTS: CatalogProduct[] = [
     colors: ['Onyx', 'Ash'],
     featured: false,
   },
-
   {
     id: 'nl-006',
     name: 'Noble Frame Sunglasses',
@@ -126,13 +111,6 @@ export const FALLBACK_PRODUCTS: CatalogProduct[] = [
     colors: ['Black / Gold'],
     featured: false,
   },
-
-  /*
-   * =========================================================
-   * NEW PRODUCTS
-   * =========================================================
-   */
-
   {
     id: 'nl-007',
     name: 'Noble Luxe Hoodie',
@@ -152,7 +130,6 @@ export const FALLBACK_PRODUCTS: CatalogProduct[] = [
       },
     },
   },
-
   {
     id: 'nl-008',
     name: 'Noble Luxe Joggers',
@@ -172,7 +149,6 @@ export const FALLBACK_PRODUCTS: CatalogProduct[] = [
       },
     },
   },
-
   {
     id: 'nl-009',
     name: "Noble Luxe Girl's Top",
@@ -193,56 +169,40 @@ export const FALLBACK_PRODUCTS: CatalogProduct[] = [
     },
   },
 ];
-
 export const formatCurrency = (value: number) =>
   new Intl.NumberFormat('en-NG', {
     style: 'currency',
     currency: 'NGN',
     maximumFractionDigits: 0,
   }).format(value);
-
-/*
- * Return the colours customers can choose.
- *
- * IMPORTANT:
- * We are NOT changing the image colour.
- * The selected colour is simply recorded with the order.
- */
 export const getProductColors = (
   product: Product,
 ): CatalogColor[] => {
   const catalogProduct = product as CatalogProduct;
-
   if (catalogProduct.colorImages) {
     return Object.values(catalogProduct.colorImages);
   }
-
   return (product.colors || []).map((color) => ({
     name: color,
-    front: product.imageUrl || FALLBACK_PRODUCTS[0].imageUrl,
+    front:
+      product.imageUrl ||
+      FALLBACK_PRODUCTS[0].imageUrl,
   }));
 };
-
-/*
- * Return the actual images for the selected product/colour.
- */
 export const getColorImages = (
   product: Product,
   color?: string,
 ): { front: string; back?: string } => {
   const catalogProduct = product as CatalogProduct;
   const colors = catalogProduct.colorImages;
-
   if (colors && color && colors[color]) {
     return {
       front: colors[color].front,
       back: colors[color].back,
     };
   }
-
   if (colors) {
     const firstColor = Object.values(colors)[0];
-
     if (firstColor) {
       return {
         front: firstColor.front,
@@ -250,14 +210,12 @@ export const getColorImages = (
       };
     }
   }
-
   return {
     front:
       product.imageUrl ||
       FALLBACK_PRODUCTS[0].imageUrl,
   };
 };
-
 export const productImage = (
   product: Product,
 ): string =>
