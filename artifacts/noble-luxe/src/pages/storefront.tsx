@@ -37,15 +37,8 @@ type StorefrontProps = {
     colorFront?: string,
     colorBack?: string,
   ) => void;
-  onUpdate: (
-    id: string,
-    size: string,
-    delta: number,
-  ) => void;
-  onRemove: (
-    id: string,
-    size: string,
-  ) => void;
+  onUpdate: (id: string, size: string, delta: number) => void;
+  onRemove: (id: string, size: string) => void;
 };
 const categories = [
   'All pieces',
@@ -55,14 +48,7 @@ const categories = [
   'Footwear',
   'Accessories',
 ];
-/* =========================================================
-   BRAND
-========================================================= */
-function BrandMark({
-  compact = false,
-}: {
-  compact?: boolean;
-}) {
+function BrandMark({ compact = false }: { compact?: boolean }) {
   return (
     <Link
       href="/"
@@ -76,9 +62,6 @@ function BrandMark({
     </Link>
   );
 }
-/* =========================================================
-   HEADER
-========================================================= */
 function Header({
   cartCount,
   onCart,
@@ -92,9 +75,7 @@ function Header({
       <div className="mx-auto flex h-[74px] max-w-[1440px] items-center justify-between px-5 lg:px-10">
         <button
           className="flex items-center gap-2 text-xs uppercase tracking-[0.22em] text-muted-foreground md:hidden"
-          onClick={() =>
-            setMenuOpen((open) => !open)
-          }
+          onClick={() => setMenuOpen((open) => !open)}
           data-testid="button-toggle-menu"
         >
           <span className="flex w-5 flex-col gap-1">
@@ -106,39 +87,42 @@ function Header({
         <BrandMark />
         <nav
           className={`${
-            menuOpen
-              ? 'absolute left-0 top-[74px] flex'
-              : 'hidden'
+            menuOpen ? 'absolute left-0 top-[74px] flex' : 'hidden'
           } w-full flex-col gap-5 border-b border-border bg-background px-5 py-6 md:static md:flex md:w-auto md:flex-row md:border-0 md:bg-transparent md:p-0`}
           aria-label="Primary navigation"
         >
           <a
             href="#collection"
             className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground transition-colors hover:text-primary"
+            onClick={() => setMenuOpen(false)}
           >
             Collection
           </a>
           <a
             href="#manifesto"
             className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground transition-colors hover:text-primary"
+            onClick={() => setMenuOpen(false)}
           >
             Manifesto
           </a>
           <a
             href="#journal"
             className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground transition-colors hover:text-primary"
+            onClick={() => setMenuOpen(false)}
           >
             Journal
           </a>
           <Link
             href="/contact"
             className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground transition-colors hover:text-primary"
+            onClick={() => setMenuOpen(false)}
           >
             Contact
           </Link>
           <Link
             href="/account"
             className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground transition-colors hover:text-primary"
+            onClick={() => setMenuOpen(false)}
           >
             Account
           </Link>
@@ -152,9 +136,7 @@ function Header({
             className="h-[18px] w-[18px]"
             strokeWidth={1.3}
           />
-          <span className="hidden sm:inline">
-            Bag
-          </span>
+          <span className="hidden sm:inline">Bag</span>
           <span
             className="absolute -right-3 -top-3 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 font-mono-brand text-[9px] text-primary-foreground"
             data-testid="text-cart-count"
@@ -166,9 +148,6 @@ function Header({
     </header>
   );
 }
-/* =========================================================
-   PRODUCT CARD
-========================================================= */
 function ProductCard({
   product,
   onAdd,
@@ -182,41 +161,33 @@ function ProductCard({
     colorBack?: string,
   ) => void;
 }) {
-  const catalogProduct =
-    product as CatalogProduct;
-  const availableColors =
-    getProductColors(product);
+  const availableColors = getProductColors(product);
   const [size, setSize] = useState(
     product.sizes?.[0] || 'One size',
   );
-  const [selectedColor, setSelectedColor] =
-    useState(
-      availableColors[0]?.name ||
-        product.colors?.[0] ||
-        'Default',
-    );
-  const [showBack, setShowBack] =
-    useState(false);
-  const [saved, setSaved] =
-    useState(false);
-  const [showTapHint, setShowTapHint] =
-    useState(true);
-  const selectedImages =
-    getColorImages(
-      product,
-      selectedColor,
-    );
+  const [selectedColor, setSelectedColor] = useState(
+    availableColors[0]?.name ||
+      product.colors?.[0] ||
+      'Default',
+  );
+  const [showBack, setShowBack] = useState(false);
+  const [saved, setSaved] = useState(false);
+  const [showTapHint, setShowTapHint] = useState(true);
+  const selectedImages = getColorImages(
+    product,
+    selectedColor,
+  );
   useEffect(() => {
     setShowBack(false);
-    setShowTapHint(true);
-  }, [selectedColor]);
+    setShowTapHint(Boolean(selectedImages.back));
+  }, [selectedColor, selectedImages.back]);
   useEffect(() => {
+    if (!selectedImages.back) return;
     const timer = window.setTimeout(() => {
       setShowTapHint(false);
     }, 7000);
-    return () =>
-      window.clearTimeout(timer);
-  }, []);
+    return () => window.clearTimeout(timer);
+  }, [selectedColor, selectedImages.back]);
   const handleProductTap = () => {
     if (!selectedImages.back) return;
     setShowBack((current) => !current);
@@ -227,36 +198,23 @@ function ProductCard({
   ) => {
     setSelectedColor(color.name);
     setShowBack(false);
-    setShowTapHint(true);
+    setShowTapHint(Boolean(color.back));
   };
   return (
     <article
       className="group animate-reveal-in"
       data-testid={`card-product-${product.id}`}
     >
-      {/* =================================================
-          IMAGE AREA
-      ================================================= */}
       <div
         className="relative aspect-[.79] cursor-pointer overflow-hidden bg-secondary"
         onClick={handleProductTap}
-        role={
-          selectedImages.back
-            ? 'button'
-            : undefined
-        }
-        tabIndex={
-          selectedImages.back
-            ? 0
-            : undefined
-        }
+        role={selectedImages.back ? 'button' : undefined}
+        tabIndex={selectedImages.back ? 0 : undefined}
         onKeyDown={(event) => {
           if (
             selectedImages.back &&
-            (
-              event.key === 'Enter' ||
-              event.key === ' '
-            )
+            (event.key === 'Enter' ||
+              event.key === ' ')
           ) {
             event.preventDefault();
             handleProductTap();
@@ -265,31 +223,26 @@ function ProductCard({
       >
         <img
           src={
-            showBack &&
-            selectedImages.back
+            showBack && selectedImages.back
               ? selectedImages.back
               : selectedImages.front
           }
           alt={`${product.name} ${
-            showBack ? 'back' : 'front'
+            showBack ? 'back view' : 'front view'
           }`}
           className="h-full w-full object-cover grayscale-[18%] transition duration-500 group-hover:scale-[1.025] group-hover:grayscale-0"
           loading="lazy"
         />
-        <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-background/60 via-transparent to-transparent" />
-        {/* FEATURED */}
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-background/60 via-transparent to-transparent opacity-90" />
         {product.featured && (
-          <span className="absolute left-4 top-4 border border-primary/60 bg-background/85 px-2 py-1 font-mono-brand text-[9px] uppercase tracking-[0.18em] text-primary backdrop-blur">
+          <span className="absolute left-4 top-4 border border-primary/60 bg-background/80 px-2 py-1 font-mono-brand text-[9px] uppercase tracking-[0.18em] text-primary backdrop-blur-sm">
             House pick
           </span>
         )}
-        {/* FAVORITE */}
         <button
           onClick={(event) => {
             event.stopPropagation();
-            setSaved(
-              (value) => !value,
-            );
+            setSaved((value) => !value);
           }}
           className="absolute right-4 top-4 flex h-9 w-9 items-center justify-center rounded-full border border-foreground/25 bg-background/75 text-foreground backdrop-blur-sm transition hover:border-primary hover:text-primary"
           data-testid={`button-favorite-${product.id}`}
@@ -304,35 +257,45 @@ function ProductCard({
             strokeWidth={1.4}
           />
         </button>
-        {/* =================================================
-            VERY VISIBLE FRONT/BACK NOTICE
-        ================================================= */}
         {selectedImages.back && (
-          <div
-            className={`pointer-events-none absolute left-1/2 top-1/2 w-[82%] -translate-x-1/2 -translate-y-1/2 text-center transition-all duration-500 ${
+          <button
+            type="button"
+            onClick={(event) => {
+              event.stopPropagation();
+              handleProductTap();
+            }}
+            className={`absolute left-1/2 top-1/2 z-10 -translate-x-1/2 -translate-y-1/2 border-2 border-primary bg-background/90 px-5 py-3 text-center shadow-[0_0_25px_rgba(0,0,0,0.35)] backdrop-blur-md transition-all duration-500 ${
               showTapHint
                 ? 'scale-100 opacity-100'
-                : 'scale-95 opacity-0'
+                : 'pointer-events-none scale-90 opacity-0'
             }`}
+            aria-label="View back of product"
           >
-            <div className="border-2 border-primary bg-background/90 px-5 py-4 shadow-[0_0_35px_rgba(0,0,0,.45)] backdrop-blur-md">
-              <div className="mb-2 flex items-center justify-center gap-2">
-                <span className="h-2 w-2 animate-pulse rounded-full bg-primary" />
-                <span className="font-mono-brand text-[11px] font-bold uppercase tracking-[0.2em] text-primary">
-                  FRONT / BACK
-                </span>
-                <span className="h-2 w-2 animate-pulse rounded-full bg-primary" />
-              </div>
-              <p className="font-display text-lg text-foreground">
-                Tap to see the back
-              </p>
-              <p className="mt-1 text-[9px] uppercase tracking-[0.15em] text-muted-foreground">
-                Tap the piece to switch view
-              </p>
-            </div>
+            <span className="flex items-center justify-center gap-2 font-mono-brand text-[10px] font-bold uppercase tracking-[0.18em] text-primary">
+              <span className="animate-pulse">
+                ✦
+              </span>
+              TAP TO SEE BACK
+              <span className="animate-pulse">
+                ✦
+              </span>
+            </span>
+            <span className="mt-1 block text-[8px] uppercase tracking-[0.15em] text-foreground">
+              Front & back view available
+            </span>
+          </button>
+        )}
+        {selectedImages.back && (
+          <div className="pointer-events-none absolute left-4 top-1/2 z-[5] -translate-y-1/2">
+            <div
+              className={`h-16 w-px bg-primary transition-opacity duration-500 ${
+                showTapHint
+                  ? 'opacity-70'
+                  : 'opacity-0'
+              }`}
+            />
           </div>
         )}
-        {/* ADD TO BAG */}
         <div
           className="absolute bottom-4 left-4 right-4"
           onClick={(event) =>
@@ -356,9 +319,6 @@ function ProductCard({
           </button>
         </div>
       </div>
-      {/* =================================================
-          PRODUCT INFORMATION
-      ================================================= */}
       <div className="flex items-start justify-between gap-4 pt-4">
         <div>
           <p className="mb-1 font-mono-brand text-[9px] uppercase tracking-[0.15em] text-muted-foreground">
@@ -372,51 +332,38 @@ function ProductCard({
           </p>
         </div>
         <p className="shrink-0 font-mono-brand text-xs text-primary">
-          {formatCurrency(
-            product.price,
-          )}
+          {formatCurrency(product.price)}
         </p>
       </div>
-      {/* =================================================
-          COLOURS
-      ================================================= */}
       {availableColors.length > 0 && (
         <div className="mt-4">
           <p className="mb-2 font-mono-brand text-[9px] uppercase tracking-[0.15em] text-muted-foreground">
             Choose colour
           </p>
           <div className="flex flex-wrap gap-2">
-            {availableColors.map(
-              (color) => (
-                <button
-                  key={color.name}
-                  type="button"
-                  onClick={() =>
-                    handleColorChange(
-                      color,
-                    )
-                  }
-                  className={`border px-3 py-1.5 font-mono-brand text-[9px] uppercase transition ${
-                    selectedColor ===
-                    color.name
-                      ? 'border-primary bg-primary text-primary-foreground'
-                      : 'border-border text-muted-foreground hover:border-primary hover:text-primary'
-                  }`}
-                  data-testid={`button-color-${product.id}-${color.name}`}
-                >
-                  {color.name}
-                </button>
-              ),
-            )}
+            {availableColors.map((color) => (
+              <button
+                key={color.name}
+                type="button"
+                onClick={() =>
+                  handleColorChange(color)
+                }
+                className={`border px-3 py-1.5 font-mono-brand text-[9px] uppercase transition ${
+                  selectedColor === color.name
+                    ? 'border-primary bg-primary text-primary-foreground'
+                    : 'border-border text-muted-foreground hover:border-primary hover:text-primary'
+                }`}
+                data-testid={`button-color-${product.id}-${color.name}`}
+              >
+                {color.name}
+              </button>
+            ))}
           </div>
-          <p className="mt-2 font-mono-brand text-[8px] uppercase tracking-[0.12em] text-muted-foreground">
+          <p className="mt-2 font-mono-brand text-[8px] uppercase tracking-[0.1em] text-muted-foreground">
             Selected: {selectedColor}
           </p>
         </div>
       )}
-      {/* =================================================
-          SIZES
-      ================================================= */}
       <div className="mt-3 flex items-center gap-2 overflow-x-auto pb-1">
         {(product.sizes?.length
           ? product.sizes
@@ -429,9 +376,7 @@ function ProductCard({
                 ? 'border-primary bg-primary text-primary-foreground'
                 : 'border-border text-muted-foreground hover:border-primary hover:text-primary'
             }`}
-            onClick={() =>
-              setSize(item)
-            }
+            onClick={() => setSize(item)}
             data-testid={`button-size-${product.id}-${item}`}
           >
             {item}
@@ -441,16 +386,13 @@ function ProductCard({
       {selectedImages.back && (
         <p className="mt-2 font-mono-brand text-[8px] uppercase tracking-[0.12em] text-muted-foreground">
           {showBack
-            ? 'Back view · Tap to return'
-            : 'Front view · Tap to see back'}
+            ? 'Back view · Tap image to return'
+            : 'Front view · Tap image to see back'}
         </p>
       )}
     </article>
   );
 }
-/* =========================================================
-   CART DRAWER
-========================================================= */
 function CartDrawer({
   cart,
   open,
@@ -471,14 +413,11 @@ function CartDrawer({
     size: string,
   ) => void;
 }) {
-  const total =
-    cart.reduce(
-      (sum, item) =>
-        sum +
-        item.price *
-          item.quantity,
-      0,
-    );
+  const total = cart.reduce(
+    (sum, item) =>
+      sum + item.price * item.quantity,
+    0,
+  );
   return (
     <>
       {open && (
@@ -528,7 +467,8 @@ function CartDrawer({
                 The bag is quiet.
               </p>
               <p className="mt-2 max-w-[220px] text-sm leading-relaxed text-muted-foreground">
-                Add a considered piece from the collection to begin.
+                Add a considered piece from the
+                collection to begin.
               </p>
             </div>
           ) : (
@@ -559,6 +499,7 @@ function CartDrawer({
                         )
                       }
                       className="text-muted-foreground hover:text-primary"
+                      data-testid={`button-remove-cart-${item.id}`}
                     >
                       <X className="h-3.5 w-3.5" />
                     </button>
@@ -582,6 +523,7 @@ function CartDrawer({
                             -1,
                           )
                         }
+                        data-testid={`button-decrease-cart-${item.id}`}
                       >
                         <Minus className="h-3 w-3" />
                       </button>
@@ -597,6 +539,7 @@ function CartDrawer({
                             1,
                           )
                         }
+                        data-testid={`button-increase-cart-${item.id}`}
                       >
                         <Plus className="h-3 w-3" />
                       </button>
@@ -623,9 +566,7 @@ function CartDrawer({
                 className="font-mono-brand text-primary"
                 data-testid="text-cart-total"
               >
-                {formatCurrency(
-                  total,
-                )}
+                {formatCurrency(total)}
               </span>
             </div>
             <Link
@@ -646,36 +587,27 @@ function CartDrawer({
     </>
   );
 }
-/* =========================================================
-   STOREFRONT
-========================================================= */
 export default function Storefront({
   cart,
   onAdd,
   onUpdate,
   onRemove,
 }: StorefrontProps) {
-  const [search, setSearch] =
-    useState('');
+  const [search, setSearch] = useState('');
   const [category, setCategory] =
     useState('All pieces');
-  const [cartOpen, setCartOpen] =
-    useState(false);
+  const [cartOpen, setCartOpen] = useState(false);
   const [addedMessage, setAddedMessage] =
     useState('');
   const [filterOpen, setFilterOpen] =
     useState(false);
-  const { toast } =
-    useToast();
+  const { toast } = useToast();
   const params = useMemo(
     () => ({
-      ...(category !==
-      'All pieces'
+      ...(category !== 'All pieces'
         ? { category }
         : {}),
-      ...(search
-        ? { search }
-        : {}),
+      ...(search ? { search } : {}),
     }),
     [category, search],
   );
@@ -683,134 +615,94 @@ export default function Storefront({
     useListProducts(params);
   const featuredQuery =
     useListFeaturedProducts();
-  const health =
-    useHealthCheck();
+  const health = useHealthCheck();
   const apiProducts =
-    (productQuery.data as
-      | Product[]
-      | undefined) || [];
-  const apiFeatured =
-    (featuredQuery.data as
-      | Product[]
-      | undefined) || [];
-  /* =======================================================
-     IMPORTANT FIX
-     NEVER let the API catalogue replace the local catalogue.
-     The local FALLBACK_PRODUCTS contains:
-       - Hoodie
-       - Joggers
-       - Girl's Top
-       - Jacket
-       - Cargo
-       - Shoes
-       - Tee
-       - Sunglasses
-     We merge API products + local products by ID.
-  ======================================================= */
-  const allProducts =
-    useMemo(() => {
-      const map =
-        new Map<string, Product>();
-      /* Local catalogue first */
-      FALLBACK_PRODUCTS.forEach(
-        (product) => {
-          map.set(
-            product.id,
-            product,
-          );
-        },
-      );
-      /* API products can override
-         existing products with same ID */
-      apiProducts.forEach(
-        (product) => {
-          map.set(
-            product.id,
-            product,
-          );
-        },
-      );
-      return Array.from(
-        map.values(),
-      );
-    }, [apiProducts]);
-  /* =======================================================
-     FILTER AFTER MERGING
-     This is important because filtering the API first
-     would hide the local hoodie/joggers.
-  ======================================================= */
-  const products =
-    allProducts.filter(
+    (productQuery.data as Product[] | undefined) ||
+    [];
+  /*
+   * IMPORTANT:
+   *
+   * The API catalogue is no longer allowed to hide
+   * the local Noble Luxe catalogue.
+   *
+   * Local products such as:
+   * - Noble Luxe Hoodie
+   * - Noble Luxe Joggers
+   * - Noble Luxe Girl's Top
+   *
+   * are merged with API products.
+   */
+  const products = useMemo(() => {
+    const combined: Product[] = [
+      ...apiProducts,
+      ...FALLBACK_PRODUCTS,
+    ];
+    const unique = new Map<string, Product>();
+    for (const product of combined) {
+      if (!unique.has(product.id)) {
+        unique.set(product.id, product);
+      }
+    }
+    return Array.from(unique.values()).filter(
       (product) => {
         const matchesCategory =
-          category ===
-            'All pieces' ||
-          product.category ===
-            category;
-        const searchValue =
-          search
-            .trim()
-            .toLowerCase();
+          category === 'All pieces' ||
+          product.category === category;
+        const searchTerm =
+          search.trim().toLowerCase();
         const matchesSearch =
-          !searchValue ||
+          !searchTerm ||
           product.name
             .toLowerCase()
-            .includes(
-              searchValue,
-            ) ||
+            .includes(searchTerm) ||
           product.description
             .toLowerCase()
-            .includes(
-              searchValue,
-            );
+            .includes(searchTerm) ||
+          product.category
+            .toLowerCase()
+            .includes(searchTerm);
         return (
           matchesCategory &&
           matchesSearch
         );
       },
     );
-  /* =======================================================
-     FEATURED
-     Always include local featured products too.
-  ======================================================= */
-  const featured =
-    useMemo(() => {
-      const map =
-        new Map<string, Product>();
-      FALLBACK_PRODUCTS
-        .filter(
-          (product) =>
-            product.featured,
-        )
-        .forEach(
-          (product) => {
-            map.set(
-              product.id,
-              product,
-            );
-          },
-        );
-      apiFeatured.forEach(
-        (product) => {
-          map.set(
-            product.id,
-            product,
-          );
-        },
-      );
-      return Array.from(
-        map.values(),
-      );
-    }, [apiFeatured]);
+  }, [apiProducts, category, search]);
+  /*
+   * Featured products also merge with the local
+   * catalogue so the new products can appear in
+   * the hero/journal sections.
+   */
+  const apiFeatured =
+    (featuredQuery.data as Product[] | undefined) ||
+    [];
+  const featured = useMemo(() => {
+    const combined: Product[] = [
+      ...apiFeatured,
+      ...FALLBACK_PRODUCTS.filter(
+        (product) => product.featured,
+      ),
+    ];
+    const unique = new Map<string, Product>();
+    for (const product of combined) {
+      if (!unique.has(product.id)) {
+        unique.set(product.id, product);
+      }
+    }
+    return Array.from(unique.values());
+  }, [apiFeatured]);
   const isLoading =
     productQuery.isLoading &&
     !productQuery.data;
-  const cartCount =
-    cart.reduce(
-      (sum, item) =>
-        sum + item.quantity,
-      0,
-    );
+  const isError =
+    productQuery.isError &&
+    !productQuery.data &&
+    FALLBACK_PRODUCTS.length === 0;
+  const cartCount = cart.reduce(
+    (sum, item) =>
+      sum + item.quantity,
+    0,
+  );
   const handleAdd = (
     product: Product,
     size?: string,
@@ -826,37 +718,23 @@ export default function Storefront({
       colorBack,
     );
     toast({
-      title:
-        'Added to bag',
-      description:
-        `${product.name}${
-          color
-            ? ` — ${color}`
-            : ''
-        }${
-          size
-            ? ` — Size ${size}`
-            : ''
-        }`,
+      title: 'Added to bag',
+      description: `${product.name}${
+        color ? ` — ${color}` : ''
+      }${size ? ` — Size ${size}` : ''}`,
     });
     setAddedMessage(
       `${product.name}${
-        color
-          ? ` · ${color}`
-          : ''
+        color ? ` · ${color}` : ''
       } added to your bag`,
     );
     window.setTimeout(
-      () =>
-        setAddedMessage(''),
+      () => setAddedMessage(''),
       2500,
     );
   };
   return (
     <div className="noble-noise min-h-[100dvh] pt-[74px]">
-      {/* =================================================
-          ADDED MESSAGE
-      ================================================= */}
       {addedMessage && (
         <div className="fixed right-5 top-24 z-50 border border-primary bg-card px-5 py-4 font-mono-brand text-[10px] uppercase tracking-[.14em] text-primary shadow-2xl">
           {addedMessage}
@@ -869,9 +747,6 @@ export default function Storefront({
         }
       />
       <main>
-        {/* =================================================
-            HERO
-        ================================================= */}
         <section className="relative mx-auto grid min-h-[calc(100dvh-74px)] max-w-[1440px] items-end px-5 pb-14 pt-16 lg:grid-cols-[1.05fr_.95fr] lg:items-center lg:px-10 lg:pb-20 lg:pt-10">
           <div className="relative z-10 animate-rise-in lg:pb-10">
             <p className="mb-8 flex items-center gap-3 font-mono-brand text-[10px] uppercase tracking-[0.25em] text-primary">
@@ -888,9 +763,9 @@ export default function Storefront({
               ordinary.
             </h1>
             <p className="mt-9 max-w-[370px] text-sm leading-[1.8] text-muted-foreground">
-              A private edit of considered streetwear
-              for people who leave an impression before
-              they speak.
+              A private edit of considered
+              streetwear for people who leave an
+              impression before they speak.
             </p>
             <a
               href="#collection"
@@ -903,8 +778,7 @@ export default function Storefront({
           <div
             className="relative mt-14 h-[58vh] min-h-[450px] animate-reveal-in lg:mt-0 lg:h-[76vh]"
             style={{
-              animationDelay:
-                '180ms',
+              animationDelay: '180ms',
             }}
           >
             <div className="absolute -left-4 top-1/2 z-10 -translate-y-1/2 [writing-mode:vertical-rl] font-mono-brand text-[9px] uppercase tracking-[0.32em] text-muted-foreground">
@@ -929,9 +803,6 @@ export default function Storefront({
             </div>
           </div>
         </section>
-        {/* =================================================
-            MANIFESTO
-        ================================================= */}
         <section
           id="manifesto"
           className="border-y border-border bg-card/50"
@@ -949,17 +820,14 @@ export default function Storefront({
                 of the choice.
               </p>
               <p className="mt-8 max-w-lg text-sm leading-[1.9] text-muted-foreground">
-                NOBLE LUXE makes fewer, better things.
-                Every cut is intentional. Every finish
-                earns its place. Built in Lagos, worn
-                everywhere.
+                NOBLE LUXE makes fewer, better
+                things. Every cut is intentional.
+                Every finish earns its place. Built
+                in Lagos, worn everywhere.
               </p>
             </div>
           </div>
         </section>
-        {/* =================================================
-            COLLECTION
-        ================================================= */}
         <section
           id="collection"
           className="mx-auto max-w-[1440px] px-5 py-20 lg:px-10 lg:py-28"
@@ -991,8 +859,7 @@ export default function Storefront({
               <button
                 onClick={() =>
                   setFilterOpen(
-                    (open) =>
-                      !open,
+                    (open) => !open,
                   )
                 }
                 className="flex items-center gap-2 self-start font-mono-brand text-[10px] uppercase tracking-[0.16em] text-muted-foreground hover:text-primary lg:hidden"
@@ -1013,13 +880,10 @@ export default function Storefront({
                     <button
                       key={item}
                       onClick={() =>
-                        setCategory(
-                          item,
-                        )
+                        setCategory(item)
                       }
                       className={`whitespace-nowrap px-3 py-2 font-mono-brand text-[9px] uppercase tracking-[0.12em] transition ${
-                        category ===
-                        item
+                        category === item
                           ? 'bg-primary text-primary-foreground'
                           : 'border border-border text-muted-foreground hover:border-primary hover:text-primary'
                       }`}
@@ -1037,9 +901,6 @@ export default function Storefront({
               </div>
             </div>
           </div>
-          {/* =================================================
-              LOADING
-          ================================================= */}
           {isLoading ? (
             <div className="grid gap-x-5 gap-y-14 sm:grid-cols-2 lg:grid-cols-3">
               {[1, 2, 3, 4, 5, 6].map(
@@ -1052,10 +913,27 @@ export default function Storefront({
                 ),
               )}
             </div>
+          ) : isError &&
+            !products.length ? (
+            <div className="border border-destructive/50 px-6 py-16 text-center">
+              <p className="font-display text-2xl">
+                The edit is temporarily private.
+              </p>
+              <p className="mt-2 text-sm text-muted-foreground">
+                We couldn't reach the showroom
+                catalog.
+              </p>
+              <button
+                onClick={() =>
+                  productQuery.refetch()
+                }
+                className="mt-6 border border-primary px-5 py-3 text-[10px] uppercase tracking-widest text-primary hover:bg-primary hover:text-primary-foreground"
+                data-testid="button-retry-products"
+              >
+                Try again
+              </button>
+            </div>
           ) : products.length ? (
-            /* =================================================
-               PRODUCT GRID
-            ================================================= */
             <div className="grid gap-x-5 gap-y-14 sm:grid-cols-2 lg:grid-cols-3">
               {products.map(
                 (product) => (
@@ -1088,9 +966,6 @@ export default function Storefront({
             </div>
           )}
         </section>
-        {/* =================================================
-            JOURNAL
-        ================================================= */}
         <section
           id="journal"
           className="border-y border-border bg-[#161512]"
@@ -1107,17 +982,17 @@ export default function Storefront({
                 </span>
               </h2>
               <p className="mt-7 max-w-md text-sm leading-[1.8] text-muted-foreground">
-                A study in contrast: sun on concrete,
-                gold in shadow, a silhouette that knows
-                where it is going.
+                A study in contrast: sun on
+                concrete, gold in shadow, a
+                silhouette that knows where it is
+                going.
               </p>
               <button
                 className="mt-9 inline-flex items-center border-b border-primary pb-2 text-[10px] font-bold uppercase tracking-[0.2em] text-primary hover:text-accent"
                 onClick={() =>
                   window.scrollTo({
                     top: 0,
-                    behavior:
-                      'smooth',
+                    behavior: 'smooth',
                   })
                 }
               >
@@ -1141,17 +1016,13 @@ export default function Storefront({
             </div>
           </div>
         </section>
-        {/* =================================================
-            FOOTER
-        ================================================= */}
         <footer className="mx-auto flex max-w-[1440px] flex-col gap-8 px-5 py-12 text-[10px] text-muted-foreground sm:flex-row sm:items-center sm:justify-between lg:px-10">
           <BrandMark compact />
           <p className="font-mono-brand uppercase tracking-[0.15em]">
             Private showroom / Est. 2026
           </p>
           <p className="font-mono-brand uppercase tracking-[0.15em]">
-            {health.data?.status ===
-            'ok'
+            {health.data?.status === 'ok'
               ? 'Showroom online'
               : 'By appointment only'}
           </p>
