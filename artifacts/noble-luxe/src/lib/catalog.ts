@@ -18,10 +18,6 @@ export type CatalogProduct = Product & {
   colorImages?: Record<string, CatalogColor>;
 };
 
-/* =========================================================
-   PRODUCT IMAGES
-   ========================================================= */
-
 const HOODIE_FRONT =
   'https://i.ibb.co/qLYHR0DP/Qcct5d-JUA5.jpg';
 
@@ -39,10 +35,6 @@ const GIRLS_TOP_FRONT =
 
 const GIRLS_TOP_BACK =
   'https://i.ibb.co/TxpTRCvf/O92i-O39-IIb.jpg';
-
-/* =========================================================
-   NOBLE LUXE LOCAL CATALOGUE
-   ========================================================= */
 
 export const FALLBACK_PRODUCTS: CatalogProduct[] = [
   {
@@ -70,7 +62,6 @@ export const FALLBACK_PRODUCTS: CatalogProduct[] = [
     sizes: ['S', 'M', 'L', 'XL'],
     colors: ['Black'],
     featured: true,
-
     colorImages: {
       Black: {
         name: 'Black',
@@ -136,9 +127,11 @@ export const FALLBACK_PRODUCTS: CatalogProduct[] = [
     featured: false,
   },
 
-  /* =========================================================
-     NEW PRODUCTS
-     ========================================================= */
+  /*
+   * =========================================================
+   * NEW PRODUCTS
+   * =========================================================
+   */
 
   {
     id: 'nl-007',
@@ -151,7 +144,6 @@ export const FALLBACK_PRODUCTS: CatalogProduct[] = [
     sizes: ['S', 'M', 'L', 'XL'],
     colors: ['Black'],
     featured: true,
-
     colorImages: {
       Black: {
         name: 'Black',
@@ -172,7 +164,6 @@ export const FALLBACK_PRODUCTS: CatalogProduct[] = [
     sizes: ['S', 'M', 'L', 'XL'],
     colors: ['Black'],
     featured: true,
-
     colorImages: {
       Black: {
         name: 'Black',
@@ -193,7 +184,6 @@ export const FALLBACK_PRODUCTS: CatalogProduct[] = [
     sizes: ['S', 'M', 'L'],
     colors: ['Black'],
     featured: true,
-
     colorImages: {
       Black: {
         name: 'Black',
@@ -204,10 +194,6 @@ export const FALLBACK_PRODUCTS: CatalogProduct[] = [
   },
 ];
 
-/* =========================================================
-   HELPERS
-   ========================================================= */
-
 export const formatCurrency = (value: number) =>
   new Intl.NumberFormat('en-NG', {
     style: 'currency',
@@ -215,10 +201,13 @@ export const formatCurrency = (value: number) =>
     maximumFractionDigits: 0,
   }).format(value);
 
-/* =========================================================
-   GET PRODUCT COLOURS
-   ========================================================= */
-
+/*
+ * Return the colours customers can choose.
+ *
+ * IMPORTANT:
+ * We are NOT changing the image colour.
+ * The selected colour is simply recorded with the order.
+ */
 export const getProductColors = (
   product: Product,
 ): CatalogColor[] => {
@@ -230,22 +219,18 @@ export const getProductColors = (
 
   return (product.colors || []).map((color) => ({
     name: color,
-    front:
-      product.imageUrl ||
-      FALLBACK_PRODUCTS[0].imageUrl,
+    front: product.imageUrl || FALLBACK_PRODUCTS[0].imageUrl,
   }));
 };
 
-/* =========================================================
-   GET SELECTED COLOUR IMAGES
-   ========================================================= */
-
+/*
+ * Return the actual images for the selected product/colour.
+ */
 export const getColorImages = (
   product: Product,
   color?: string,
 ): { front: string; back?: string } => {
   const catalogProduct = product as CatalogProduct;
-
   const colors = catalogProduct.colorImages;
 
   if (colors && color && colors[color]) {
@@ -272,10 +257,6 @@ export const getColorImages = (
       FALLBACK_PRODUCTS[0].imageUrl,
   };
 };
-
-/* =========================================================
-   MAIN PRODUCT IMAGE
-   ========================================================= */
 
 export const productImage = (
   product: Product,
