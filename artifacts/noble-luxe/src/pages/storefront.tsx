@@ -582,41 +582,38 @@ export default function Storefront({
   const apiProducts =
     (productQuery.data as Product[] | undefined) ||
     [];
-  const products =
-    apiProducts.length > 0
-      ? apiProducts
-      : FALLBACK_PRODUCTS.filter(
-          (product) => {
-            const matchesCategory =
-              category === 'All pieces' ||
-              product.category === category;
-            const matchesSearch =
-              !search ||
-              product.name
-                .toLowerCase()
-                .includes(
-                  search.toLowerCase(),
-                ) ||
-              product.description
-                .toLowerCase()
-                .includes(
-                  search.toLowerCase(),
-                );
-            return (
-              matchesCategory &&
-              matchesSearch
-            );
-          },
-        );
+  const allProducts = [
+  ...FALLBACK_PRODUCTS,
+  ...apiProducts.filter(
+    (apiProduct) =>
+      !FALLBACK_PRODUCTS.some(
+        (localProduct) => localProduct.id === apiProduct.id,
+      ),
+  ),
+];
+
+const products = allProducts.filter((product) => {
+  const matchesCategory =
+    category === 'All pieces' ||
+    product.category === category;
+
+  const matchesSearch =
+    !search ||
+    product.name
+      .toLowerCase()
+      .includes(search.toLowerCase()) ||
+    product.description
+      .toLowerCase()
+      .includes(search.toLowerCase());
+
+  return matchesCategory && matchesSearch;
+});
   const featuredApi =
     (featuredQuery.data as Product[] | undefined) ||
     [];
-  const featured =
-    featuredApi.length > 0
-      ? featuredApi
-      : FALLBACK_PRODUCTS.filter(
-          (product) => product.featured,
-        );
+  const featured = allProducts.filter(
+  (product) => product.featured,
+);
   const isLoading =
     productQuery.isLoading &&
     !productQuery.data;
