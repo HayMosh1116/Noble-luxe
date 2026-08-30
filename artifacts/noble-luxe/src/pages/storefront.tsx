@@ -125,16 +125,64 @@ export default function Storefront({ cart, onAdd, onUpdate, onRemove }: Storefro
   const [category, setCategory] = useState('All pieces');
   const [cartOpen, setCartOpen] = useState(false);
   const [addedMessage, setAddedMessage] = useState('');
-  const { toast } = useToast();
   const [filterOpen, setFilterOpen] = useState(false);
-  const params = useMemo(() => ({ ...(category !== 'All pieces' ? { category } : {}), ...(search ? { search } : {}) }), [category, search]);
-  const sourceProducts = productQuery.isError ? FALLBACK_PRODUCTS : apiProducts;
+
+  const { toast } = useToast();
+
+  // Build the API query BEFORE using it
+  const params = useMemo(
+    () => ({
+      ...(category !== 'All pieces' ? { category } : {}),
+      ...(search ? { search } : {}),
+    }),
+    [category, search]
+  );
+
+  // Now these can safely use params
+  const productQuery = useListProducts(params);
+  const featuredQuery = useListFeaturedProducts();
+  const health = useHealthCheck();
+
+  const apiProducts =
+    (productQuery.data as Product[] | undefined) || [];
+
+  const sourceProducts = productQuery.isError
+    ? FALLBACK_PRODUCTS
+    : apiProducts;
+
   const products = sourceProducts.filter((product) => {
-    const matchesCategory = category === 'All pieces' || product.category.toLowerCase() === category.toLowerCase();
+    const matchesCategory =
+      category === 'All pieces' ||
+      product.category.toLowerCase() === category.toLowerCase();
+
     const query = search.trim().toLowerCase();
-    const matchesSearch = !query || [product.name, product.category, product.description].some((value) => value.toLowerCase().includes(query));
+
+    const matchesSearch =
+      !query ||
+      [product.name, product.category, product.description].some((value) =>
+        value.toLowerCase().includes(query)
+      );
+
     return matchesCategory && matchesSearch;
   });
+
+  const featured =
+    ((featuredQuery.data as Product[] | undefined) || []).length
+      ? (featuredQuery.data as Product[])
+      : FALLBACK_PRODUCTS.filter((product) => product.featured);
+
+  const isLoading =
+    productQuery.isLoading && !productQuery.data;
+
+  const isError =
+    productQuery.isError && !productQuery.data;
+
+  const cartCount = cart.reduce(
+    (sum, item) => sum + item.quantity,
+    0
+  );
+
+  // ...keep the rest of your existing JSX below this
   const featured = ((featuredQuery.data as Product[] | undefined) || []).length ? (featuredQuery.data as Product[]) : FALLBACK_PRODUCTS.filter((product) => product.featured);
   const isLoading = productQuery.isLoading && !productQuery.data;
   const isError = productQuery.isError && !productQuery.data;
