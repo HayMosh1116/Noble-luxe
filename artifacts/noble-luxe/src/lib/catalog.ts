@@ -1,4 +1,5 @@
 import type { Product } from '@workspace/api-client-react';
+
 export type CartItem = Product & {
   selectedSize: string;
   selectedColor?: string;
@@ -6,182 +7,190 @@ export type CartItem = Product & {
   selectedColorBack?: string;
   quantity: number;
 };
+
 export type CatalogColor = {
   name: string;
   front: string;
   back?: string;
 };
+
 export type CatalogProduct = Product & {
   colorImages?: Record<string, CatalogColor>;
 };
-const HOODIE_FRONT =
-  'https://i.ibb.co/qLYHR0DP/Qcct5d-JUA5.jpg';
-const HOODIE_BACK =
-  'https://i.ibb.co/tTMqjXmG/w-UIs-AX27v-A.jpg';
-const JOGGERS_FRONT =
-  'https://i.ibb.co/YFR5bGd2/jboafl7g-GJ.jpg';
-const JOGGERS_BACK =
-  'https://i.ibb.co/bgh0qRbq/IZJsk-Ghb-I4.jpg';
-const GIRLS_TOP_FRONT =
-  'https://i.ibb.co/HLKZWS68/I5kw-WDymih.jpg';
-const GIRLS_TOP_BACK =
-  'https://i.ibb.co/TxpTRCvf/O92i-O39-IIb.jpg';
+
+const LACE_FRONT =
+  'https://i.ibb.co/fYtNVKtn/9-VHf-MPa-Kpt.jpg';
+const LACE_BACK =
+  'https://i.ibb.co/cXS0gMH5/a91ku7-Hd-Xw.jpg';
+
+const ROUND_NECK_FRONT =
+  'https://i.ibb.co/v4x3TdD7/w-Rw-Ai6upb0.jpg';
+const ROUND_NECK_BACK =
+  'https://i.ibb.co/MxVZPtF3/k3f-K3-Iq6-JK.jpg';
+
+const SWEAT_FRONT =
+  'https://i.ibb.co/pjcvhvxM/0-Np-YFBt-Un9.jpg';
+const SWEAT_BACK =
+  'https://i.ibb.co/XxBmfwwK/xs-HBVXd-OKU.jpg';
+
+const VINTAGE_FRONT =
+  'https://i.ibb.co/hRfWwNvK/9-Xjth-WBYX4.jpg';
+const VINTAGE_BACK =
+  'https://i.ibb.co/0RggLFq8/v-Su-Io-V73-DJ.jpg';
+
+const ARMLESS_FRONT =
+  'https://i.ibb.co/yBs58tVF/ZUj-Onk-Zz1-M.jpg';
+const ARMLESS_BACK =
+  'https://i.ibb.co/MxZL0xcG/kv-Xv3i-NFLd.jpg';
+
+const SIZES = ['XL', 'XXL'];
+
+const roundNeckColors = [
+  'Black',
+  'White',
+  'Purple',
+  'Brown',
+  'Ash',
+  'Sky Blue',
+  'Carton Brown',
+];
+
+const sweatColors = [
+  'Army Green',
+  'Mint Green',
+  'Orange',
+];
+
+const makeColorImages = (
+  colors: string[],
+  front: string,
+  back: string,
+): Record<string, CatalogColor> =>
+  Object.fromEntries(
+    colors.map((name) => [
+      name,
+      {
+        name,
+        front,
+        back,
+      },
+    ]),
+  );
+
 export const FALLBACK_PRODUCTS: CatalogProduct[] = [
   {
     id: 'nl-001',
-    name: 'Obsidian Varsity Jacket',
-    category: 'Outerwear',
-    price: 185000,
-    imageUrl:
-      'https://images.pexels.com/photos/7679720/pexels-photo-7679720.jpeg?auto=compress&cs=tinysrgb&w=1200',
+    name: 'Lace Shirt',
+    category: 'Essentials',
+    price: 10000,
+    imageUrl: LACE_FRONT,
     description:
-      'A weighty wool-blend varsity jacket cut with architectural shoulders and a satin-lined interior.',
-    sizes: ['S', 'M', 'L', 'XL'],
-    colors: ['Obsidian', 'Antique Gold'],
+      'A refined Noble Luxe lace shirt with a clean front and detailed back finish.',
+    sizes: SIZES,
+    colors: ['Black'],
     featured: true,
+    colorImages: {
+      Black: {
+        name: 'Black',
+        front: LACE_FRONT,
+        back: LACE_BACK,
+      },
+    },
   },
+
   {
     id: 'nl-002',
-    name: 'Atelier 03 Hoodie',
+    name: 'NL Round-Neck 2',
     category: 'Essentials',
-    price: 78000,
-    imageUrl: HOODIE_FRONT,
+    price: 11000,
+    imageUrl: ROUND_NECK_FRONT,
     description:
-      'Heavyweight brushed cotton with an offset monogram and a softly structured hood.',
-    sizes: ['S', 'M', 'L', 'XL'],
-    colors: ['Black'],
+      'The Noble Luxe round-neck essential, designed for a clean everyday streetwear look.',
+    sizes: SIZES,
+    colors: roundNeckColors,
     featured: true,
-    colorImages: {
-      Black: {
-        name: 'Black',
-        front: HOODIE_FRONT,
-        back: HOODIE_BACK,
-      },
-    },
+    colorImages: makeColorImages(
+      roundNeckColors,
+      ROUND_NECK_FRONT,
+      ROUND_NECK_BACK,
+    ),
   },
+
   {
     id: 'nl-003',
-    name: 'Monument Cargo Trouser',
-    category: 'Trousers',
-    price: 92500,
-    imageUrl:
-      'https://images.pexels.com/photos/6765164/pexels-photo-6765164.jpeg?auto=compress&cs=tinysrgb&w=1200',
+    name: 'NL Sweat Shirt',
+    category: 'Essentials',
+    price: 13000,
+    imageUrl: SWEAT_FRONT,
     description:
-      'Relaxed utility trousers with articulated knees, hidden hardware and a clean tapered break.',
-    sizes: ['28', '30', '32', '34', '36'],
-    colors: ['Coal'],
-    featured: false,
+      'A comfortable Noble Luxe sweatshirt with a relaxed silhouette and statement finish.',
+    sizes: SIZES,
+    colors: sweatColors,
+    featured: true,
+    colorImages: makeColorImages(
+      sweatColors,
+      SWEAT_FRONT,
+      SWEAT_BACK,
+    ),
   },
+
   {
     id: 'nl-004',
-    name: 'Signet Leather Runner',
-    category: 'Footwear',
-    price: 112000,
-    imageUrl:
-      'https://images.pexels.com/photos/2529148/pexels-photo-2529148.jpeg?auto=compress&cs=tinysrgb&w=1200',
+    name: 'NL Vintage',
+    category: 'Essentials',
+    price: 8000,
+    imageUrl: VINTAGE_FRONT,
     description:
-      'Low-profile leather runners finished with a brushed-metal signet at the heel.',
-    sizes: ['40', '41', '42', '43', '44', '45'],
-    colors: ['Ink', 'Ivory'],
+      'A vintage-inspired Noble Luxe piece with a distinctive front and back presentation.',
+    sizes: SIZES,
+    colors: ['Default'],
     featured: true,
+    colorImages: {
+      Default: {
+        name: 'Default',
+        front: VINTAGE_FRONT,
+        back: VINTAGE_BACK,
+      },
+    },
   },
+
   {
     id: 'nl-005',
-    name: 'Nocturne Rib Tee',
+    name: 'NL Armless',
     category: 'Essentials',
-    price: 42000,
-    imageUrl:
-      'https://images.pexels.com/photos/5698851/pexels-photo-5698851.jpeg?auto=compress&cs=tinysrgb&w=1200',
+    price: 11000,
+    imageUrl: ARMLESS_FRONT,
     description:
-      'A close, clean rib knit designed to sit beneath tailoring or hold its own after dark.',
-    sizes: ['S', 'M', 'L', 'XL'],
-    colors: ['Onyx', 'Ash'],
-    featured: false,
-  },
-  {
-    id: 'nl-006',
-    name: 'Noble Frame Sunglasses',
-    category: 'Accessories',
-    price: 55000,
-    imageUrl:
-      'https://images.pexels.com/photos/701877/pexels-photo-701877.jpeg?auto=compress&cs=tinysrgb&w=1200',
-    description:
-      'Hand-finished acetate frames with smoked lenses and a subtle gold temple mark.',
-    sizes: ['One size'],
-    colors: ['Black / Gold'],
-    featured: false,
-  },
-  {
-    id: 'nl-007',
-    name: 'Noble Luxe Hoodie',
-    category: 'Essentials',
-    price: 78000,
-    imageUrl: HOODIE_FRONT,
-    description:
-      'A signature Noble Luxe hoodie with a clean silhouette and heavyweight streetwear finish.',
-    sizes: ['S', 'M', 'L', 'XL'],
+      'A clean Noble Luxe armless piece built for a simple, confident silhouette.',
+    sizes: SIZES,
     colors: ['Black'],
     featured: true,
     colorImages: {
       Black: {
         name: 'Black',
-        front: HOODIE_FRONT,
-        back: HOODIE_BACK,
-      },
-    },
-  },
-  {
-    id: 'nl-008',
-    name: 'Noble Luxe Joggers',
-    category: 'Trousers',
-    price: 65000,
-    imageUrl: JOGGERS_FRONT,
-    description:
-      'Relaxed Noble Luxe joggers designed for a clean, comfortable streetwear silhouette.',
-    sizes: ['S', 'M', 'L', 'XL'],
-    colors: ['Black'],
-    featured: true,
-    colorImages: {
-      Black: {
-        name: 'Black',
-        front: JOGGERS_FRONT,
-        back: JOGGERS_BACK,
-      },
-    },
-  },
-  {
-    id: 'nl-009',
-    name: "Noble Luxe Girl's Top",
-    category: 'Essentials',
-    price: 45000,
-    imageUrl: GIRLS_TOP_FRONT,
-    description:
-      'A refined Noble Luxe top with a clean silhouette and statement finish.',
-    sizes: ['S', 'M', 'L'],
-    colors: ['Black'],
-    featured: true,
-    colorImages: {
-      Black: {
-        name: 'Black',
-        front: GIRLS_TOP_FRONT,
-        back: GIRLS_TOP_BACK,
+        front: ARMLESS_FRONT,
+        back: ARMLESS_BACK,
       },
     },
   },
 ];
+
 export const formatCurrency = (value: number) =>
   new Intl.NumberFormat('en-NG', {
     style: 'currency',
     currency: 'NGN',
     maximumFractionDigits: 0,
   }).format(value);
+
 export const getProductColors = (
   product: Product,
 ): CatalogColor[] => {
   const catalogProduct = product as CatalogProduct;
+
   if (catalogProduct.colorImages) {
     return Object.values(catalogProduct.colorImages);
   }
+
   return (product.colors || []).map((color) => ({
     name: color,
     front:
@@ -189,20 +198,24 @@ export const getProductColors = (
       FALLBACK_PRODUCTS[0].imageUrl,
   }));
 };
+
 export const getColorImages = (
   product: Product,
   color?: string,
 ): { front: string; back?: string } => {
   const catalogProduct = product as CatalogProduct;
   const colors = catalogProduct.colorImages;
+
   if (colors && color && colors[color]) {
     return {
       front: colors[color].front,
       back: colors[color].back,
     };
   }
+
   if (colors) {
     const firstColor = Object.values(colors)[0];
+
     if (firstColor) {
       return {
         front: firstColor.front,
@@ -210,12 +223,14 @@ export const getColorImages = (
       };
     }
   }
+
   return {
     front:
       product.imageUrl ||
       FALLBACK_PRODUCTS[0].imageUrl,
   };
 };
+
 export const productImage = (
   product: Product,
 ): string =>
