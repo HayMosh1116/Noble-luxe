@@ -1,4 +1,5 @@
 import type { Product } from '@workspace/api-client-react';
+
 export type CartItem = Product & {
   selectedSize: string;
   selectedColor?: string;
@@ -6,42 +7,43 @@ export type CartItem = Product & {
   selectedColorBack?: string;
   quantity: number;
 };
+
 export type CatalogColor = {
   name: string;
   front: string;
   back?: string;
 };
+
 export type CatalogProduct = Product & {
   colorImages?: Record<string, CatalogColor>;
 };
+
+/* =========================================================
+   PRODUCT IMAGES
+   ========================================================= */
+
 const HOODIE_FRONT =
   'https://i.ibb.co/qLYHR0DP/Qcct5d-JUA5.jpg';
+
 const HOODIE_BACK =
   'https://i.ibb.co/tTMqjXmG/w-UIs-AX27v-A.jpg';
+
 const JOGGERS_FRONT =
   'https://i.ibb.co/YFR5bGd2/jboafl7g-GJ.jpg';
+
 const JOGGERS_BACK =
   'https://i.ibb.co/bgh0qRbq/IZJsk-Ghb-I4.jpg';
+
 const GIRLS_TOP_FRONT =
   'https://i.ibb.co/HLKZWS68/I5kw-WDymih.jpg';
+
 const GIRLS_TOP_BACK =
   'https://i.ibb.co/TxpTRCvf/O92i-O39-IIb.jpg';
-/*
- * =========================================================
- * NOBLE LUXE LOCAL CATALOGUE
- * =========================================================
- *
- * To add another colour later, simply add another entry:
- *
- * Blue: {
- *   name: 'Blue',
- *   front: 'FRONT IMAGE URL',
- *   back: 'BACK IMAGE URL',
- * }
- *
- * This means colours can later be moved into the admin
- * dashboard without changing the storefront design.
- */
+
+/* =========================================================
+   NOBLE LUXE LOCAL CATALOGUE
+   ========================================================= */
+
 export const FALLBACK_PRODUCTS: CatalogProduct[] = [
   {
     id: 'nl-001',
@@ -56,6 +58,7 @@ export const FALLBACK_PRODUCTS: CatalogProduct[] = [
     colors: ['Obsidian', 'Antique Gold'],
     featured: true,
   },
+
   {
     id: 'nl-002',
     name: 'Atelier 03 Hoodie',
@@ -67,6 +70,7 @@ export const FALLBACK_PRODUCTS: CatalogProduct[] = [
     sizes: ['S', 'M', 'L', 'XL'],
     colors: ['Black'],
     featured: true,
+
     colorImages: {
       Black: {
         name: 'Black',
@@ -75,6 +79,7 @@ export const FALLBACK_PRODUCTS: CatalogProduct[] = [
       },
     },
   },
+
   {
     id: 'nl-003',
     name: 'Monument Cargo Trouser',
@@ -88,6 +93,7 @@ export const FALLBACK_PRODUCTS: CatalogProduct[] = [
     colors: ['Coal'],
     featured: false,
   },
+
   {
     id: 'nl-004',
     name: 'Signet Leather Runner',
@@ -101,9 +107,10 @@ export const FALLBACK_PRODUCTS: CatalogProduct[] = [
     colors: ['Ink', 'Ivory'],
     featured: true,
   },
+
   {
     id: 'nl-005',
-    name: "Nocturne Rib Tee",
+    name: 'Nocturne Rib Tee',
     category: 'Essentials',
     price: 42000,
     imageUrl:
@@ -114,6 +121,7 @@ export const FALLBACK_PRODUCTS: CatalogProduct[] = [
     colors: ['Onyx', 'Ash'],
     featured: false,
   },
+
   {
     id: 'nl-006',
     name: 'Noble Frame Sunglasses',
@@ -127,11 +135,11 @@ export const FALLBACK_PRODUCTS: CatalogProduct[] = [
     colors: ['Black / Gold'],
     featured: false,
   },
-  /*
-   * =========================================================
-   * NEW PRODUCTS
-   * =========================================================
-   */
+
+  /* =========================================================
+     NEW PRODUCTS
+     ========================================================= */
+
   {
     id: 'nl-007',
     name: 'Noble Luxe Hoodie',
@@ -143,6 +151,7 @@ export const FALLBACK_PRODUCTS: CatalogProduct[] = [
     sizes: ['S', 'M', 'L', 'XL'],
     colors: ['Black'],
     featured: true,
+
     colorImages: {
       Black: {
         name: 'Black',
@@ -151,6 +160,7 @@ export const FALLBACK_PRODUCTS: CatalogProduct[] = [
       },
     },
   },
+
   {
     id: 'nl-008',
     name: 'Noble Luxe Joggers',
@@ -162,6 +172,7 @@ export const FALLBACK_PRODUCTS: CatalogProduct[] = [
     sizes: ['S', 'M', 'L', 'XL'],
     colors: ['Black'],
     featured: true,
+
     colorImages: {
       Black: {
         name: 'Black',
@@ -170,6 +181,7 @@ export const FALLBACK_PRODUCTS: CatalogProduct[] = [
       },
     },
   },
+
   {
     id: 'nl-009',
     name: "Noble Luxe Girl's Top",
@@ -181,6 +193,7 @@ export const FALLBACK_PRODUCTS: CatalogProduct[] = [
     sizes: ['S', 'M', 'L'],
     colors: ['Black'],
     featured: true,
+
     colorImages: {
       Black: {
         name: 'Black',
@@ -190,52 +203,61 @@ export const FALLBACK_PRODUCTS: CatalogProduct[] = [
     },
   },
 ];
-/*
- * =========================================================
- * HELPERS
- * =========================================================
- */
+
+/* =========================================================
+   HELPERS
+   ========================================================= */
+
 export const formatCurrency = (value: number) =>
   new Intl.NumberFormat('en-NG', {
     style: 'currency',
     currency: 'NGN',
     maximumFractionDigits: 0,
   }).format(value);
-/*
- * Return all colours configured for a product.
- *
- * If a product does not have the new colourImages system,
- * we create simple fallback colours from product.colors.
- */
+
+/* =========================================================
+   GET PRODUCT COLOURS
+   ========================================================= */
+
 export const getProductColors = (
   product: Product,
 ): CatalogColor[] => {
   const catalogProduct = product as CatalogProduct;
+
   if (catalogProduct.colorImages) {
     return Object.values(catalogProduct.colorImages);
   }
+
   return (product.colors || []).map((color) => ({
     name: color,
-    front: product.imageUrl || FALLBACK_PRODUCTS[0].imageUrl,
+    front:
+      product.imageUrl ||
+      FALLBACK_PRODUCTS[0].imageUrl,
   }));
 };
-/*
- * Return the correct front/back image for the selected colour.
- */
+
+/* =========================================================
+   GET SELECTED COLOUR IMAGES
+   ========================================================= */
+
 export const getColorImages = (
   product: Product,
   color?: string,
 ): { front: string; back?: string } => {
   const catalogProduct = product as CatalogProduct;
+
   const colors = catalogProduct.colorImages;
+
   if (colors && color && colors[color]) {
     return {
       front: colors[color].front,
       back: colors[color].back,
     };
   }
+
   if (colors) {
     const firstColor = Object.values(colors)[0];
+
     if (firstColor) {
       return {
         front: firstColor.front,
@@ -243,15 +265,18 @@ export const getColorImages = (
       };
     }
   }
+
   return {
     front:
       product.imageUrl ||
       FALLBACK_PRODUCTS[0].imageUrl,
   };
 };
-/*
- * Main product image helper.
- */
+
+/* =========================================================
+   MAIN PRODUCT IMAGE
+   ========================================================= */
+
 export const productImage = (
   product: Product,
 ): string =>
