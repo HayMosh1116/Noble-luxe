@@ -48,6 +48,70 @@ const categories = [
   'Footwear',
   'Accessories',
 ];
+/*
+ * =========================================================
+ * COLOUR DISPLAY
+ * =========================================================
+ *
+ * This creates a visual colour treatment from the existing
+ * product image. No additional image URL is required.
+ *
+ * The original image remains underneath so shadows,
+ * highlights and fabric texture are preserved.
+ */
+const colourMap: Record<string, string> = {
+  black: '#080808',
+  white: '#f4f2ec',
+  grey: '#777777',
+  gray: '#777777',
+  red: '#8d1717',
+  blue: '#183c73',
+  navy: '#172844',
+  green: '#234b35',
+  cream: '#d9cdb4',
+  beige: '#c8b99d',
+  brown: '#60402d',
+  burgundy: '#551b29',
+  purple: '#51336f',
+  gold: '#b28a3d',
+  ivory: '#eee8d8',
+  ink: '#111722',
+  onyx: '#111111',
+  ash: '#777777',
+  coal: '#242424',
+  obsidian: '#101010',
+  'black / gold': '#0a0a0a',
+};
+function getColourValue(color?: string) {
+  if (!color) return '#111111';
+  return (
+    colourMap[color.toLowerCase()] ||
+    '#111111'
+  );
+}
+function getColourFilter(color?: string) {
+  const normalized = color?.toLowerCase() || '';
+  if (
+    normalized === 'black' ||
+    normalized === 'onyx' ||
+    normalized === 'obsidian' ||
+    normalized === 'ink' ||
+    normalized === 'coal'
+  ) {
+    return 'brightness(.58) contrast(1.08) saturate(.85)';
+  }
+  if (
+    normalized === 'white' ||
+    normalized === 'ivory' ||
+    normalized === 'cream'
+  ) {
+    return 'brightness(1.32) contrast(.88) saturate(.65)';
+  }
+  if (normalized === 'grey' || normalized === 'gray' || normalized === 'ash') {
+    return 'grayscale(.65) brightness(.92) contrast(.92)';
+  }
+  return 'brightness(.86) saturate(.88) contrast(1.03)';
+}
 function BrandMark({ compact = false }: { compact?: boolean }) {
   return (
     <Link
@@ -94,35 +158,30 @@ function Header({
           <a
             href="#collection"
             className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground transition-colors hover:text-primary"
-            onClick={() => setMenuOpen(false)}
           >
             Collection
           </a>
           <a
             href="#manifesto"
             className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground transition-colors hover:text-primary"
-            onClick={() => setMenuOpen(false)}
           >
             Manifesto
           </a>
           <a
             href="#journal"
             className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground transition-colors hover:text-primary"
-            onClick={() => setMenuOpen(false)}
           >
             Journal
           </a>
           <Link
             href="/contact"
             className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground transition-colors hover:text-primary"
-            onClick={() => setMenuOpen(false)}
           >
             Contact
           </Link>
           <Link
             href="/account"
             className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground transition-colors hover:text-primary"
-            onClick={() => setMenuOpen(false)}
           >
             Account
           </Link>
@@ -167,9 +226,7 @@ function ProductCard({
     product.sizes?.[0] || 'One size',
   );
   const [selectedColor, setSelectedColor] = useState(
-    availableColors[0]?.name ||
-      product.colors?.[0] ||
-      'Default',
+    availableColors[0]?.name || product.colors?.[0] || 'Default',
   );
   const [showBack, setShowBack] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -178,24 +235,32 @@ function ProductCard({
     product,
     selectedColor,
   );
+  const hasBackImage = Boolean(selectedImages.back);
+  const colourValue = getColourValue(selectedColor);
+  const colourFilter = getColourFilter(selectedColor);
   useEffect(() => {
     setShowBack(false);
     setShowTapHint(true);
   }, [selectedColor]);
   useEffect(() => {
+    if (!hasBackImage) {
+      setShowTapHint(false);
+      return;
+    }
     const timer = window.setTimeout(() => {
       setShowTapHint(false);
-    }, 5000);
+    }, 8000);
     return () => window.clearTimeout(timer);
-  }, []);
+  }, [selectedColor, hasBackImage]);
   const handleProductTap = () => {
-    if (!selectedImages.back) return;
+    if (!hasBackImage) return;
     setShowBack((current) => !current);
     setShowTapHint(false);
   };
   const handleColorChange = (color: CatalogColor) => {
     setSelectedColor(color.name);
     setShowBack(false);
+    setShowTapHint(true);
   };
   return (
     <article
@@ -205,11 +270,11 @@ function ProductCard({
       <div
         className="relative aspect-[.79] cursor-pointer overflow-hidden bg-secondary"
         onClick={handleProductTap}
-        role={selectedImages.back ? 'button' : undefined}
-        tabIndex={selectedImages.back ? 0 : undefined}
+        role={hasBackImage ? 'button' : undefined}
+        tabIndex={hasBackImage ? 0 : undefined}
         onKeyDown={(event) => {
           if (
-            selectedImages.back &&
+            hasBackImage &&
             (event.key === 'Enter' || event.key === ' ')
           ) {
             event.preventDefault();
@@ -217,6 +282,7 @@ function ProductCard({
           }
         }}
       >
+        {/* ORIGINAL IMAGE */}
         <img
           src={
             showBack && selectedImages.back
@@ -226,12 +292,32 @@ function ProductCard({
           alt={`${product.name} ${
             showBack ? 'back' : 'front'
           }`}
-          className="h-full w-full object-cover grayscale-[18%] transition duration-500 group-hover:scale-[1.025] group-hover:grayscale-0"
+          className="absolute inset-0 h-full w-full object-cover object-center grayscale-[12%] transition duration-500 group-hover:scale-[1.025] group-hover:grayscale-0"
           loading="lazy"
         />
-        <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-background/55 via-transparent to-transparent opacity-80" />
+        {/* COLOUR TREATMENT */}
+        <div
+          className="pointer-events-none absolute inset-0 mix-blend-color transition-all duration-500"
+          style={{
+            backgroundColor: colourValue,
+            opacity:
+              selectedColor.toLowerCase() === 'black'
+                ? 0.38
+                : 0.48,
+          }}
+        />
+        <div
+          className="pointer-events-none absolute inset-0 transition-all duration-500"
+          style={{
+            backgroundColor: colourValue,
+            mixBlendMode: 'multiply',
+            opacity: 0.22,
+            filter: colourFilter,
+          }}
+        />
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-background/60 via-transparent to-transparent opacity-85" />
         {product.featured && (
-          <span className="absolute left-4 top-4 border border-primary/60 bg-background/80 px-2 py-1 font-mono-brand text-[9px] uppercase tracking-[0.18em] text-primary">
+          <span className="absolute left-4 top-4 border border-primary/60 bg-background/80 px-2 py-1 font-mono-brand text-[9px] uppercase tracking-[0.18em] text-primary backdrop-blur-sm">
             House pick
           </span>
         )}
@@ -251,24 +337,48 @@ function ProductCard({
             strokeWidth={1.4}
           />
         </button>
-        {selectedImages.back && (
+        {/* =================================================
+            ATTENTION-GRABBING BACK VIEW INDICATOR
+           ================================================= */}
+        {hasBackImage && (
           <div
-            className={`pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 border border-primary/50 bg-background/85 px-4 py-2 text-center backdrop-blur-md transition duration-500 ${
+            className={`pointer-events-none absolute left-1/2 top-1/2 z-20 -translate-x-1/2 -translate-y-1/2 transition-all duration-500 ${
               showTapHint
                 ? 'scale-100 opacity-100'
                 : 'scale-95 opacity-0'
             }`}
           >
-            <p className="font-mono-brand text-[9px] uppercase tracking-[0.14em] text-primary">
-              Tap the piece
-            </p>
-            <p className="mt-1 text-[9px] uppercase tracking-wider text-foreground">
-              to see the back side
-            </p>
+            <div className="relative">
+              {/* outer pulse */}
+              <div className="absolute -inset-3 animate-ping rounded-full border border-primary/30" />
+              <div className="relative min-w-[185px] border border-primary bg-background/90 px-5 py-4 text-center shadow-2xl backdrop-blur-md">
+                <div className="mb-2 flex items-center justify-center gap-2">
+                  <span className="flex h-7 w-7 items-center justify-center rounded-full border border-primary text-primary">
+                    ↻
+                  </span>
+                  <span className="font-mono-brand text-[10px] font-bold uppercase tracking-[0.2em] text-primary">
+                    Tap to explore
+                  </span>
+                </div>
+                <p className="font-display text-sm uppercase tracking-[0.08em] text-foreground">
+                  View back side
+                </p>
+                <div className="mx-auto mt-2 h-px w-10 bg-primary" />
+              </div>
+            </div>
           </div>
         )}
+        {/* VIEW STATE */}
+        {hasBackImage && !showTapHint && (
+          <div className="pointer-events-none absolute bottom-[76px] left-1/2 z-10 -translate-x-1/2 border border-primary/50 bg-background/80 px-3 py-1.5 font-mono-brand text-[8px] uppercase tracking-[0.15em] text-primary backdrop-blur-sm">
+            {showBack
+              ? 'Back view · Tap to return'
+              : 'Front view · Tap to see back'}
+          </div>
+        )}
+        {/* ADD TO BAG */}
         <div
-          className="absolute bottom-4 left-4 right-4"
+          className="absolute bottom-4 left-4 right-4 z-10"
           onClick={(event) => event.stopPropagation()}
         >
           <button
@@ -315,7 +425,7 @@ function ProductCard({
                 key={color.name}
                 type="button"
                 onClick={() => handleColorChange(color)}
-                className={`border px-2.5 py-1 font-mono-brand text-[9px] uppercase transition ${
+                className={`relative overflow-hidden border px-2.5 py-1 font-mono-brand text-[9px] uppercase transition ${
                   selectedColor === color.name
                     ? 'border-primary bg-primary text-primary-foreground'
                     : 'border-border text-muted-foreground hover:border-primary hover:text-primary'
@@ -335,7 +445,6 @@ function ProductCard({
         ).map((item) => (
           <button
             key={item}
-            type="button"
             className={`border px-2.5 py-1 font-mono-brand text-[9px] transition ${
               size === item
                 ? 'border-primary bg-primary text-primary-foreground'
@@ -348,11 +457,11 @@ function ProductCard({
           </button>
         ))}
       </div>
-      {selectedImages.back && (
+      {hasBackImage && (
         <p className="mt-2 font-mono-brand text-[8px] uppercase tracking-[0.12em] text-muted-foreground">
           {showBack
-            ? 'Back view · Tap to return'
-            : 'Front view · Tap to see back'}
+            ? 'Back view · Tap image to return'
+            : 'Front view · Tap image to see back'}
         </p>
       )}
     </article>
@@ -376,8 +485,7 @@ function CartDrawer({
   onRemove: (id: string, size: string) => void;
 }) {
   const total = cart.reduce(
-    (sum, item) =>
-      sum + item.price * item.quantity,
+    (sum, item) => sum + item.price * item.quantity,
     0,
   );
   return (
@@ -392,9 +500,7 @@ function CartDrawer({
       )}
       <aside
         className={`fixed bottom-0 right-0 top-0 z-50 flex w-full max-w-[470px] flex-col border-l border-border bg-card shadow-2xl transition-transform duration-500 ${
-          open
-            ? 'translate-x-0'
-            : 'translate-x-full'
+          open ? 'translate-x-0' : 'translate-x-full'
         }`}
         aria-label="Shopping bag"
       >
@@ -444,7 +550,7 @@ function CartDrawer({
                     item.selectedColorFront ||
                     productImage(item)
                   }
-                  alt={item.name}
+                  alt=""
                   className="h-24 w-[76px] object-cover"
                 />
                 <div className="min-w-0 flex-1">
@@ -476,7 +582,6 @@ function CartDrawer({
                   <div className="mt-4 flex items-center justify-between">
                     <div className="flex items-center border border-border">
                       <button
-                        type="button"
                         className="p-1.5 text-muted-foreground hover:text-primary"
                         onClick={() =>
                           onUpdate(
@@ -493,7 +598,6 @@ function CartDrawer({
                         {item.quantity}
                       </span>
                       <button
-                        type="button"
                         className="p-1.5 text-muted-foreground hover:text-primary"
                         onClick={() =>
                           onUpdate(
@@ -509,8 +613,7 @@ function CartDrawer({
                     </div>
                     <span className="font-mono-brand text-xs text-primary">
                       {formatCurrency(
-                        item.price *
-                          item.quantity,
+                        item.price * item.quantity,
                       )}
                     </span>
                   </div>
@@ -557,72 +660,80 @@ export default function Storefront({
   onRemove,
 }: StorefrontProps) {
   const [search, setSearch] = useState('');
-  const [category, setCategory] =
-    useState('All pieces');
+  const [category, setCategory] = useState('All pieces');
   const [cartOpen, setCartOpen] = useState(false);
-  const [addedMessage, setAddedMessage] =
-    useState('');
-  const [filterOpen, setFilterOpen] =
-    useState(false);
+  const [addedMessage, setAddedMessage] = useState('');
+  const [filterOpen, setFilterOpen] = useState(false);
   const { toast } = useToast();
   const params = useMemo(
     () => ({
-      ...(category !== 'All pieces'
-        ? { category }
-        : {}),
+      ...(category !== 'All pieces' ? { category } : {}),
       ...(search ? { search } : {}),
     }),
     [category, search],
   );
-  const productQuery =
-    useListProducts(params);
-  const featuredQuery =
-    useListFeaturedProducts();
+  const productQuery = useListProducts(params);
+  const featuredQuery = useListFeaturedProducts();
   const health = useHealthCheck();
   const apiProducts =
-    (productQuery.data as Product[] | undefined) ||
-    [];
+    (productQuery.data as Product[] | undefined) || [];
+  /*
+   * =========================================================
+   * IMPORTANT:
+   * Merge API products + local catalog.
+   *
+   * This prevents the API catalogue from hiding the products
+   * you added to FALLBACK_PRODUCTS.
+   * =========================================================
+   */
   const allProducts = [
-  ...FALLBACK_PRODUCTS,
-  ...apiProducts.filter(
-    (apiProduct) =>
-      !FALLBACK_PRODUCTS.some(
-        (localProduct) => localProduct.id === apiProduct.id,
-      ),
-  ),
-];
-
-const products = allProducts.filter((product) => {
-  const matchesCategory =
-    category === 'All pieces' ||
-    product.category === category;
-
-  const matchesSearch =
-    !search ||
-    product.name
-      .toLowerCase()
-      .includes(search.toLowerCase()) ||
-    product.description
-      .toLowerCase()
-      .includes(search.toLowerCase());
-
-  return matchesCategory && matchesSearch;
-});
+    ...FALLBACK_PRODUCTS,
+    ...apiProducts.filter(
+      (apiProduct) =>
+        !FALLBACK_PRODUCTS.some(
+          (localProduct) =>
+            localProduct.id === apiProduct.id,
+        ),
+    ),
+  ];
+  const products = allProducts.filter((product) => {
+    const matchesCategory =
+      category === 'All pieces' ||
+      product.category === category;
+    const matchesSearch =
+      !search ||
+      product.name
+        .toLowerCase()
+        .includes(search.toLowerCase()) ||
+      product.description
+        .toLowerCase()
+        .includes(search.toLowerCase());
+    return matchesCategory && matchesSearch;
+  });
   const featuredApi =
-    (featuredQuery.data as Product[] | undefined) ||
-    [];
-  const featured = allProducts.filter(
-  (product) => product.featured,
-);
+    (featuredQuery.data as Product[] | undefined) || [];
+  const featured =
+    featuredApi.length > 0
+      ? [
+          ...FALLBACK_PRODUCTS.filter(
+            (localProduct) =>
+              localProduct.featured &&
+              !featuredApi.some(
+                (apiProduct) =>
+                  apiProduct.id === localProduct.id,
+              ),
+          ),
+          ...featuredApi,
+        ]
+      : allProducts.filter(
+          (product) => product.featured,
+        );
   const isLoading =
-    productQuery.isLoading &&
-    !productQuery.data;
+    productQuery.isLoading && !productQuery.data;
   const isError =
-    productQuery.isError &&
-    !productQuery.data;
+    productQuery.isError && !productQuery.data;
   const cartCount = cart.reduce(
-    (sum, item) =>
-      sum + item.quantity,
+    (sum, item) => sum + item.quantity,
     0,
   );
   const handleAdd = (
@@ -643,9 +754,7 @@ const products = allProducts.filter((product) => {
       title: 'Added to bag',
       description: `${product.name}${
         color ? ` — ${color}` : ''
-      }${
-        size ? ` — Size ${size}` : ''
-      }`,
+      }${size ? ` — Size ${size}` : ''}`,
     });
     setAddedMessage(
       `${product.name}${
@@ -669,18 +778,19 @@ const products = allProducts.filter((product) => {
         onCart={() => setCartOpen(true)}
       />
       <main>
+        {/* =================================================
+            HERO
+           ================================================= */}
         <section className="relative mx-auto grid min-h-[calc(100dvh-74px)] max-w-[1440px] items-end px-5 pb-14 pt-16 lg:grid-cols-[1.05fr_.95fr] lg:items-center lg:px-10 lg:pb-20 lg:pt-10">
           <div className="relative z-10 animate-rise-in lg:pb-10">
             <p className="mb-8 flex items-center gap-3 font-mono-brand text-[10px] uppercase tracking-[0.25em] text-primary">
               <span className="h-px w-10 bg-primary" />
-              Lagos / House 2025
+              Lagos / House 2026
             </p>
             <h1 className="max-w-[720px] font-display text-[clamp(4.2rem,10vw,9.8rem)] font-medium leading-[.84] tracking-[-.065em] text-foreground">
               Dress
               <br />
-              <em className="text-primary">
-                above
-              </em>
+              <em className="text-primary">above</em>
               <br />
               ordinary.
             </h1>
@@ -699,17 +809,14 @@ const products = allProducts.filter((product) => {
           </div>
           <div
             className="relative mt-14 h-[58vh] min-h-[450px] animate-reveal-in lg:mt-0 lg:h-[76vh]"
-            style={{
-              animationDelay: '180ms',
-            }}
+            style={{ animationDelay: '180ms' }}
           >
             <div className="absolute -left-4 top-1/2 z-10 -translate-y-1/2 [writing-mode:vertical-rl] font-mono-brand text-[9px] uppercase tracking-[0.32em] text-muted-foreground">
               Noble Luxe / Form follows presence
             </div>
             <img
               src={productImage(
-                featured[0] ||
-                  FALLBACK_PRODUCTS[0],
+                featured[0] || FALLBACK_PRODUCTS[0],
               )}
               alt="Noble Luxe signature outerwear"
               className="h-full w-full object-cover object-center grayscale-[12%]"
@@ -725,6 +832,9 @@ const products = allProducts.filter((product) => {
             </div>
           </div>
         </section>
+        {/* =================================================
+            MANIFESTO
+           ================================================= */}
         <section
           id="manifesto"
           className="border-y border-border bg-card/50"
@@ -750,6 +860,9 @@ const products = allProducts.filter((product) => {
             </div>
           </div>
         </section>
+        {/* =================================================
+            COLLECTION
+           ================================================= */}
         <section
           id="collection"
           className="mx-auto max-w-[1440px] px-5 py-20 lg:px-10 lg:py-28"
@@ -769,9 +882,7 @@ const products = allProducts.filter((product) => {
                 <input
                   value={search}
                   onChange={(event) =>
-                    setSearch(
-                      event.target.value,
-                    )
+                    setSearch(event.target.value)
                   }
                   placeholder="Search the house"
                   className="w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground/70 lg:w-56"
@@ -780,9 +891,7 @@ const products = allProducts.filter((product) => {
               </div>
               <button
                 onClick={() =>
-                  setFilterOpen(
-                    (open) => !open,
-                  )
+                  setFilterOpen((open) => !open)
                 }
                 className="flex items-center gap-2 self-start font-mono-brand text-[10px] uppercase tracking-[0.16em] text-muted-foreground hover:text-primary lg:hidden"
                 data-testid="button-toggle-filters"
@@ -792,36 +901,25 @@ const products = allProducts.filter((product) => {
               </button>
               <div
                 className={`${
-                  filterOpen
-                    ? 'flex'
-                    : 'hidden'
+                  filterOpen ? 'flex' : 'hidden'
                 } flex-wrap gap-2 lg:flex`}
               >
-                {categories.map(
-                  (item) => (
-                    <button
-                      key={item}
-                      onClick={() =>
-                        setCategory(
-                          item,
-                        )
-                      }
-                      className={`whitespace-nowrap px-3 py-2 font-mono-brand text-[9px] uppercase tracking-[0.12em] transition ${
-                        category === item
-                          ? 'bg-primary text-primary-foreground'
-                          : 'border border-border text-muted-foreground hover:border-primary hover:text-primary'
-                      }`}
-                      data-testid={`button-filter-${item
-                        .toLowerCase()
-                        .replace(
-                          ' ',
-                          '-',
-                        )}`}
-                    >
-                      {item}
-                    </button>
-                  ),
-                )}
+                {categories.map((item) => (
+                  <button
+                    key={item}
+                    onClick={() => setCategory(item)}
+                    className={`whitespace-nowrap px-3 py-2 font-mono-brand text-[9px] uppercase tracking-[0.12em] transition ${
+                      category === item
+                        ? 'bg-primary text-primary-foreground'
+                        : 'border border-border text-muted-foreground hover:border-primary hover:text-primary'
+                    }`}
+                    data-testid={`button-filter-${item
+                      .toLowerCase()
+                      .replace(' ', '-')}`}
+                  >
+                    {item}
+                  </button>
+                ))}
               </div>
             </div>
           </div>
@@ -837,8 +935,7 @@ const products = allProducts.filter((product) => {
                 ),
               )}
             </div>
-          ) : isError &&
-            !products.length ? (
+          ) : isError && !products.length ? (
             <div className="border border-destructive/50 px-6 py-16 text-center">
               <p className="font-display text-2xl">
                 The edit is temporarily private.
@@ -847,9 +944,7 @@ const products = allProducts.filter((product) => {
                 We couldn't reach the showroom catalog.
               </p>
               <button
-                onClick={() =>
-                  productQuery.refetch()
-                }
+                onClick={() => productQuery.refetch()}
                 className="mt-6 border border-primary px-5 py-3 text-[10px] uppercase tracking-widest text-primary hover:bg-primary hover:text-primary-foreground"
                 data-testid="button-retry-products"
               >
@@ -858,15 +953,13 @@ const products = allProducts.filter((product) => {
             </div>
           ) : products.length ? (
             <div className="grid gap-x-5 gap-y-14 sm:grid-cols-2 lg:grid-cols-3">
-              {products.map(
-                (product) => (
-                  <ProductCard
-                    key={product.id}
-                    product={product}
-                    onAdd={handleAdd}
-                  />
-                ),
-              )}
+              {products.map((product) => (
+                <ProductCard
+                  key={product.id}
+                  product={product}
+                  onAdd={handleAdd}
+                />
+              ))}
             </div>
           ) : (
             <div className="py-24 text-center">
@@ -877,9 +970,7 @@ const products = allProducts.filter((product) => {
               <button
                 onClick={() => {
                   setSearch('');
-                  setCategory(
-                    'All pieces',
-                  );
+                  setCategory('All pieces');
                 }}
                 className="mt-5 text-[10px] uppercase tracking-widest text-primary hover:text-accent"
                 data-testid="button-clear-filters"
@@ -889,6 +980,9 @@ const products = allProducts.filter((product) => {
             </div>
           )}
         </section>
+        {/* =================================================
+            JOURNAL
+           ================================================= */}
         <section
           id="journal"
           className="border-y border-border bg-[#161512]"
@@ -925,8 +1019,7 @@ const products = allProducts.filter((product) => {
             <div className="relative aspect-[1.15] overflow-hidden">
               <img
                 src={productImage(
-                  featured[1] ||
-                    FALLBACK_PRODUCTS[1],
+                  featured[1] || FALLBACK_PRODUCTS[1],
                 )}
                 alt="Noble Luxe atelier detail"
                 className="h-full w-full object-cover grayscale-[25%] transition duration-700 hover:scale-105 hover:grayscale-0"
@@ -938,6 +1031,9 @@ const products = allProducts.filter((product) => {
             </div>
           </div>
         </section>
+        {/* =================================================
+            FOOTER
+           ================================================= */}
         <footer className="mx-auto flex max-w-[1440px] flex-col gap-8 px-5 py-12 text-[10px] text-muted-foreground sm:flex-row sm:items-center sm:justify-between lg:px-10">
           <BrandMark compact />
           <p className="font-mono-brand uppercase tracking-[0.15em]">
@@ -953,9 +1049,7 @@ const products = allProducts.filter((product) => {
       <CartDrawer
         cart={cart}
         open={cartOpen}
-        onClose={() =>
-          setCartOpen(false)
-        }
+        onClose={() => setCartOpen(false)}
         onUpdate={onUpdate}
         onRemove={onRemove}
       />
