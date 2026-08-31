@@ -128,6 +128,7 @@ export default function Checkout({
         productId: item.id,
         productName: item.name,
         size: item.selectedSize,
+        color: item.selectedColor,
         quantity: item.quantity,
         price: item.price,
       })),
