@@ -31,24 +31,45 @@ function useCart() {
     localStorage.setItem(CART_KEY, JSON.stringify(cart));
   }, [cart]);
 
-  const add = (product: Product, selectedSize?: string) =>
-    setCart((current) => {
-      const size = selectedSize || product.sizes?.[0] || 'One size';
-      const existing = current.find(
-        (item) => item.id === product.id && item.selectedSize === size
-      );
+const add = (
+  product: Product,
+  selectedSize?: string,
+  selectedColor?: string,
+  selectedColorFront?: string,
+  selectedColorBack?: string,
+) =>
+  setCart((current) => {
+    const size =
+      selectedSize || product.sizes?.[0] || 'One size';
 
-      return existing
-        ? current.map((item) =>
-            item === existing
-              ? { ...item, quantity: item.quantity + 1 }
-              : item
-          )
-        : [
-            ...current,
-            { ...product, selectedSize: size, quantity: 1 },
-          ];
-    });
+    const existing = current.find(
+      (item) =>
+        item.id === product.id &&
+        item.selectedSize === size &&
+        item.selectedColor === selectedColor,
+    );
+
+    return existing
+      ? current.map((item) =>
+          item === existing
+            ? {
+                ...item,
+                quantity: item.quantity + 1,
+              }
+            : item,
+        )
+      : [
+          ...current,
+          {
+            ...product,
+            selectedSize: size,
+            selectedColor,
+            selectedColorFront,
+            selectedColorBack,
+            quantity: 1,
+          },
+        ];
+  });
 
   const update = (id: string, size: string, delta: number) =>
     setCart((current) =>
