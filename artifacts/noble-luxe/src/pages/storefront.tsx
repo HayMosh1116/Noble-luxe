@@ -1153,7 +1153,8 @@ export default function Storefront({
           </p>
         </footer>
       </main>
-
+      <WhatsAppSticky  />
+    
       <CartDrawer
         cart={cart}
         open={cartOpen}
