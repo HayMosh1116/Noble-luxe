@@ -33,6 +33,35 @@ import {
   type CatalogProduct,
 } from '@/lib/catalog';
 
+function WhatsAppSticky() {
+  const phone = '2347026987674';
+  const message = encodeURIComponent(
+    'Hello NOBLE LUXE, I would like to make an enquiry about your collection.'
+  );
+  return (
+    <a
+      href={`https://wa.me/${phone}?text=${message}`}
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label="Chat with Noble Luxe on WhatsApp"
+      className="fixed bottom-5 right-5 z-[60] flex items-center gap-3 rounded-full border border-primary/30 bg-primary px-4 py-3 text-primary-foreground shadow-2xl transition-all duration-300 hover:scale-105 hover:bg-accent sm:bottom-7 sm:right-7"
+    >
+      <span className="flex h-8 w-8 items-center justify-center rounded-full bg-background/15">
+        <svg
+          viewBox="0 0 24 24"
+          className="h-5 w-5 fill-current"
+          aria-hidden="true"
+        >
+          <path d="M20.52 3.48A11.82 11.82 0 0 0 12.08 0C5.55 0 .24 5.31.24 11.84c0 2.09.55 4.13 1.6 5.93L.14 24l6.38-1.67a11.82 11.82 0 0 0 5.56 1.39h.01c6.53 0 11.84-5.31 11.84-11.84 0-3.17-1.23-6.14-3.41-8.4ZM12.09 21.7h-.01a9.84 9.84 0 0 1-5.02-1.37l-.36-.21-3.79.99 1.01-3.7-.23-.38a9.82 9.82 0 0 1-1.5-5.19C2.19 6.4 6.62 1.97 12.09 1.97c2.65 0 5.14 1.03 7.01 2.9a9.84 9.84 0 0 1 2.91 7.02c0 5.47-4.45 9.81-9.92 9.81Zm5.4-7.37c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.17-.17.2-.35.22-.65.07-.3-.15-1.27-.47-2.42-1.5-.9-.8-1.51-1.78-1.69-2.08-.17-.3-.02-.46.13-.61.14-.14.3-.35.45-.52.15-.17.2-.3.3-.5.1-.2.05-.37-.02-.52-.07-.15-.67-1.61-.92-2.2-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.49s1.07 2.89 1.22 3.09c.15.2 2.1 3.2 5.09 4.49.71.31 1.27.5 1.7.64.71.23 1.35.2 1.86.12.57-.09 1.76-.72 2.01-1.41.25-.69.25-1.28.17-1.41-.07-.12-.27-.2-.57-.35Z" />
+        </svg>
+      </span>
+      <span className="hidden font-mono-brand text-[10px] font-bold uppercase tracking-[0.16em] sm:inline">
+        WhatsApp
+      </span>
+    </a>
+  );
+}
+
 type StorefrontProps = {
   cart: CartItem[];
 
