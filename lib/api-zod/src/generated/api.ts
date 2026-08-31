@@ -84,6 +84,7 @@ export const CreateOrderBody = zod.object({
   "productId": zod.string(),
   "productName": zod.string(),
   "size": zod.string(),
+  "color": zod.string().optional(),
   "quantity": zod.number().min(1),
   "price": zod.number().min(createOrderBodyItemsItemPriceMin)
 })).min(1),
