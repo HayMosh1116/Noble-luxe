@@ -172,7 +172,7 @@ function Orders() {
                   </span>
                 </div>
               </article>
-            )
+            ))
           ) : (
             <div className="border border-dashed border-border p-12 text-center text-sm text-muted-foreground">
               Your order history will appear here
