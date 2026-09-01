@@ -40,13 +40,20 @@ const add = (
 ) =>
   setCart((current) => {
     const size =
-      selectedSize || product.sizes?.[0] || 'One size';
+      selectedSize ||
+      product.sizes?.[0] ||
+      "One size";
+
+    const color =
+      selectedColor ||
+      product.colors?.[0] ||
+      "Default";
 
     const existing = current.find(
       (item) =>
         item.id === product.id &&
         item.selectedSize === size &&
-        item.selectedColor === selectedColor,
+        item.selectedColor === color,
     );
 
     return existing
@@ -63,7 +70,7 @@ const add = (
           {
             ...product,
             selectedSize: size,
-            selectedColor,
+            selectedColor: color,
             selectedColorFront,
             selectedColorBack,
             quantity: 1,
