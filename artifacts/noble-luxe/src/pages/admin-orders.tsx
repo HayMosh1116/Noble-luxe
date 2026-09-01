@@ -8,6 +8,16 @@ type Order = {
   email: string;
   phone: string;
   address?: string;
+
+  items: {
+  productId: string;
+  productName: string;
+  size: string;
+  color?: string;
+  quantity: number;
+  price: number;
+}[];
+  
   total: string;
   paymentMethod?: string;
   status: string;
