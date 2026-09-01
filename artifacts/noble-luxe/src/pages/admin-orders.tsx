@@ -278,7 +278,33 @@ export default function AdminOrders() {
                       )}
                     </div>
                   </div>
+<div className="mt-6 border-t border-border pt-5">
+  <p className="font-mono-brand text-[9px] uppercase tracking-[.18em] text-primary">
+    Items
+  </p>
 
+  <div className="mt-3 space-y-2">
+    {order.items.map((item, index) => (
+      <div
+        key={`${item.productId}-${item.size}-${item.color}-${index}`}
+        className="flex flex-wrap items-center justify-between gap-3 text-sm"
+      >
+        <span>
+          {item.productName}
+          {" — "}
+          Size {item.size}
+          {item.color ? ` — Color ${item.color}` : ""}
+          {" — Qty "}
+          {item.quantity}
+        </span>
+
+        <span className="font-mono-brand text-primary">
+          ₦{item.price.toLocaleString()}
+        </span>
+      </div>
+    ))}
+  </div>
+</div>
                   <div className="mt-6 flex flex-wrap items-center gap-3">
                     <select
                       value={order.status}
