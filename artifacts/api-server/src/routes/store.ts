@@ -73,8 +73,8 @@ async function notifyGmail(
     `Address: ${data.address}`,
     "",
     "Items:",
-    ...data.items.map(
-      (item) =>
+...data.items.map(
+  (item: typeof data.items[number]) =>
         `${item.productName} — Size ${item.size}${
           item.color
             ? ` — Color ${item.color}`
