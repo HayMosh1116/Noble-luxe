@@ -25,6 +25,7 @@ export interface OrderItemInput {
   productId: string;
   productName: string;
   size: string;
+  color?: string;
   /** @minimum 1 */
   quantity: number;
   /** @minimum 0 */
@@ -64,6 +65,56 @@ export interface OrderConfirmation {
   message?: string;
 }
 
+export type CustomerOrderPaymentMethod = typeof CustomerOrderPaymentMethod[keyof typeof CustomerOrderPaymentMethod];
+
+
+export const CustomerOrderPaymentMethod = {
+  OPay: 'OPay',
+  PalmPay: 'PalmPay',
+} as const;
+
+export interface CustomerOrder {
+  orderId: string;
+  total: string;
+  paymentMethod: CustomerOrderPaymentMethod;
+  status: string;
+  statusMessage?: string | null;
+  items: OrderItemInput[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type AdminOrder = CustomerOrder & {
+  customerName: string;
+  phone: string;
+  email: string;
+  address: string;
+  paymentScreenshot: string;
+};
+
+export type OrderStatusUpdateStatus = typeof OrderStatusUpdateStatus[keyof typeof OrderStatusUpdateStatus];
+
+
+export const OrderStatusUpdateStatus = {
+  pending: 'pending',
+  confirmed: 'confirmed',
+  processing: 'processing',
+  out_for_delivery: 'out_for_delivery',
+  delivered: 'delivered',
+  cancelled: 'cancelled',
+} as const;
+
+export interface OrderStatusUpdate {
+  status: OrderStatusUpdateStatus;
+  statusMessage?: string | null;
+}
+
+export interface OrderStatusUpdateResponse {
+  orderId: string;
+  status: string;
+  statusMessage?: string | null;
+}
+
 export interface ErrorResponse {
   error: string;
 }
@@ -72,4 +123,3 @@ export type ListProductsParams = {
 category?: string;
 search?: string;
 };
-

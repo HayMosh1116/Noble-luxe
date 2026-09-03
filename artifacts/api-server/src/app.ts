@@ -90,16 +90,21 @@ app.use(
  * =========================================================
  * CLERK AUTHENTICATION
  * =========================================================
+ *
+ * A repository checkout can be booted before the Replit-managed Clerk
+ * secrets have been provisioned. Keep public catalog/health routes usable in
+ * that state; protected handlers still return 401 through their auth helper.
  */
-
-app.use(
-  clerkMiddleware((req) => ({
-    publishableKey: publishableKeyFromHost(
-      getClerkProxyHost(req) ?? "",
-      process.env.CLERK_PUBLISHABLE_KEY,
-    ),
-  })),
-);
+if (process.env.CLERK_SECRET_KEY) {
+  app.use(
+    clerkMiddleware((req) => ({
+      publishableKey: publishableKeyFromHost(
+        getClerkProxyHost(req) ?? "",
+        process.env.CLERK_PUBLISHABLE_KEY,
+      ),
+    })),
+  );
+}
 
 /*
  * =========================================================

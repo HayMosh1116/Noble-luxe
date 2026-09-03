@@ -1,5 +1,6 @@
 import { type ReactNode, useEffect, useState } from 'react';
 import { ClerkProvider, SignIn, SignUp } from '@clerk/react';
+import { publishableKeyFromHost } from '@clerk/react/internal';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from '@/components/ui/toaster';
 import { TooltipProvider } from '@/components/ui/tooltip';
@@ -96,7 +97,9 @@ const add = (
       )
     );
 
-  return { cart, add, update, remove };
+  const clear = () => setCart([]);
+
+  return { cart, add, update, remove, clear };
 }
 
 function Router() {
@@ -125,6 +128,7 @@ function Router() {
               cart={cart.cart}
               onUpdate={cart.update}
               onRemove={cart.remove}
+              onClear={cart.clear}
             />
           )}
         />
@@ -141,6 +145,7 @@ function Router() {
               <SignIn
                 routing="path"
                 path={`${basePath}/sign-in`}
+                signUpUrl={`${basePath}/sign-up`}
               />
             </div>
           )}
@@ -153,13 +158,10 @@ function Router() {
               <SignUp
                 routing="path"
                 path={`${basePath}/sign-up`}
+                signInUrl={`${basePath}/sign-in`}
               />
             </div>
           )}
-        />
-<Route
-          path="/admin-orders"
-          component={AdminOrders}
         />
         <Route component={NotFound} />
       </Switch>
@@ -183,14 +185,24 @@ function RoutedErrorBoundary({
 
 export default function App() {
   const basePath = import.meta.env.BASE_URL.replace(/\/$/, '');
+  const clerkPubKey = publishableKeyFromHost(
+    window.location.hostname,
+    import.meta.env.VITE_CLERK_PUBLISHABLE_KEY,
+  );
+  const clerkProxyUrl = import.meta.env.VITE_CLERK_PROXY_URL;
+
+  if (!clerkPubKey) {
+    throw new Error('Missing VITE_CLERK_PUBLISHABLE_KEY');
+  }
 
   return (
     <ClerkProvider
-      publishableKey={import.meta.env.VITE_CLERK_PUBLISHABLE_KEY}
+      publishableKey={clerkPubKey}
+      proxyUrl={clerkProxyUrl}
       signInUrl={`${basePath}/sign-in`}
       signUpUrl={`${basePath}/sign-up`}
-      signInForceRedirectUrl="/account"
-      signUpForceRedirectUrl="/account"
+      signInForceRedirectUrl={`${basePath}/account`}
+      signUpForceRedirectUrl={`${basePath}/account`}
     >
       <QueryClientProvider client={queryClient}>
         <TooltipProvider>

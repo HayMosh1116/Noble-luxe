@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useAuth, useUser } from "@clerk/react";
+import { SignInButton, useUser } from "@clerk/react";
 import { Link } from "wouter";
 
 type Order = {
@@ -10,18 +10,19 @@ type Order = {
   address?: string;
 
   items: {
-  productId: string;
-  productName: string;
-  size: string;
-  color?: string;
-  quantity: number;
-  price: number;
-}[];
+    productId: string;
+    productName: string;
+    size: string;
+    color?: string;
+    quantity: number;
+    price: number;
+  }[];
   
   total: string;
   paymentMethod?: string;
   status: string;
   statusMessage?: string | null;
+  paymentScreenshot?: string | null;
   createdAt: string;
 };
 
@@ -44,11 +45,7 @@ const statusLabels: Record<string, string> = {
 };
 
 export default function AdminOrders() {
-  const { user } = useUser();
-  const { getToken } = useAuth();
-
-  const email =
-    user?.primaryEmailAddress?.emailAddress || "";
+  const { user, isLoaded } = useUser();
 
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
@@ -57,7 +54,7 @@ export default function AdminOrders() {
   const [error, setError] = useState("");
 
   const load = async () => {
-    if (!email) {
+    if (!isLoaded || !user) {
       setLoading(false);
       return;
     }
@@ -66,17 +63,10 @@ export default function AdminOrders() {
       setLoading(true);
       setError("");
 
-      const token = await getToken();
-
       const response = await fetch(
         `/api/orders/admin`,
         {
           credentials: "include",
-          headers: token
-            ? {
-                Authorization: `Bearer ${token}`,
-              }
-            : undefined,
         },
       );
 
@@ -112,7 +102,7 @@ export default function AdminOrders() {
 
   useEffect(() => {
     void load();
-  }, [email]);
+  }, [isLoaded, user?.id]);
 
   const update = async (
     orderId: string,
@@ -122,8 +112,6 @@ export default function AdminOrders() {
       setUpdating(orderId);
       setMessage("");
       setError("");
-
-      const token = await getToken();
 
       const statusMessage =
         status === "confirmed"
@@ -147,11 +135,6 @@ export default function AdminOrders() {
           credentials: "include",
           headers: {
             "Content-Type": "application/json",
-            ...(token
-              ? {
-                  Authorization: `Bearer ${token}`,
-                }
-              : {}),
           },
           body: JSON.stringify({
             status,
@@ -227,9 +210,26 @@ export default function AdminOrders() {
           </p>
         )}
 
-        {loading ? (
+        {!isLoaded || loading ? (
           <div className="mt-12 border border-dashed border-border p-12 text-center text-sm text-muted-foreground">
             Loading orders…
+          </div>
+        ) : !user ? (
+          <div className="mt-12 max-w-lg border border-primary/40 bg-primary/5 p-6 text-sm text-muted-foreground">
+            <p className="font-display text-2xl text-foreground">
+              Sign in to access the order desk.
+            </p>
+            <p className="mt-3 leading-6">
+              Only the configured Noble Luxe admin account can view and manage customer orders.
+            </p>
+            <SignInButton mode="modal">
+              <button
+                type="button"
+                className="mt-5 bg-primary px-5 py-3 text-[10px] font-bold uppercase tracking-[.18em] text-primary-foreground"
+              >
+                Sign in
+              </button>
+            </SignInButton>
           </div>
         ) : (
           <div className="mt-12 space-y-4">
@@ -275,33 +275,53 @@ export default function AdminOrders() {
                       )}
                     </div>
                   </div>
-<div className="mt-6 border-t border-border pt-5">
-  <p className="font-mono-brand text-[9px] uppercase tracking-[.18em] text-primary">
-    Items
-  </p>
+                  <div className="mt-6 border-t border-border pt-5">
+                    <p className="font-mono-brand text-[9px] uppercase tracking-[.18em] text-primary">
+                      Items
+                    </p>
 
-  <div className="mt-3 space-y-2">
-    {order.items.map((item, index) => (
-      <div
-        key={`${item.productId}-${item.size}-${item.color}-${index}`}
-        className="flex flex-wrap items-center justify-between gap-3 text-sm"
-      >
-        <span>
-          {item.productName}
-          {" — "}
-          Size {item.size}
-          {item.color ? ` — Color ${item.color}` : ""}
-          {" — Qty "}
-          {item.quantity}
-        </span>
+                    <div className="mt-3 space-y-2">
+                      {order.items.map((item, index) => (
+                        <div
+                          key={`${item.productId}-${item.size}-${item.color}-${index}`}
+                          className="flex flex-wrap items-center justify-between gap-3 text-sm"
+                        >
+                          <span>
+                            {item.productName}
+                            {" — "}
+                            Size {item.size}
+                            {item.color ? ` — Color ${item.color}` : ""}
+                            {" — Qty "}
+                            {item.quantity}
+                          </span>
 
-        <span className="font-mono-brand text-primary">
-          ₦{item.price.toLocaleString()}
-        </span>
-      </div>
-    ))}
-  </div>
-</div>
+                          <span className="font-mono-brand text-primary">
+                            ₦{(item.price * item.quantity).toLocaleString()}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {order.paymentScreenshot && (
+                    <div className="mt-6 border-t border-border pt-5">
+                      <p className="font-mono-brand text-[9px] uppercase tracking-[.18em] text-primary">
+                        Payment receipt
+                      </p>
+                      <a
+                        href={order.paymentScreenshot}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="mt-3 inline-block border border-border bg-background p-2 transition hover:border-primary"
+                      >
+                        <img
+                          src={order.paymentScreenshot}
+                          alt={`Payment receipt for ${order.orderId}`}
+                          className="max-h-64 max-w-full object-contain"
+                        />
+                      </a>
+                    </div>
+                  )}
                   <div className="mt-6 flex flex-wrap items-center gap-3">
                     <select
                       value={order.status}

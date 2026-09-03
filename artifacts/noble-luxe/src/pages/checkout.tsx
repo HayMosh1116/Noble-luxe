@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
 import { Link, useLocation } from 'wouter';
-import { useAuth } from '@clerk/react';
+import { SignInButton, useAuth } from '@clerk/react';
 import {
   ArrowLeft,
   ArrowRight,
@@ -21,6 +21,7 @@ type CheckoutProps = {
   cart: CartItem[];
   onUpdate: (id: string, size: string, delta: number) => void;
   onRemove: (id: string, size: string) => void;
+  onClear: () => void;
 };
 type FormState = {
   customerName: string;
@@ -40,6 +41,7 @@ export default function Checkout({
   cart,
   onUpdate,
   onRemove,
+  onClear,
 }: CheckoutProps) {
   const [, setLocation] = useLocation();
   const { isSignedIn } = useAuth();
@@ -68,9 +70,6 @@ export default function Checkout({
   useEffect(() => {
     if (!cart.length) {
       setLocation('/');
-    }
-    if (!isSignedIn) {
-      setLocation('/sign-in');
     }
   }, [cart.length, isSignedIn, setLocation]);
   const setField = (
@@ -115,6 +114,9 @@ export default function Checkout({
   };
   const submit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    if (!isSignedIn) {
+      return;
+    }
     if (
       !detailsReady ||
       !screenshot ||
@@ -144,6 +146,7 @@ export default function Checkout({
       { data: payload },
       {
         onSuccess: (confirmation) => {
+          onClear();
           sessionStorage.setItem(
             `noble-luxe-order-${confirmation.orderId}`,
             JSON.stringify(confirmation),
@@ -152,7 +155,7 @@ export default function Checkout({
             `/confirmation/${confirmation.orderId}`,
           );
         },
-      },
+    },
     );
   };
   return (
@@ -481,9 +484,29 @@ export default function Checkout({
                   check your details and try again.
                 </div>
               )}
+              {!isSignedIn && (
+                <div className="border border-primary/40 bg-primary/5 p-5 text-sm text-muted-foreground">
+                  <p className="font-display text-xl text-foreground">
+                    Sign in before placing your order.
+                  </p>
+                  <p className="mt-2 leading-6">
+                    Your bag will stay here while you sign in or create an account.
+                  </p>
+                  <SignInButton mode="modal">
+                    <button
+                      type="button"
+                      className="mt-4 bg-primary px-5 py-3 text-[10px] font-bold uppercase tracking-[0.18em] text-primary-foreground"
+                      data-testid="button-checkout-sign-in"
+                    >
+                      Sign in / sign up to continue
+                    </button>
+                  </SignInButton>
+                </div>
+              )}
               <button
                 type="submit"
                 disabled={
+                  !isSignedIn ||
                   !detailsReady ||
                   !screenshot ||
                   createOrder.isPending

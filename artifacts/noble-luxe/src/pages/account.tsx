@@ -15,6 +15,14 @@ type Order = {
   statusMessage?: string | null;
   createdAt: string;
   updatedAt?: string;
+  items: {
+    productId: string;
+    productName: string;
+    size: string;
+    color?: string | null;
+    quantity: number;
+    price: number;
+  }[];
 };
 
 const labels: Record<string, string> = {
@@ -28,7 +36,6 @@ const labels: Record<string, string> = {
 
 function Orders() {
   const { user } = useUser();
-  const { getToken } = useAuth();
 
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
@@ -47,17 +54,10 @@ function Orders() {
         setLoading(true);
         setError("");
 
-        const token = await getToken();
-
         const response = await fetch(
           "/api/orders/me",
           {
             credentials: "include",
-            headers: token
-              ? {
-                  Authorization: `Bearer ${token}`,
-                }
-              : undefined,
           },
         );
 
@@ -88,11 +88,15 @@ function Orders() {
     };
 
     void loadOrders();
+    const refreshTimer = window.setInterval(() => {
+      void loadOrders();
+    }, 15_000);
 
     return () => {
       cancelled = true;
+      window.clearInterval(refreshTimer);
     };
-  }, [user?.id, getToken]);
+  }, [user?.id]);
 
   return (
     <main className="mx-auto max-w-[1100px] px-5 pb-24 pt-36 lg:px-10">
@@ -167,6 +171,28 @@ function Orders() {
                     "We will keep you updated as your order moves through the atelier."}
                 </p>
 
+                <div className="mt-5 border-t border-border pt-5">
+                  <p className="font-mono-brand text-[9px] uppercase tracking-[.18em] text-primary">
+                    Items
+                  </p>
+                  <div className="mt-3 space-y-2 text-sm text-muted-foreground">
+                    {order.items.map((item, index) => (
+                      <div
+                        key={`${item.productId}-${item.size}-${item.color}-${index}`}
+                        className="flex flex-wrap justify-between gap-3"
+                      >
+                        <span>
+                          {item.productName} · Size {item.size}
+                          {item.color ? ` · ${item.color}` : ""} · Qty {item.quantity}
+                        </span>
+                        <span className="font-mono-brand text-primary">
+                          ₦{(item.price * item.quantity).toLocaleString()}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
                 <div className="mt-5 flex flex-wrap gap-3 font-mono-brand text-[9px] uppercase tracking-[.15em] text-muted-foreground">
                   <span>
                     {new Date(
@@ -177,8 +203,10 @@ function Orders() {
                   <span>·</span>
 
                   <span>
-                    {order.paymentMethod}
+                    Payment: {order.status === "pending" ? "Pending review" : "Confirmed"}
                   </span>
+                  <span>·</span>
+                  <span>{order.paymentMethod}</span>
                 </div>
               </article>
             ))

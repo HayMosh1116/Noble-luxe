@@ -15,8 +15,7 @@ const DEFAULT_JSON_ACCEPT = "application/json, application/problem+json";
 // Module-level configuration
 // ---------------------------------------------------------------------------
 
-let _baseUrl: string | null =
-  "https://noble-luxe-store--ibrahimhaywhy.replit.app";
+let _baseUrl: string | null = null;
 let _authTokenGetter: AuthTokenGetter | null = null;
 
 /**
@@ -267,7 +266,6 @@ async function parseErrorBody(response: Response, method: string): Promise<unkno
     return typeof response.blob === "function"
       ? response.blob()
       : response.text();
-    return typeof response.blob === "function" ? response.blob() : response.text();
   }
 
   const raw = await response.text();

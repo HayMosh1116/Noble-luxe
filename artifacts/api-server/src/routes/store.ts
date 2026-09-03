@@ -8,9 +8,48 @@ import {
 import { db, ordersTable } from "@workspace/db";
 import { ReplitConnectors } from "@replit/connectors-sdk";
 import { getAuth } from "@clerk/express";
+import { clerkClient } from "@clerk/express";
 import { eq, desc } from "drizzle-orm";
 const router: IRouter = Router();
 const connectors = new ReplitConnectors();
+
+function getRequestAuth(req: Parameters<typeof getAuth>[0]) {
+  if (!process.env.CLERK_SECRET_KEY) {
+    return { userId: null, sessionClaims: null };
+  }
+  return getAuth(req);
+}
+
+async function isConfiguredAdmin(req: Parameters<typeof getAuth>[0]): Promise<boolean> {
+  const { userId, sessionClaims } = getRequestAuth(req);
+  if (!userId) return false;
+
+  const configuredUserId = process.env.ORDER_ADMIN_USER_ID?.trim();
+  if (configuredUserId && configuredUserId === userId) return true;
+
+  const configuredEmail = process.env.ORDER_ADMIN_EMAIL?.trim().toLowerCase();
+  if (!configuredEmail) return false;
+
+  const claims = sessionClaims as { email?: unknown; email_address?: unknown } | null;
+  const claimEmail =
+    typeof claims?.email === "string"
+      ? claims.email
+      : typeof claims?.email_address === "string"
+        ? claims.email_address
+        : null;
+  if (claimEmail?.toLowerCase() === configuredEmail) return true;
+
+  try {
+    const user = await clerkClient.users.getUser(userId);
+    return user.emailAddresses.some(
+      (emailAddress) =>
+        emailAddress.emailAddress.toLowerCase() === configuredEmail,
+    );
+  } catch (error) {
+    req.log.error({ err: error, userId }, "Unable to verify configured admin");
+    return false;
+  }
+}
 /*
  * =========================================================
  * GMAIL — NEW ORDER NOTIFICATION
@@ -294,7 +333,7 @@ router.get("/products/featured", (_req, res) => {
 router.get(
   "/orders/me",
   async (req, res): Promise<void> => {
-    const { userId } = getAuth(req);
+    const { userId } = getRequestAuth(req);
     if (!userId) {
       res.status(401).json({
         error:
@@ -311,6 +350,7 @@ router.get(
         status: ordersTable.status,
         statusMessage:
           ordersTable.statusMessage,
+        items: ordersTable.items,
         createdAt: ordersTable.createdAt,
         updatedAt: ordersTable.updatedAt,
       })
@@ -332,20 +372,7 @@ router.get(
 router.get(
   "/orders/admin",
   async (req, res): Promise<void> => {
-    const { userId } = getAuth(req);
-    const adminEmail = process.env.ORDER_ADMIN_EMAIL;
-    
-    if (!userId || !adminEmail) {
-      res.status(403).json({
-        error: "Admin access required.",
-      });
-      return;
-    }
-
-    // Get user's email from Clerk via the auth session
-    const userEmail = req.auth?.sessionClaims?.email;
-    
-    if (userEmail !== adminEmail) {
+    if (!(await isConfiguredAdmin(req))) {
       res.status(403).json({
         error: "Admin access required.",
       });
@@ -369,20 +396,7 @@ router.get(
 router.patch(
   "/orders/:orderId/status",
   async (req, res): Promise<void> => {
-    const { userId } = getAuth(req);
-    const adminEmail = process.env.ORDER_ADMIN_EMAIL;
-    
-    if (!userId || !adminEmail) {
-      res.status(403).json({
-        error: "Admin access required.",
-      });
-      return;
-    }
-
-    // Get user's email from Clerk via the auth session
-    const userEmail = req.auth?.sessionClaims?.email;
-    
-    if (userEmail !== adminEmail) {
+    if (!(await isConfiguredAdmin(req))) {
       res.status(403).json({
         error: "Admin access required.",
       });
@@ -458,7 +472,7 @@ router.patch(
 router.post(
   "/orders",
   async (req, res): Promise<void> => {
-    const { userId } = getAuth(req);
+    const { userId } = getRequestAuth(req);
     if (!userId) {
       res.status(401).json({
         error:

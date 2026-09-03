@@ -101,3 +101,82 @@ export const CreateOrderResponse = zod.object({
 })
 
 
+/**
+ * @summary List the signed-in customer's orders
+ */
+
+export const listMyOrdersResponseItemsItemPriceMin = 0;
+
+
+
+export const ListMyOrdersResponseItem = zod.object({
+  "orderId": zod.string(),
+  "total": zod.string(),
+  "paymentMethod": zod.enum(['OPay', 'PalmPay']),
+  "status": zod.string(),
+  "statusMessage": zod.string().nullish(),
+  "items": zod.array(zod.object({
+  "productId": zod.string(),
+  "productName": zod.string(),
+  "size": zod.string(),
+  "color": zod.string().optional(),
+  "quantity": zod.number().min(1),
+  "price": zod.number().min(listMyOrdersResponseItemsItemPriceMin)
+})),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})
+export const ListMyOrdersResponse = zod.array(ListMyOrdersResponseItem)
+
+
+/**
+ * @summary List all orders for the configured admin
+ */
+
+export const listAdminOrdersResponseOneItemsItemPriceMin = 0;
+
+
+
+export const ListAdminOrdersResponseItem = zod.object({
+  "orderId": zod.string(),
+  "total": zod.string(),
+  "paymentMethod": zod.enum(['OPay', 'PalmPay']),
+  "status": zod.string(),
+  "statusMessage": zod.string().nullish(),
+  "items": zod.array(zod.object({
+  "productId": zod.string(),
+  "productName": zod.string(),
+  "size": zod.string(),
+  "color": zod.string().optional(),
+  "quantity": zod.number().min(1),
+  "price": zod.number().min(listAdminOrdersResponseOneItemsItemPriceMin)
+})),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+}).and(zod.object({
+  "customerName": zod.string(),
+  "phone": zod.string(),
+  "email": zod.string(),
+  "address": zod.string(),
+  "paymentScreenshot": zod.string()
+}))
+export const ListAdminOrdersResponse = zod.array(ListAdminOrdersResponseItem)
+
+
+/**
+ * @summary Update an order status for the configured admin
+ */
+export const UpdateOrderStatusParams = zod.object({
+  "orderId": zod.coerce.string()
+})
+
+export const UpdateOrderStatusBody = zod.object({
+  "status": zod.enum(['pending', 'confirmed', 'processing', 'out_for_delivery', 'delivered', 'cancelled']),
+  "statusMessage": zod.string().nullish()
+})
+
+export const UpdateOrderStatusResponse = zod.object({
+  "orderId": zod.string(),
+  "status": zod.string(),
+  "statusMessage": zod.string().nullish()
+})
