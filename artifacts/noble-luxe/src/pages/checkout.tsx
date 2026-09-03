@@ -19,8 +19,8 @@ import type { CartItem } from '@/lib/catalog';
 import { formatCurrency, productImage } from '@/lib/catalog';
 type CheckoutProps = {
   cart: CartItem[];
-  onUpdate: (id: string, size: string, delta: number) => void;
-  onRemove: (id: string, size: string) => void;
+  onUpdate: (id: string, size: string, color: string, delta: number) => void;
+  onRemove: (id: string, size: string, color: string) => void;
   onClear: () => void;
 };
 type FormState = {
