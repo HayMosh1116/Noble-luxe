@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import {
   SignInButton,
+  SignOutButton,
   useAuth,
   useUser,
 } from "@clerk/react";
@@ -104,10 +105,18 @@ function Orders() {
           Your orders.
         </h1>
 
-        <span className="text-sm text-muted-foreground">
-          {user?.firstName ||
-            user?.primaryEmailAddress?.emailAddress}
-        </span>
+        <div className="flex items-center gap-3">
+          <span className="text-sm text-muted-foreground">
+            {user?.firstName ||
+              user?.primaryEmailAddress?.emailAddress}
+          </span>
+
+          <SignOutButton>
+            <button className="text-[10px] uppercase tracking-[.18em] text-muted-foreground hover:text-primary">
+              Sign out
+            </button>
+          </SignOutButton>
+        </div>
       </div>
 
       {loading && (

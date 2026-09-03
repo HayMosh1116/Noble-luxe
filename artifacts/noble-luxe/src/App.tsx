@@ -189,6 +189,8 @@ export default function App() {
       publishableKey={import.meta.env.VITE_CLERK_PUBLISHABLE_KEY}
       signInUrl={`${basePath}/sign-in`}
       signUpUrl={`${basePath}/sign-up`}
+      signInForceRedirectUrl="/account"
+      signUpForceRedirectUrl="/account"
     >
       <QueryClientProvider client={queryClient}>
         <TooltipProvider>
