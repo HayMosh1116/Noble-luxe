@@ -1,1 +1,1 @@
-- [OpenAPI/Zod compatibility](openapi-zod-compat.md) — avoid generated Zod 4-only helpers while this workspace resolves Zod 3.
+- [GitHub connector uploads](github-connector-rate-limits.md) — pace REST blob uploads below the connector's 10-requests-per-second limit.
