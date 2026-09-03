@@ -333,17 +333,25 @@ router.get(
   "/orders/admin",
   async (req, res): Promise<void> => {
     const { userId } = getAuth(req);
-    if (
-      !userId ||
-      !process.env.ORDER_ADMIN_EMAIL ||
-      req.query.adminEmail !==
-        process.env.ORDER_ADMIN_EMAIL
-    ) {
+    const adminEmail = process.env.ORDER_ADMIN_EMAIL;
+    
+    if (!userId || !adminEmail) {
       res.status(403).json({
         error: "Admin access required.",
       });
       return;
     }
+
+    // Get user's email from Clerk via the auth session
+    const userEmail = req.auth?.sessionClaims?.email;
+    
+    if (userEmail !== adminEmail) {
+      res.status(403).json({
+        error: "Admin access required.",
+      });
+      return;
+    }
+
     const orders = await db
       .select()
       .from(ordersTable)
@@ -362,18 +370,25 @@ router.patch(
   "/orders/:orderId/status",
   async (req, res): Promise<void> => {
     const { userId } = getAuth(req);
-    const adminEmail =
-      process.env.ORDER_ADMIN_EMAIL;
-    if (
-      !userId ||
-      !adminEmail ||
-      req.body?.adminEmail !== adminEmail
-    ) {
+    const adminEmail = process.env.ORDER_ADMIN_EMAIL;
+    
+    if (!userId || !adminEmail) {
       res.status(403).json({
         error: "Admin access required.",
       });
       return;
     }
+
+    // Get user's email from Clerk via the auth session
+    const userEmail = req.auth?.sessionClaims?.email;
+    
+    if (userEmail !== adminEmail) {
+      res.status(403).json({
+        error: "Admin access required.",
+      });
+      return;
+    }
+
     const allowed = [
       "pending",
       "confirmed",

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
 import { Link, useLocation } from 'wouter';
+import { useAuth } from '@clerk/react';
 import {
   ArrowLeft,
   ArrowRight,
@@ -41,6 +42,7 @@ export default function Checkout({
   onRemove,
 }: CheckoutProps) {
   const [, setLocation] = useLocation();
+  const { isSignedIn } = useAuth();
   const [form, setForm] = useState<FormState>(initialForm);
   const [screenshot, setScreenshot] = useState('');
   const [fileName, setFileName] = useState('');
@@ -67,7 +69,10 @@ export default function Checkout({
     if (!cart.length) {
       setLocation('/');
     }
-  }, [cart.length, setLocation]);
+    if (!isSignedIn) {
+      setLocation('/sign-in');
+    }
+  }, [cart.length, isSignedIn, setLocation]);
   const setField = (
     field: keyof FormState,
     value: string,

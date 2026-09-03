@@ -132,7 +132,7 @@ function Router() {
         <Route path="/confirmation/:orderId" component={Confirmation} />
         <Route path="/contact" component={Contact} />
         <Route path="/account" component={Account} />
-        <Route path="/admin/orders" component={AdminOrders} />
+        <Route path="/admin-orders" component={AdminOrders} />
 
         <Route
           path="/sign-in/*?"

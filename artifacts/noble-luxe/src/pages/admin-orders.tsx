@@ -69,9 +69,7 @@ export default function AdminOrders() {
       const token = await getToken();
 
       const response = await fetch(
-        `/api/orders/admin?adminEmail=${encodeURIComponent(
-          email,
-        )}`,
+        `/api/orders/admin`,
         {
           credentials: "include",
           headers: token
@@ -157,7 +155,6 @@ export default function AdminOrders() {
           },
           body: JSON.stringify({
             status,
-            adminEmail: email,
             statusMessage,
           }),
         },
