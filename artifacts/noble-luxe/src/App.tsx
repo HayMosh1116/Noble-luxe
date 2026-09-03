@@ -157,7 +157,10 @@ function Router() {
             </div>
           )}
         />
-
+<Route
+          path="/admin-orders"
+          component={AdminOrders}
+        />
         <Route component={NotFound} />
       </Switch>
     </RoutedErrorBoundary>
