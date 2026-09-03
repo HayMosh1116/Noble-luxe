@@ -559,7 +559,7 @@ export const FALLBACK_PRODUCTS: CatalogProduct[] = [
     price: 11000,
     imageUrl: ROUND_NECK_1_WHITE_A_FRONT,
     description:
-      'Noble Luxe round-neck black edition with another signature front and back finish.',
+      'Noble Luxe round-neck white edition with another signature front and back finish.',
     sizes: ['XL', 'XXL'],
     colors: ['White'],
     featured: false,
