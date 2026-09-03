@@ -106,6 +106,12 @@ const ROUND_NECK_1_BLACK_B_FRONT =
 const ROUND_NECK_1_BLACK_B_BACK =
   'https://i.ibb.co/QjfkFR5B/PZo-EBNSFjb.jpg';
 
+const ROUND_NECK_1_WHITE_A_FRONT =
+  'https://i.ibb.co/QVZwbDt/Lm-K96y-Ho35.jpg';
+
+const ROUND_NECK_1_WHITE_A_BACK =
+  'https://i.ibb.co/ym6SxsTw/2-Wd9nmnl6k.jpg';
+
 /*
  * =========================================================
  * AVAILABLE COLOURS
@@ -536,6 +542,32 @@ export const FALLBACK_PRODUCTS: CatalogProduct[] = [
         name: 'Black',
         front: ROUND_NECK_1_BLACK_B_FRONT,
         back: ROUND_NECK_1_BLACK_B_BACK,
+      },
+    },
+  },
+
+/*
+   * -------------------------------------------------------
+   * NL-014 — ROUND NECK 1 WHITE A
+   * -------------------------------------------------------
+   */
+
+{
+    id: 'nl-014',
+    name: 'NL Round Neck 1',
+    category: 'T-Shirts',
+    price: 11000,
+    imageUrl: ROUND_NECK_1_WHITE_A_FRONT,
+    description:
+      'Noble Luxe round-neck black edition with another signature front and back finish.',
+    sizes: ['XL', 'XXL'],
+    colors: ['White'],
+    featured: false,
+    colorImages: {
+      Black: {
+        name: 'White',
+        front: ROUND_NECK_1_WHITE_A_FRONT,
+        back: ROUND_NECK_1_WHITE_A_BACK,
       },
     },
   },
