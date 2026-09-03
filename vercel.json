@@ -1,4 +1,4 @@
 {
-  "buildCommand": "pnpm run typecheck:libs && pnpm --filter @workspace/noble-luxe run build",
+  "buildCommand": "pnpm -w run typecheck:libs && pnpm --filter @workspace/noble-luxe run build",
   "outputDirectory": "artifacts/noble-luxe/dist/public"
 }
