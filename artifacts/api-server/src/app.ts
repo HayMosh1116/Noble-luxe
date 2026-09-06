@@ -1,6 +1,8 @@
 import express, { type Express } from "express";
 import cors from "cors";
 import pinoHttp from "pino-http";
+import { fileURLToPath } from "node:url";
+import { dirname, resolve } from "node:path";
 
 import router from "./routes";
 import { logger } from "./lib/logger";
@@ -113,5 +115,31 @@ if (process.env.CLERK_SECRET_KEY) {
  */
 
 app.use("/api", router);
+
+/*
+ * =========================================================
+ * PRODUCTION STOREFRONT
+ * =========================================================
+ *
+ * The API artifact is the runnable Replit production service. Serve the
+ * compiled Noble Luxe SPA from that same service so the published app has a
+ * working root route while `/api/*` remains the API surface.
+ */
+if (process.env.NODE_ENV === "production") {
+  const storefrontDistPath = resolve(
+    dirname(fileURLToPath(import.meta.url)),
+    "../../noble-luxe/dist/public",
+  );
+
+  app.use(express.static(storefrontDistPath, { index: false }));
+
+  app.get(/^(?!\/api(?:\/|$)).*/, (_req, res, next) => {
+    res.sendFile(resolve(storefrontDistPath, "index.html"), (error) => {
+      if (error) {
+        next(error);
+      }
+    });
+  });
+}
 
 export default app;
