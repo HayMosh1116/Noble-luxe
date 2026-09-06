@@ -36,6 +36,7 @@ const labels: Record<string, string> = {
 
 function Orders() {
   const { user } = useUser();
+  const { getToken } = useAuth();
 
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
@@ -54,10 +55,16 @@ function Orders() {
         setLoading(true);
         setError("");
 
+        const token = await getToken();
         const response = await fetch(
           "/api/orders/me",
           {
             credentials: "include",
+            headers: token
+              ? {
+                  Authorization: `Bearer ${token}`,
+                }
+              : undefined,
           },
         );
 
@@ -96,7 +103,7 @@ function Orders() {
       cancelled = true;
       window.clearInterval(refreshTimer);
     };
-  }, [user?.id]);
+  }, [getToken, user?.id]);
 
   return (
     <main className="mx-auto max-w-[1100px] px-5 pb-24 pt-36 lg:px-10">

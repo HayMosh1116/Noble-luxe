@@ -1,7 +1,8 @@
 import { type ReactNode, useEffect, useState } from 'react';
-import { ClerkProvider, SignIn, SignUp } from '@clerk/react';
+import { ClerkProvider, SignIn, SignUp, useAuth } from '@clerk/react';
 import { publishableKeyFromHost } from '@clerk/react/internal';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { setAuthTokenGetter } from '@workspace/api-client-react';
 import { Toaster } from '@/components/ui/toaster';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { ErrorBoundary } from '@/components/error-boundary';
@@ -18,6 +19,20 @@ import type { CartItem } from '@/lib/catalog';
 
 const queryClient = new QueryClient();
 const CART_KEY = 'noble-luxe-cart';
+
+function ClerkApiAuthBridge() {
+  const { getToken } = useAuth();
+
+  useEffect(() => {
+    setAuthTokenGetter(getToken);
+
+    return () => {
+      setAuthTokenGetter(null);
+    };
+  }, [getToken]);
+
+  return null;
+}
 
 function useCart() {
   const [cart, setCart] = useState<CartItem[]>(() => {
@@ -205,6 +220,7 @@ export default function App() {
       signUpForceRedirectUrl={`${basePath}/account`}
     >
       <QueryClientProvider client={queryClient}>
+        <ClerkApiAuthBridge />
         <TooltipProvider>
           <WouterRouter base={basePath}>
             <Router />

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { SignInButton, useUser } from "@clerk/react";
+import { SignInButton, useAuth, useUser } from "@clerk/react";
 import { Link } from "wouter";
 
 type Order = {
@@ -46,6 +46,7 @@ const statusLabels: Record<string, string> = {
 
 export default function AdminOrders() {
   const { user, isLoaded } = useUser();
+  const { getToken } = useAuth();
 
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
@@ -63,10 +64,16 @@ export default function AdminOrders() {
       setLoading(true);
       setError("");
 
+      const token = await getToken();
       const response = await fetch(
         `/api/orders/admin`,
         {
           credentials: "include",
+          headers: token
+            ? {
+                Authorization: `Bearer ${token}`,
+              }
+            : undefined,
         },
       );
 
@@ -102,7 +109,7 @@ export default function AdminOrders() {
 
   useEffect(() => {
     void load();
-  }, [isLoaded, user?.id]);
+  }, [getToken, isLoaded, user?.id]);
 
   const update = async (
     orderId: string,
@@ -126,6 +133,7 @@ export default function AdminOrders() {
                   ? "Your order has been cancelled. Please contact Noble Luxe if you need assistance."
                   : "Payment is awaiting review.";
 
+      const token = await getToken();
       const response = await fetch(
         `/api/orders/${encodeURIComponent(
           orderId,
@@ -135,6 +143,11 @@ export default function AdminOrders() {
           credentials: "include",
           headers: {
             "Content-Type": "application/json",
+            ...(token
+              ? {
+                  Authorization: `Bearer ${token}`,
+                }
+              : {}),
           },
           body: JSON.stringify({
             status,
