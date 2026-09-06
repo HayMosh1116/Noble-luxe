@@ -1,23 +1,12 @@
 modules = ["nodejs-24"]
 
-[deployment]
-router = "application"
-deploymentTarget = "autoscale"
+    [deployment]
+    router = "application"
+    deploymentTarget = "autoscale"
+    build = "pnpm --filter @workspace/api-server run build && pnpm --filter @workspace/noble-luxe run build"
+    run = "pnpm --filter @workspace/noble-luxe run serve"
 
-[deployment.postBuild]
-args = ["pnpm", "store", "prune"]
-env = { "CI" = "true" }
-
-[workflows]
-runButton = "Project"
-
-[agent]
-stack = "PNPM_WORKSPACE"
-expertMode = true
-
-[postMerge]
-path = "scripts/post-merge.sh"
-timeoutMs = 20000
-
-[nix]
-channel = "stable-25_05"
+    [deployment.postBuild]
+    args = ["pnpm", "store", "prune"]
+    env = { "CI" = "true" }
+    
