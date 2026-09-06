@@ -112,6 +112,11 @@ const ROUND_NECK_1_WHITE_A_FRONT =
 const ROUND_NECK_1_WHITE_A_BACK =
   'https://i.ibb.co/ym6SxsTw/2-Wd9nmnl6k.jpg';
 
+const ROUND_NECK_1_WHITE_B_FRONT =
+  'https://i.ibb.co/QVZwbDt/Lm-K96y-Ho35.jpg';
+
+const ROUND_NECK_1_WHITE_B_BACK =
+  'https://i.ibb.co/v4TZ07Lk/Ira-Dw-XMzg-V.jpg';
 /*
  * =========================================================
  * AVAILABLE COLOURS
@@ -199,11 +204,11 @@ export const FALLBACK_PRODUCTS: CatalogProduct[] = [
     description:
       'A refined Noble Luxe lace shirt with a distinctive front and back finish.',
     sizes: ['XL', 'XXL'],
-    colors: ['Black'],
+    colors: [''],
     featured: true,
     colorImages: {
       Black: {
-        name: 'Black',
+        name: '',
         front: LACE_SHIRT_FRONT,
         back: LACE_SHIRT_BACK,
       },
@@ -283,11 +288,11 @@ export const FALLBACK_PRODUCTS: CatalogProduct[] = [
     description:
       'A vintage-inspired Noble Luxe piece with a distinctive front and back design.',
     sizes: ['XL', 'XXL'],
-    colors: ['Black'],
+    colors: [''],
     featured: true,
     colorImages: {
       Black: {
-        name: 'Black',
+        name: '',
         front: VINTAGE_FRONT,
         back: VINTAGE_BACK,
       },
@@ -554,7 +559,7 @@ export const FALLBACK_PRODUCTS: CatalogProduct[] = [
 
 {
     id: 'nl-014',
-    name: 'NL Round Neck 1',
+    name: 'NL Round Neck 1 (Never Give Up)',
     category: 'T-Shirts',
     price: 11000,
     imageUrl: ROUND_NECK_1_WHITE_A_FRONT,
@@ -571,7 +576,35 @@ export const FALLBACK_PRODUCTS: CatalogProduct[] = [
       },
     },
   },
+
+/*
+   * -------------------------------------------------------
+   * NL-014 — ROUND NECK 1 WHITE A
+   * -------------------------------------------------------
+   */
+
+{
+    id: 'nl-015',
+    name: 'NL Round Neck 1 (Rich Friends)',
+    category: 'T-Shirts',
+    price: 11000,
+    imageUrl: ROUND_NECK_1_WHITE_B_FRONT,
+    description:
+      'Noble Luxe round-neck white edition with another signature front and back finish.',
+    sizes: ['XL', 'XXL'],
+    colors: ['White'],
+    featured: false,
+    colorImages: {
+      Black: {
+        name: 'White',
+        front: ROUND_NECK_1_WHITE_B_FRONT,
+        back: ROUND_NECK_1_WHITE_B_BACK,
+      },
+    },
+  },
 ];
+];
+
 
 /*
  * =========================================================
