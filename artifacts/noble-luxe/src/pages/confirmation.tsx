@@ -143,11 +143,11 @@ export default function Confirmation() {
           </div>
 
           <Link
-            href="/"
+            href="/account"
             className="mt-10 inline-flex items-center border-b border-primary pb-2 text-[10px] font-bold uppercase tracking-[0.2em] text-primary transition hover:text-accent"
             data-testid="link-continue-shopping"
           >
-            Continue through the showroom
+            View your orders
 
             <ArrowRight className="ml-2 h-4 w-4" />
           </Link>
