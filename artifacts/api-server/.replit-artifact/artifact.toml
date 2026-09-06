@@ -15,7 +15,7 @@ run = "pnpm --filter @workspace/api-server run dev"
 [services.production]
 
 [services.production.build]
-args = ["sh", "-c", "pnpm --filter @workspace/api-server run build && pnpm --filter @workspace/noble-luxe run build"]
+args = ["sh", "-c", "rm -rf artifacts/noble-luxe/dist/public && pnpm --filter @workspace/api-server run build && pnpm --filter @workspace/noble-luxe run build"]
 
 [services.production.build.env]
 NODE_ENV = "production"
