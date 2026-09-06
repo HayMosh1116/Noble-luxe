@@ -478,7 +478,7 @@ export const FALLBACK_PRODUCTS: CatalogProduct[] = [
 
   {
     id: 'nl-011',
-    name: 'NL Round Neck 1',
+    name: 'NL Round Neck 1 (All Man)',
     category: 'T-Shirts',
     price: 11000,
     imageUrl: ROUND_NECK_1_MULTI_FRONT,
@@ -507,7 +507,7 @@ export const FALLBACK_PRODUCTS: CatalogProduct[] = [
 
   {
     id: 'nl-012',
-    name: 'NL Round Neck 1',
+    name: 'NL Round Neck 1(Chasing the bag)',
     category: 'T-Shirts',
     price: 11000,
     imageUrl: ROUND_NECK_1_BLACK_A_FRONT,
@@ -533,7 +533,7 @@ export const FALLBACK_PRODUCTS: CatalogProduct[] = [
 
   {
     id: 'nl-013',
-    name: 'NL Round Neck 1',
+    name: 'NL Round Neck 1(Disturbing yankee)',
     category: 'T-Shirts',
     price: 11000,
     imageUrl: ROUND_NECK_1_BLACK_B_FRONT,
