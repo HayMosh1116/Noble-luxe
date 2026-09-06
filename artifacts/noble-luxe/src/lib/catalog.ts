@@ -579,7 +579,7 @@ export const FALLBACK_PRODUCTS: CatalogProduct[] = [
 
 /*
    * -------------------------------------------------------
-   * NL-014 — ROUND NECK 1 WHITE A
+   * NL-015 — ROUND NECK 1 WHITE B
    * -------------------------------------------------------
    */
 
@@ -603,7 +603,7 @@ export const FALLBACK_PRODUCTS: CatalogProduct[] = [
     },
   },
 ];
-];
+
 
 
 /*
