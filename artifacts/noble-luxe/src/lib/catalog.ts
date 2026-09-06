@@ -117,6 +117,54 @@ const ROUND_NECK_1_WHITE_B_FRONT =
 
 const ROUND_NECK_1_WHITE_B_BACK =
   'https://i.ibb.co/v4TZ07Lk/Ira-Dw-XMzg-V.jpg';
+
+const VINTAGETM_FRONT =
+  'https://i.ibb.co/LDLTpJrb/cv-QDVa6-U3-L.jpg';
+
+const VINTAGETM_BACK =
+  'https://i.ibb.co/nsbPdZCs/t-XGD7t-Lf-Zr.jpg';
+
+const VINTAGEBWY_FRONT =
+  'https://i.ibb.co/8DCDG6pF/j8b874mh-B4.jpg';
+
+const VINTAGEBWY_BACK =
+  'https://i.ibb.co/QFzXr054/jk-Lg-IEy-M3j.jpg';
+
+const LACE_SHIRTRWG_FRONT =
+  'https://i.ibb.co/4Z9tbW09/ksb-Qmu-R63n.jpg';
+
+const LACE_SHIRTRWG_BACK =
+  'https://i.ibb.co/jZTNbjfj/6uf-F7pywfo.jpg';
+
+const LACE_SHIRTBWG_FRONT =
+  'https://i.ibb.co/MDBczQ21/UV8-OS3lpzr.jpg';
+
+const LACE_SHIRTBWG_BACK =
+  'https://i.ibb.co/Xr75Brwy/cpzc-TNHk-E2.jpg';
+
+const LACE_SHIRTDBWB_FRONT =
+  'https://i.ibb.co/0jBkWn16/Nu-GUVzh-Wp4.jpg';
+
+const LACE_SHIRTDBWB_BACK =
+  'https://i.ibb.co/GvTxWsm0/Rxc-P4l-Swo-T.jpg';
+
+const VINTAGEMEOW_FRONT =
+  'https://i.ibb.co/GfVDYBzw/h9xr-Ff-UZfs.jpg';
+
+const VINTAGEMEOW_BACK =
+  'https://i.ibb.co/x8z49mQd/Yis-NLJ2ola.jpg';
+
+const VINTAGEBOOM_FRONT =
+  'https://i.ibb.co/Gf8wXNjV/Hgix-I8362-P.jpg';
+
+const VINTAGETBOOM_BACK =
+  'https://i.ibb.co/VcJ47dPL/x-Pt-W7-SAbj9.jpg';
+
+const VINTAGEBG_FRONT =
+  'https://i.ibb.co/XrxRQ7SC/8-Iy3-Kkrc-Lx.jpg';
+
+const VINTAGETBG_BACK =
+  'https://i.ibb.co/gFPCV8B7/0-Hf-HYf-Fe-GV.jpg';
 /*
  * =========================================================
  * AVAILABLE COLOURS
@@ -194,7 +242,7 @@ export const FALLBACK_PRODUCTS: CatalogProduct[] = [
 
   {
     id: 'nl-001',
-    name: 'Lace Shirt',
+    name: 'Lace Shirt(BWB)',
     category: 'Tops',
     price: 11000,
     imageUrl: LACE_SHIRT_FRONT,
@@ -278,7 +326,7 @@ export const FALLBACK_PRODUCTS: CatalogProduct[] = [
 
   {
     id: 'nl-004',
-    name: 'NL Vintage',
+    name: 'NL Vintage(BWGO)',
     category: 'T-Shirts',
     price: 9000,
     imageUrl: VINTAGE_FRONT,
@@ -596,6 +644,214 @@ export const FALLBACK_PRODUCTS: CatalogProduct[] = [
         name: 'White',
         front: ROUND_NECK_1_WHITE_B_FRONT,
         back: ROUND_NECK_1_WHITE_B_BACK,
+      },
+    },
+  },
+
+    /*
+   * -------------------------------------------------------
+   * NL-016 VINTAGE TM
+   * -------------------------------------------------------
+   */
+
+  {
+    id: 'nl-016',
+    name: 'NL Vintage(TM)',
+    category: 'T-Shirts',
+    price: 9000,
+    imageUrl: VINTAGETM_FRONT,
+    description:
+      'A vintage-inspired Noble Luxe piece with a distinctive front and back design.',
+    sizes: ['XL', 'XXL'],
+    colors: [''],
+    featured: true,
+    colorImages: {
+      Black: {
+        name: '',
+        front: VINTAGETM_FRONT,
+        back: VINTAGETM_BACK,
+      },
+    },
+  },
+
+    /*
+   * -------------------------------------------------------
+   * NL-017 VINTAGEBWY
+   * -------------------------------------------------------
+   */
+
+    {
+    id: 'nl-017',
+    name: 'NL Vintage(BWY)',
+    category: 'T-Shirts',
+    price: 9000,
+    imageUrl: VINTAGEBWY_FRONT ,
+    description:
+      'A vintage-inspired Noble Luxe piece with a distinctive front and back design.',
+    sizes: ['XL', 'XXL'],
+    colors: [''],
+    featured: true,
+    colorImages: {
+      Black: {
+        name: '',
+        front: VINTAGEBWY_FRONT ,
+        back: VINTAGEBWY_BACK ,
+      },
+    },
+  },
+
+      /*
+   * -------------------------------------------------------
+   * NL-018 LACE SHIRT RWG
+   * -------------------------------------------------------
+   */
+
+    {
+    id: 'nl-018',
+    name: 'NL LACE SHIRT(RWG)',
+    category: 'T-Shirts',
+    price: 11000,
+    imageUrl: LACE_SHIRTRWG_FRONT  ,
+    description:
+      'A refined Noble Luxe lace shirt with a distinctive front and back finish..',
+    sizes: ['XL', 'XXL'],
+    colors: [''],
+    featured: true,
+    colorImages: {
+      Black: {
+        name: '',
+        front: LACE_SHIRTRWG_FRONT  ,
+        back: LACE_SHIRTRWG_BACK  ,
+      },
+    },
+  },
+
+        /*
+   * -------------------------------------------------------
+   * NL-019 LACE SHIRT BWG
+   * -------------------------------------------------------
+   */
+
+    {
+    id: 'nl-019',
+    name: 'NL LACE SHIRT(BWG) STRAIGHT',
+    category: 'T-Shirts',
+    price: 11000,
+    imageUrl: LACE_SHIRTBWG_FRONT  ,
+    description:
+      'A refined Noble Luxe lace shirt with a distinctive front and back finish..',
+    sizes: ['XL', 'XXL'],
+    colors: [''],
+    featured: true,
+    colorImages: {
+      Black: {
+        name: '',
+        front: LACE_SHIRTBWG_FRONT  ,
+        back: LACE_SHIRTBWG_BACK  ,
+      },
+    },
+  },
+
+          /*
+   * -------------------------------------------------------
+   * NL-20 LACE SHIRT DBWB
+   * -------------------------------------------------------
+   */
+
+    {
+    id: 'nl-20',
+    name: 'NL LACE SHIRT(DBWB) DASH',
+    category: 'T-Shirts',
+    price: 11000,
+    imageUrl: LACE_SHIRTDBWB_FRONT  ,
+    description:
+      'A refined Noble Luxe lace shirt with a distinctive front and back finish..',
+    sizes: ['XL', 'XXL'],
+    colors: [''],
+    featured: true,
+    colorImages: {
+      Black: {
+        name: '',
+        front: LACE_SHIRTDBWB_FRONT  ,
+        back: LACE_SHIRTDBWB_BACK  ,
+      },
+    },
+  },
+
+      /*
+   * -------------------------------------------------------
+   * NL-21 VINTAGEMEOW
+   * -------------------------------------------------------
+   */
+
+    {
+    id: 'nl-21',
+    name: 'NL Vintage(MEOW)',
+    category: 'T-Shirts',
+    price: 9000,
+    imageUrl: VINTAGEMEOW_FRONT ,
+    description:
+      'A vintage-inspired Noble Luxe piece with a distinctive front and back design.',
+    sizes: ['XL', 'XXL'],
+    colors: [''],
+    featured: true,
+    colorImages: {
+      Black: {
+        name: '',
+        front: VINTAGEMEOW_FRONT ,
+        back: VINTAGEMEOW_BACK ,
+      },
+    },
+  },
+
+        /*
+   * -------------------------------------------------------
+   * NL-22 VINTAGEBOOM
+   * -------------------------------------------------------
+   */
+
+    {
+    id: 'nl-22',
+    name: 'NL Vintage(BOOM)',
+    category: 'T-Shirts',
+    price: 9000,
+    imageUrl: VINTAGEBOOM_FRONT ,
+    description:
+      'A vintage-inspired Noble Luxe piece with a distinctive front and back design.',
+    sizes: ['XL', 'XXL'],
+    colors: [''],
+    featured: true,
+    colorImages: {
+      Black: {
+        name: '',
+        front: VINTAGEBOOM_FRONT ,
+        back: VINTAGEBOOM_BACK ,
+      },
+    },
+  },
+
+          /*
+   * -------------------------------------------------------
+   * NL-23 VINTAGEBG
+   * -------------------------------------------------------
+   */
+
+    {
+    id: 'nl-23',
+    name: 'NL Vintage(BG)',
+    category: 'T-Shirts',
+    price: 9000,
+    imageUrl: VINTAGEBG_FRONT ,
+    description:
+      'A vintage-inspired Noble Luxe piece with a distinctive front and back design.',
+    sizes: ['XL', 'XXL'],
+    colors: [''],
+    featured: true,
+    colorImages: {
+      Black: {
+        name: '',
+        front: VINTAGEBG_FRONT ,
+        back: VINTAGEBG_BACK ,
       },
     },
   },
