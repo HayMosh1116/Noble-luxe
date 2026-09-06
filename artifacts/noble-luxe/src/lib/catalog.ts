@@ -177,9 +177,6 @@ const shortJoggersColors = [
 
 const roundNeck1Colors = [
   'Brown',
-  'White',
-  'Pink',
-  'Black',
 ];
 
 /*
@@ -199,7 +196,7 @@ export const FALLBACK_PRODUCTS: CatalogProduct[] = [
     id: 'nl-001',
     name: 'Lace Shirt',
     category: 'Tops',
-    price: 10000,
+    price: 11000,
     imageUrl: LACE_SHIRT_FRONT,
     description:
       'A refined Noble Luxe lace shirt with a distinctive front and back finish.',
@@ -225,7 +222,7 @@ export const FALLBACK_PRODUCTS: CatalogProduct[] = [
     id: 'nl-002',
     name: 'NL Round-Neck 2',
     category: 'T-Shirts',
-    price: 11000,
+    price: 12000,
     imageUrl: ROUND_NECK_2_FRONT,
     description:
       'A clean Noble Luxe round-neck piece available in multiple colours.',
@@ -254,7 +251,7 @@ export const FALLBACK_PRODUCTS: CatalogProduct[] = [
     id: 'nl-003',
     name: 'NL Sweat Shirt',
     category: 'Sweatshirts',
-    price: 13000,
+    price: 14000,
     imageUrl: SWEAT_SHIRT_FRONT,
     description:
       'A comfortable Noble Luxe sweatshirt offered in statement seasonal colours.',
@@ -283,7 +280,7 @@ export const FALLBACK_PRODUCTS: CatalogProduct[] = [
     id: 'nl-004',
     name: 'NL Vintage',
     category: 'T-Shirts',
-    price: 8000,
+    price: 9000,
     imageUrl: VINTAGE_FRONT,
     description:
       'A vintage-inspired Noble Luxe piece with a distinctive front and back design.',
@@ -309,7 +306,7 @@ export const FALLBACK_PRODUCTS: CatalogProduct[] = [
     id: 'nl-005',
     name: 'NL Armless',
     category: 'Tops',
-    price: 11000,
+    price: 12000,
     imageUrl: ARMLESS_FRONT,
     description:
       'A clean Noble Luxe armless piece designed for a relaxed streetwear fit.',
@@ -335,7 +332,7 @@ export const FALLBACK_PRODUCTS: CatalogProduct[] = [
     id: 'nl-006',
     name: 'NL Hoodie',
     category: 'Hoodies',
-    price: 16000,
+    price: 17000,
     imageUrl: HOODIE_FRONT,
     description:
       'A statement Noble Luxe hoodie with a clean front and distinctive back finish.',
@@ -364,7 +361,7 @@ export const FALLBACK_PRODUCTS: CatalogProduct[] = [
     id: 'nl-007',
     name: 'NL Joggers 1',
     category: 'Joggers',
-    price: 14000,
+    price: 15000,
     imageUrl: JOGGERS_1_FRONT,
     description:
       'Noble Luxe joggers built for a relaxed streetwear silhouette.',
@@ -393,7 +390,7 @@ export const FALLBACK_PRODUCTS: CatalogProduct[] = [
     id: 'nl-008',
     name: 'NL Basic Top',
     category: 'Tops',
-    price: 8000,
+    price: 9000,
     imageUrl: BASIC_TOP_FRONT,
     description:
       'A clean Noble Luxe basic top available in four versatile colours.',
@@ -422,7 +419,7 @@ export const FALLBACK_PRODUCTS: CatalogProduct[] = [
     id: 'nl-009',
     name: 'NL Joggers 2',
     category: 'Joggers',
-    price: 14000,
+    price: 15000,
     imageUrl: JOGGERS_2_FRONT,
     description:
       'A second Noble Luxe joggers silhouette with a refined front and back finish.',
@@ -451,7 +448,7 @@ export const FALLBACK_PRODUCTS: CatalogProduct[] = [
     id: 'nl-010',
     name: 'NL Short Joggers',
     category: 'Shorts',
-    price: 9000,
+    price: 10000,
     imageUrl: SHORT_JOGGERS_FRONT,
     description:
       'Relaxed Noble Luxe short joggers designed for everyday streetwear.',
@@ -480,7 +477,7 @@ export const FALLBACK_PRODUCTS: CatalogProduct[] = [
     id: 'nl-011',
     name: 'NL Round Neck 1 (All Man)',
     category: 'T-Shirts',
-    price: 11000,
+    price: 15000,
     imageUrl: ROUND_NECK_1_MULTI_FRONT,
     description:
       'A Noble Luxe round-neck essential available in brown, white, pink and black.',
@@ -509,7 +506,7 @@ export const FALLBACK_PRODUCTS: CatalogProduct[] = [
     id: 'nl-012',
     name: 'NL Round Neck 1(Chasing the bag)',
     category: 'T-Shirts',
-    price: 11000,
+    price: 15000,
     imageUrl: ROUND_NECK_1_BLACK_A_FRONT,
     description:
       'Noble Luxe round-neck black edition with a distinctive front and back design.',
@@ -535,7 +532,7 @@ export const FALLBACK_PRODUCTS: CatalogProduct[] = [
     id: 'nl-013',
     name: 'NL Round Neck 1(Disturbing yankee)',
     category: 'T-Shirts',
-    price: 11000,
+    price: 15000,
     imageUrl: ROUND_NECK_1_BLACK_B_FRONT,
     description:
       'Noble Luxe round-neck black edition with another signature front and back finish.',
@@ -561,7 +558,7 @@ export const FALLBACK_PRODUCTS: CatalogProduct[] = [
     id: 'nl-014',
     name: 'NL Round Neck 1 (Never Give Up)',
     category: 'T-Shirts',
-    price: 11000,
+    price: 15000,
     imageUrl: ROUND_NECK_1_WHITE_A_FRONT,
     description:
       'Noble Luxe round-neck white edition with another signature front and back finish.',
@@ -587,7 +584,7 @@ export const FALLBACK_PRODUCTS: CatalogProduct[] = [
     id: 'nl-015',
     name: 'NL Round Neck 1 (Rich Friends)',
     category: 'T-Shirts',
-    price: 11000,
+    price: 15000,
     imageUrl: ROUND_NECK_1_WHITE_B_FRONT,
     description:
       'Noble Luxe round-neck white edition with another signature front and back finish.',
