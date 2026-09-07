@@ -163,7 +163,7 @@ const VINTAGEBOOM_BACK =
 const VINTAGEBG_FRONT =
   'https://i.ibb.co/XrxRQ7SC/8-Iy3-Kkrc-Lx.jpg';
 
-const VINTAGETBG_BACK =
+const VINTAGEBG_BACK =
   'https://i.ibb.co/gFPCV8B7/0-Hf-HYf-Fe-GV.jpg';
 /*
  * =========================================================
