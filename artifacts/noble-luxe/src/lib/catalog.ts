@@ -157,7 +157,7 @@ const VINTAGEMEOW_BACK =
 const VINTAGEBOOM_FRONT =
   'https://i.ibb.co/Gf8wXNjV/Hgix-I8362-P.jpg';
 
-const VINTAGETBOOM_BACK =
+const VINTAGEBOOM_BACK =
   'https://i.ibb.co/VcJ47dPL/x-Pt-W7-SAbj9.jpg';
 
 const VINTAGEBG_FRONT =
