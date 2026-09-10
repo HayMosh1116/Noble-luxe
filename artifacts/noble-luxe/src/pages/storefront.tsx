@@ -378,21 +378,22 @@ function ProductCard({
             event.stopPropagation()
           }
         >
-          <button
-            onClick={() =>
-              onAdd(
-                product,
-                size,
-                selectedColor,
-                selectedImages.front,
-                selectedImages.back,
-              )
-            }
-            className="w-full bg-primary py-3 text-[10px] font-bold uppercase tracking-[0.19em] text-primary-foreground transition duration-300 hover:bg-accent"
-            data-testid={`button-add-product-${product.id}`}
-          >
-            Add to bag
-          </button>
+         <button
+  disabled={product.inStock === false}
+  onClick={() => {
+    if (product.inStock === false) return;
+
+    onAdd(
+      product,
+      size,
+      selectedColor,
+      selectedImages.front,
+      selectedImages.back,
+    );
+  }}
+>
+  {product.inStock === false ? 'OUT OF STOCK' : 'ADD TO BAG'}
+</button>
         </div>
       </div>
 
