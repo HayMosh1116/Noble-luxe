@@ -378,7 +378,7 @@ function ProductCard({
             event.stopPropagation()
           }
         >
-         <button
+      <button
   disabled={product.inStock === false}
   onClick={() => {
     if (product.inStock === false) return;
@@ -391,8 +391,13 @@ function ProductCard({
       selectedImages.back,
     );
   }}
+  className={`w-full rounded-none border px-4 py-3 text-[10px] font-semibold uppercase tracking-[0.25em] transition-all duration-300 ${
+    product.inStock === false
+      ? 'cursor-not-allowed border-border bg-muted/40 text-muted-foreground/70'
+      : 'border-primary bg-primary text-primary-foreground hover:bg-transparent hover:text-primary'
+  }`}
 >
-  {product.inStock === false ? 'OUT OF STOCK' : 'ADD TO BAG'}
+  {product.inStock === false ? 'SOLD OUT' : 'ADD TO BAG'}
 </button>
         </div>
       </div>
