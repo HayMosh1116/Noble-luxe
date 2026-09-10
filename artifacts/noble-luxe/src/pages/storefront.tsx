@@ -397,7 +397,7 @@ function ProductCard({
       : 'border-primary bg-primary text-primary-foreground hover:bg-transparent hover:text-primary'
   }`}
 >
-  {product.inStock === false ? 'SOLD OUT' : 'ADD TO BAG'}
+  {product.inStock === false ? 'OUT OF STOCK' : 'ADD TO BAG'}
 </button>
         </div>
       </div>
