@@ -82,7 +82,7 @@ export const CreateOrderBody = zod.object({
   address: zod.string().min(createOrderBodyAddressMin),
 
   fulfilmentMethod: zod.enum(['Delivery', 'Pickup']),
-
+  pickupCode: zod.string().nullish(),
   items: zod.array(zod.object({
     productId: zod.string(),
     productName: zod.string(),
