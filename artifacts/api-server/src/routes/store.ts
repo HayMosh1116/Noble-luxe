@@ -428,12 +428,16 @@ router.patch(
     }
     const [updated] = await db
       .update(ordersTable)
-      .set({
-        status: req.body.status,
-        statusMessage:
-          req.body.statusMessage || null,
-        updatedAt: new Date(),
-      })
+     .set({
+  status: req.body.status,
+  statusMessage:
+    req.body.statusMessage || null,
+
+  pickupCode:
+    req.body.pickupCode || null,
+
+  updatedAt: new Date(),
+})
       .where(
         eq(
           ordersTable.orderId,
