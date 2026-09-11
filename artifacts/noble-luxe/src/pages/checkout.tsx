@@ -325,25 +325,42 @@ export default function Checkout({
                       data-testid="input-customer-email"
                     />
                   </label>
-                  <label className="sm:col-span-2">
-                    <span className="field-label">
-                      Delivery address
-                    </span>
-                    <textarea
-                      required
-                      value={form.address}
-                      onChange={(event) =>
-                        setField(
-                          'address',
-                          event.target.value,
-                        )
-                      }
-                      className="field min-h-28 resize-y"
-                      placeholder="Street, area, city"
-                      data-testid="input-customer-address"
-                    />
-                  </label>
-                </div>
+               {form.fulfilmentMethod === 'Delivery' ? (
+  <label className="sm:col-span-2">
+    <span className="field-label">
+      Delivery address
+    </span>
+
+    <textarea
+      required
+      value={form.address}
+      onChange={(event) =>
+        setField(
+          'address',
+          event.target.value,
+        )
+      }
+      className="field min-h-28 resize-y"
+      placeholder="Street, area, city"
+      data-testid="input-customer-address"
+    />
+  </label>
+) : (
+  <div className="sm:col-span-2 border border-primary/30 bg-primary/5 p-5">
+    <p className="font-display text-xl">
+      5 Alhaji Adegoke str baruwa ipaja lagos state.
+    </p>
+
+    <p className="mt-2 text-sm leading-6 text-muted-foreground">
+      Your order will be available for pickup at our
+      designated pickup location.
+    </p>
+
+    <p className="mt-3 text-[10px] font-bold uppercase tracking-[0.18em] text-primary">
+      Pickup details will be provided after payment verification.
+    </p>
+  </div>
+)}
               </section>
               {/* STEP 02 */}
               <section>
