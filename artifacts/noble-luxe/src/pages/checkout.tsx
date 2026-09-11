@@ -65,10 +65,13 @@ export default function Checkout({
     [cart],
   );
   const detailsReady =
-    form.customerName.trim().length >= 2 &&
-    form.phone.trim().length >= 7 &&
-    form.email.includes('@') &&
-    form.address.trim().length >= 8;
+  form.customerName.trim().length >= 2 &&
+  form.phone.trim().length >= 7 &&
+  form.email.includes('@') &&
+  (
+    form.fulfilmentMethod === 'Pickup' ||
+    form.address.trim().length >= 8
+  );
   useEffect(() => {
     if (!cart.length) {
       setLocation('/');
