@@ -28,6 +28,7 @@ type FormState = {
   phone: string;
   email: string;
   address: string;
+  fulfilmentMethod: 'Delivery' | 'Pickup';
   paymentMethod: 'OPay' | 'PalmPay';
 };
 const initialForm: FormState = {
@@ -35,6 +36,7 @@ const initialForm: FormState = {
   phone: '',
   email: '',
   address: '',
+  fulfilmentMethod: 'Delivery',
   paymentMethod: 'OPay',
 };
 export default function Checkout({
@@ -221,6 +223,52 @@ export default function Checkout({
                     Where should we send it?
                   </h2>
                 </div>
+<div className="mb-6">
+  <span className="field-label">
+    Fulfilment method
+  </span>
+
+  <div className="grid gap-3 sm:grid-cols-2">
+    {(['Delivery', 'Pickup'] as const).map((method) => (
+      <button
+        type="button"
+        key={method}
+        onClick={() =>
+          setField('fulfilmentMethod', method)
+        }
+        className={`border p-5 text-left transition ${
+          form.fulfilmentMethod === method
+            ? 'border-primary bg-primary/10'
+            : 'border-border hover:border-primary/60'
+        }`}
+      >
+        <div className="flex items-center justify-between">
+          <span className="font-display text-xl">
+            {method === 'Delivery' ? '🚚 Delivery' : '📍 Pickup'}
+          </span>
+
+          <span
+            className={`flex h-5 w-5 items-center justify-center rounded-full border ${
+              form.fulfilmentMethod === method
+                ? 'border-primary bg-primary text-primary-foreground'
+                : 'border-muted-foreground'
+            }`}
+          >
+            {form.fulfilmentMethod === method && (
+              <Check className="h-3 w-3" />
+            )}
+          </span>
+        </div>
+
+        <p className="mt-3 text-xs text-muted-foreground">
+          {method === 'Delivery'
+            ? 'Have your order delivered to your address.'
+            : 'Collect your order from our pickup location.'}
+        </p>
+      </button>
+    ))}
+  </div>
+</div>
                 <div className="grid gap-5 sm:grid-cols-2">
                   <label className="sm:col-span-2">
                     <span className="field-label">
