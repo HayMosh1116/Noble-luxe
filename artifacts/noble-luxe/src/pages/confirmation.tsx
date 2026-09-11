@@ -12,6 +12,8 @@ type StoredConfirmation = {
   orderId: string;
   receivedAt: string;
   total: number;
+  fulfilmentMethod?: "Delivery" | "Pickup";
+  pickupLocation?: string;
   message?: string;
 };
 
@@ -113,6 +115,22 @@ export default function Confirmation() {
                 </button>
               </span>
             </div>
+
+            {order?.fulfilmentMethod === "Pickup" && (
+              <div className="py-2">
+                <div className="flex items-center justify-between">
+                  <span className="font-mono-brand text-[9px] uppercase tracking-[0.16em] text-muted-foreground">
+                    Fulfilment
+                  </span>
+                  <span className="font-mono-brand text-xs text-primary">
+                    Pickup
+                  </span>
+                </div>
+                <p className="mt-2 text-right text-xs leading-5 text-foreground">
+                  {order.pickupLocation}
+                </p>
+              </div>
+            )}
 
             <div className="flex items-center justify-between py-2">
               <span className="font-mono-brand text-[9px] uppercase tracking-[0.16em] text-muted-foreground">

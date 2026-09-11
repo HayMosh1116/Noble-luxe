@@ -19,8 +19,8 @@ import type { CartItem } from '@/lib/catalog';
 import { formatCurrency, productImage } from '@/lib/catalog';
 type CheckoutProps = {
   cart: CartItem[];
-  onUpdate: (id: string, size: string, color: string, delta: number) => void;
-  onRemove: (id: string, size: string, color: string) => void;
+  onUpdate: (id: string, size: string, delta: number) => void;
+  onRemove: (id: string, size: string) => void;
   onClear: () => void;
 };
 type FormState = {
@@ -31,6 +31,8 @@ type FormState = {
   fulfilmentMethod: 'Delivery' | 'Pickup';
   paymentMethod: 'OPay' | 'PalmPay';
 };
+const PICKUP_LOCATION =
+  '5 Alhaji Adegoke str, Baruwa, Ipaja, Lagos State';
 const initialForm: FormState = {
   customerName: '',
   phone: '',
@@ -130,23 +132,31 @@ export default function Checkout({
     ) {
       return;
     }
-    const payload: OrderInput = {
-      ...form,
-      address: form.address.trim(),
-      customerName: form.customerName.trim(),
-      email: form.email.trim(),
-      phone: form.phone.trim(),
-      items: cart.map((item) => ({
-        productId: item.id,
-        productName: item.name,
-        size: item.selectedSize,
-        color: item.selectedColor,
-        quantity: item.quantity,
-        price: item.price,
-      })),
-      total,
-      paymentScreenshot: screenshot,
-    };
+     const payload: OrderInput = {
+       customerName: form.customerName.trim(),
+       phone: form.phone.trim(),
+       email: form.email.trim(),
+       items: cart.map((item) => ({
+         productId: item.id,
+         productName: item.name,
+         size: item.selectedSize,
+         color: item.selectedColor,
+         quantity: item.quantity,
+         price: item.price,
+       })),
+       total,
+       paymentMethod: form.paymentMethod,
+       paymentScreenshot: screenshot,
+       ...(form.fulfilmentMethod === 'Pickup'
+         ? {
+             fulfilmentMethod: 'Pickup' as const,
+             pickupLocation: PICKUP_LOCATION,
+           }
+         : {
+             fulfilmentMethod: 'Delivery' as const,
+             address: form.address.trim(),
+           }),
+     };
     createOrder.mutate(
       { data: payload },
       {
@@ -350,17 +360,19 @@ export default function Checkout({
   </label>
 ) : (
   <div className="sm:col-span-2 border border-primary/30 bg-primary/5 p-5">
-    <p className="font-display text-xl">
-      Pickup Location...
+     <p className="font-display text-xl">
+       Pickup location
     </p>
 
     <p className="mt-2 text-sm leading-6 text-muted-foreground">
-      Your order will be available for pickup at our
-      designated pickup location.
+       Your order will be available for pickup at:
     </p>
+     <p className="mt-3 text-sm font-medium text-foreground">
+       {PICKUP_LOCATION}
+     </p>
 
     <p className="mt-3 text-[10px] font-bold uppercase tracking-[0.18em] text-primary">
-      Pickup details will be provided after payment verification.
+       Your pickup location will also appear on the confirmation screen after payment submission.
     </p>
   </div>
 )}

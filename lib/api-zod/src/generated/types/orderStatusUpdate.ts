@@ -10,4 +10,5 @@ import type { OrderStatusUpdateStatus } from './orderStatusUpdateStatus';
 export interface OrderStatusUpdate {
   status: OrderStatusUpdateStatus;
   statusMessage?: string | null;
+  pickupCode?: string | null;
 }

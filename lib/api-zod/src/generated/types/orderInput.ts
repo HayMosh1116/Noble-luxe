@@ -5,23 +5,7 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
-import type { OrderInputPaymentMethod } from './orderInputPaymentMethod';
-import type { OrderItemInput } from './orderItemInput';
+import type { DeliveryOrderInput } from './deliveryOrderInput';
+import type { PickupOrderInput } from './pickupOrderInput';
 
-export interface OrderInput {
-  /** @minLength 2 */
-  customerName: string;
-  /** @minLength 7 */
-  phone: string;
-  /** @minLength 5 */
-  email: string;
-  /** @minLength 8 */
-  address: string;
-  /** @minItems 1 */
-  items: OrderItemInput[];
-  /** @minimum 0 */
-  total: number;
-  paymentMethod: OrderInputPaymentMethod;
-  /** Uploaded payment screenshot as a data URL for server-side processing */
-  paymentScreenshot: string;
-}
+export type OrderInput = DeliveryOrderInput | PickupOrderInput;

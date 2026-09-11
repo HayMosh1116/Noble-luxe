@@ -5,10 +5,13 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { OrderConfirmationFulfilmentMethod } from './orderConfirmationFulfilmentMethod';
 
 export interface OrderConfirmation {
   orderId: string;
   receivedAt: Date;
   total: number;
+  fulfilmentMethod?: OrderConfirmationFulfilmentMethod;
+  pickupLocation?: string;
   message?: string;
 }

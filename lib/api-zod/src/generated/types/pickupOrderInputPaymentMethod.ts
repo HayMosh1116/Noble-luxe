@@ -6,10 +6,10 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export type OrderInputPaymentMethod = typeof OrderInputPaymentMethod[keyof typeof OrderInputPaymentMethod];
+export type PickupOrderInputPaymentMethod = typeof PickupOrderInputPaymentMethod[keyof typeof PickupOrderInputPaymentMethod];
 
 
-export const OrderInputPaymentMethod = {
+export const PickupOrderInputPaymentMethod = {
   OPay: 'OPay',
   PalmPay: 'PalmPay',
 } as const;

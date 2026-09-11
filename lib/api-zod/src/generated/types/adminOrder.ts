@@ -7,10 +7,10 @@
  */
 import type { CustomerOrder } from './customerOrder';
 
-export type AdminOrder = CustomerOrder & {
+export type AdminOrder = CustomerOrder & ({
   customerName: string;
   phone: string;
   email: string;
-  address: string;
+  address: string | null;
   paymentScreenshot: string;
-};
+});

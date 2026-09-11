@@ -5,6 +5,7 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { CustomerOrderFulfilmentMethod } from './customerOrderFulfilmentMethod';
 import type { CustomerOrderPaymentMethod } from './customerOrderPaymentMethod';
 import type { OrderItemInput } from './orderItemInput';
 
@@ -14,6 +15,9 @@ export interface CustomerOrder {
   paymentMethod: CustomerOrderPaymentMethod;
   status: string;
   statusMessage?: string | null;
+  fulfilmentMethod: CustomerOrderFulfilmentMethod;
+  address: string | null;
+  pickupCode: string | null;
   items: OrderItemInput[];
   createdAt: Date;
   updatedAt: Date;

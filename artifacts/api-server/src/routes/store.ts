@@ -1,4 +1,8 @@
-import { Router, type IRouter } from "express";
+import {
+  Router,
+  type IRouter,
+  type Response,
+} from "express";
 import {
   CreateOrderBody,
   ListProductsQueryParams,
@@ -12,6 +16,8 @@ import { clerkClient } from "@clerk/express";
 import { eq, desc } from "drizzle-orm";
 const router: IRouter = Router();
 const connectors = new ReplitConnectors();
+const PICKUP_LOCATION =
+  "5 Alhaji Adegoke str, Baruwa, Ipaja, Lagos State";
 
 function getRequestAuth(req: Parameters<typeof getAuth>[0]) {
   if (!process.env.CLERK_SECRET_KEY) {
@@ -110,11 +116,11 @@ async function notifyGmail(
     `Phone: ${data.phone}`,
     `Email: ${data.email}`,
    `Fulfilment: ${data.fulfilmentMethod}`,
-`Address: ${
-  data.fulfilmentMethod === "Pickup"
-    ? "Pickup — customer will collect"
-    : data.address
-}`,
+    `Address: ${
+      data.fulfilmentMethod === "Pickup"
+        ? `Pickup — ${data.pickupLocation}`
+        : data.address
+    }`,
     "",
     "Items:",
 ...data.items.map(
@@ -335,9 +341,10 @@ router.get("/products/featured", (_req, res) => {
  * CUSTOMER ORDERS
  * =========================================================
  */
-router.get(
-  "/orders/me",
-  async (req, res): Promise<void> => {
+async function listCustomerOrders(
+  req: Parameters<typeof getAuth>[0],
+  res: Response,
+): Promise<void> {
     const { userId } = getRequestAuth(req);
     if (!userId) {
       res.status(401).json({
@@ -359,6 +366,7 @@ router.get(
         createdAt: ordersTable.createdAt,
         updatedAt: ordersTable.updatedAt,
         fulfilmentMethod: ordersTable.fulfilmentMethod,
+        address: ordersTable.address,
         pickupCode: ordersTable.pickupCode,
       })
       .from(ordersTable)
@@ -369,8 +377,10 @@ router.get(
         desc(ordersTable.createdAt),
       );
     res.json(orders);
-  },
-);
+}
+
+router.get("/orders", listCustomerOrders);
+router.get("/orders/me", listCustomerOrders);
 /*
  * =========================================================
  * ADMIN ORDERS
@@ -501,6 +511,15 @@ router.post(
       return;
     }
     const data = parsed.data;
+    if (
+      data.fulfilmentMethod === "Pickup" &&
+      data.pickupLocation !== PICKUP_LOCATION
+    ) {
+      res.status(400).json({
+        error: "Please use the configured Noble Luxe pickup location.",
+      });
+      return;
+    }
     const orderId =
       `NL-${Date.now()
         .toString(36)
@@ -515,7 +534,10 @@ router.post(
           data.customerName,
         phone: data.phone,
         email: data.email,
-        address: data.address,
+        address:
+          data.fulfilmentMethod === "Pickup"
+            ? data.pickupLocation
+            : data.address,
         fulfilmentMethod: data.fulfilmentMethod,
         items: data.items,
         total: data.total.toFixed(2),
@@ -561,8 +583,15 @@ router.post(
           orderId,
           receivedAt: new Date(),
           total: data.total,
+          fulfilmentMethod: data.fulfilmentMethod,
+          pickupLocation:
+            data.fulfilmentMethod === "Pickup"
+              ? data.pickupLocation
+              : undefined,
           message:
-            "Your order has been received and is awaiting payment verification.",
+            data.fulfilmentMethod === "Pickup"
+              ? "Your pickup order has been received and is awaiting payment verification."
+              : "Your delivery order has been received and is awaiting payment verification.",
         }),
       );
   },

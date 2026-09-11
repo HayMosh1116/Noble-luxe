@@ -19,6 +19,7 @@ export interface Product {
   sizes: string[];
   colors: string[];
   featured: boolean;
+  inStock?: boolean;
 }
 
 export interface OrderItemInput {
@@ -32,15 +33,22 @@ export interface OrderItemInput {
   price: number;
 }
 
-export type OrderInputPaymentMethod = typeof OrderInputPaymentMethod[keyof typeof OrderInputPaymentMethod];
+export type DeliveryOrderInputFulfilmentMethod = typeof DeliveryOrderInputFulfilmentMethod[keyof typeof DeliveryOrderInputFulfilmentMethod];
 
 
-export const OrderInputPaymentMethod = {
+export const DeliveryOrderInputFulfilmentMethod = {
+  Delivery: 'Delivery',
+} as const;
+
+export type DeliveryOrderInputPaymentMethod = typeof DeliveryOrderInputPaymentMethod[keyof typeof DeliveryOrderInputPaymentMethod];
+
+
+export const DeliveryOrderInputPaymentMethod = {
   OPay: 'OPay',
   PalmPay: 'PalmPay',
 } as const;
 
-export interface OrderInput {
+export interface DeliveryOrderInput {
   /** @minLength 2 */
   customerName: string;
   /** @minLength 7 */
@@ -49,19 +57,72 @@ export interface OrderInput {
   email: string;
   /** @minLength 8 */
   address: string;
+  fulfilmentMethod: DeliveryOrderInputFulfilmentMethod;
   /** @minItems 1 */
   items: OrderItemInput[];
   /** @minimum 0 */
   total: number;
-  paymentMethod: OrderInputPaymentMethod;
+  paymentMethod: DeliveryOrderInputPaymentMethod;
   /** Uploaded payment screenshot as a data URL for server-side processing */
   paymentScreenshot: string;
 }
+
+export type PickupOrderInputPickupLocation = typeof PickupOrderInputPickupLocation[keyof typeof PickupOrderInputPickupLocation];
+
+
+export const PickupOrderInputPickupLocation = {
+  '5_Alhaji_Adegoke_str,_Baruwa,_Ipaja,_Lagos_State': '5 Alhaji Adegoke str, Baruwa, Ipaja, Lagos State',
+} as const;
+
+export type PickupOrderInputFulfilmentMethod = typeof PickupOrderInputFulfilmentMethod[keyof typeof PickupOrderInputFulfilmentMethod];
+
+
+export const PickupOrderInputFulfilmentMethod = {
+  Pickup: 'Pickup',
+} as const;
+
+export type PickupOrderInputPaymentMethod = typeof PickupOrderInputPaymentMethod[keyof typeof PickupOrderInputPaymentMethod];
+
+
+export const PickupOrderInputPaymentMethod = {
+  OPay: 'OPay',
+  PalmPay: 'PalmPay',
+} as const;
+
+export interface PickupOrderInput {
+  /** @minLength 2 */
+  customerName: string;
+  /** @minLength 7 */
+  phone: string;
+  /** @minLength 5 */
+  email: string;
+  pickupLocation: PickupOrderInputPickupLocation;
+  fulfilmentMethod: PickupOrderInputFulfilmentMethod;
+  /** @minItems 1 */
+  items: OrderItemInput[];
+  /** @minimum 0 */
+  total: number;
+  paymentMethod: PickupOrderInputPaymentMethod;
+  /** Uploaded payment screenshot as a data URL for server-side processing */
+  paymentScreenshot: string;
+}
+
+export type OrderInput = DeliveryOrderInput | PickupOrderInput;
+
+export type OrderConfirmationFulfilmentMethod = typeof OrderConfirmationFulfilmentMethod[keyof typeof OrderConfirmationFulfilmentMethod];
+
+
+export const OrderConfirmationFulfilmentMethod = {
+  Delivery: 'Delivery',
+  Pickup: 'Pickup',
+} as const;
 
 export interface OrderConfirmation {
   orderId: string;
   receivedAt: string;
   total: number;
+  fulfilmentMethod?: OrderConfirmationFulfilmentMethod;
+  pickupLocation?: string;
   message?: string;
 }
 
@@ -73,24 +134,35 @@ export const CustomerOrderPaymentMethod = {
   PalmPay: 'PalmPay',
 } as const;
 
+export type CustomerOrderFulfilmentMethod = typeof CustomerOrderFulfilmentMethod[keyof typeof CustomerOrderFulfilmentMethod];
+
+
+export const CustomerOrderFulfilmentMethod = {
+  Delivery: 'Delivery',
+  Pickup: 'Pickup',
+} as const;
+
 export interface CustomerOrder {
   orderId: string;
   total: string;
   paymentMethod: CustomerOrderPaymentMethod;
   status: string;
   statusMessage?: string | null;
+  fulfilmentMethod: CustomerOrderFulfilmentMethod;
+  address: string | null;
+  pickupCode: string | null;
   items: OrderItemInput[];
   createdAt: string;
   updatedAt: string;
 }
 
-export type AdminOrder = CustomerOrder & {
+export type AdminOrder = CustomerOrder & ({
   customerName: string;
   phone: string;
   email: string;
-  address: string;
+  address: string | null;
   paymentScreenshot: string;
-};
+});
 
 export type OrderStatusUpdateStatus = typeof OrderStatusUpdateStatus[keyof typeof OrderStatusUpdateStatus];
 
@@ -107,6 +179,7 @@ export const OrderStatusUpdateStatus = {
 export interface OrderStatusUpdate {
   status: OrderStatusUpdateStatus;
   statusMessage?: string | null;
+  pickupCode?: string | null;
 }
 
 export interface OrderStatusUpdateResponse {
@@ -123,3 +196,4 @@ export type ListProductsParams = {
 category?: string;
 search?: string;
 };
+

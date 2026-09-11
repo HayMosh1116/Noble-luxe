@@ -34,7 +34,8 @@ export const ListProductsResponseItem = zod.object({
   "description": zod.string(),
   "sizes": zod.array(zod.string()),
   "colors": zod.array(zod.string()),
-  "featured": zod.boolean()
+  "featured": zod.boolean(),
+  "inStock": zod.boolean().optional()
 })
 export const ListProductsResponse = zod.array(ListProductsResponseItem)
 
@@ -51,56 +52,116 @@ export const ListFeaturedProductsResponseItem = zod.object({
   "description": zod.string(),
   "sizes": zod.array(zod.string()),
   "colors": zod.array(zod.string()),
-  "featured": zod.boolean()
+  "featured": zod.boolean(),
+  "inStock": zod.boolean().optional()
 })
 export const ListFeaturedProductsResponse = zod.array(ListFeaturedProductsResponseItem)
 
 
 /**
+ * @summary List the signed-in customer's orders
+ */
+
+export const listOrdersResponseItemsItemPriceMin = 0;
+
+
+
+export const ListOrdersResponseItem = zod.object({
+  "orderId": zod.string(),
+  "total": zod.string(),
+  "paymentMethod": zod.enum(['OPay', 'PalmPay']),
+  "status": zod.string(),
+  "statusMessage": zod.string().nullish(),
+  "fulfilmentMethod": zod.enum(['Delivery', 'Pickup']),
+  "address": zod.string().nullable(),
+  "pickupCode": zod.string().nullable(),
+  "items": zod.array(zod.object({
+  "productId": zod.string(),
+  "productName": zod.string(),
+  "size": zod.string(),
+  "color": zod.string().optional(),
+  "quantity": zod.number().min(1),
+  "price": zod.number().min(listOrdersResponseItemsItemPriceMin)
+})),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})
+export const ListOrdersResponse = zod.array(ListOrdersResponseItem)
+
+
+/**
  * @summary Submit a manual-transfer order
  */
-export const createOrderBodyCustomerNameMin = 2;
+export const createOrderBodyOneCustomerNameMin = 2;
 
-export const createOrderBodyPhoneMin = 7;
+export const createOrderBodyOnePhoneMin = 7;
 
-export const createOrderBodyEmailMin = 5;
+export const createOrderBodyOneEmailMin = 5;
 
-export const createOrderBodyAddressMin = 8;
-
-
-export const createOrderBodyItemsItemPriceMin = 0;
+export const createOrderBodyOneAddressMin = 8;
 
 
-export const createOrderBodyTotalMin = 0;
+export const createOrderBodyOneItemsItemPriceMin = 0;
+
+
+export const createOrderBodyOneTotalMin = 0;
+
+export const createOrderBodyTwoCustomerNameMin = 2;
+
+export const createOrderBodyTwoPhoneMin = 7;
+
+export const createOrderBodyTwoEmailMin = 5;
+
+
+export const createOrderBodyTwoItemsItemPriceMin = 0;
+
+
+export const createOrderBodyTwoTotalMin = 0;
 
 
 
-export const CreateOrderBody = zod.object({
-  customerName: zod.string().min(createOrderBodyCustomerNameMin),
-  phone: zod.string().min(createOrderBodyPhoneMin),
-  email: zod.string().min(createOrderBodyEmailMin),
-  address: zod.string().min(createOrderBodyAddressMin),
-
-  fulfilmentMethod: zod.enum(['Delivery', 'Pickup']),
-  pickupCode: zod.string().nullish(),
-  items: zod.array(zod.object({
-    productId: zod.string(),
-    productName: zod.string(),
-    size: zod.string(),
-    color: zod.string().optional(),
-    quantity: zod.number().min(1),
-    price: zod.number().min(0),
-  })).min(1),
-
-  total: zod.number().min(0),
-  paymentMethod: zod.enum(['OPay', 'PalmPay']),
-  paymentScreenshot: zod.string(),
-});
+export const CreateOrderBody = zod.union([zod.object({
+  "customerName": zod.string().min(createOrderBodyOneCustomerNameMin),
+  "phone": zod.string().min(createOrderBodyOnePhoneMin),
+  "email": zod.string().min(createOrderBodyOneEmailMin),
+  "address": zod.string().min(createOrderBodyOneAddressMin),
+  "fulfilmentMethod": zod.enum(['Delivery']),
+  "items": zod.array(zod.object({
+  "productId": zod.string(),
+  "productName": zod.string(),
+  "size": zod.string(),
+  "color": zod.string().optional(),
+  "quantity": zod.number().min(1),
+  "price": zod.number().min(createOrderBodyOneItemsItemPriceMin)
+})).min(1),
+  "total": zod.number().min(createOrderBodyOneTotalMin),
+  "paymentMethod": zod.enum(['OPay', 'PalmPay']),
+  "paymentScreenshot": zod.string().describe('Uploaded payment screenshot as a data URL for server-side processing')
+}),zod.object({
+  "customerName": zod.string().min(createOrderBodyTwoCustomerNameMin),
+  "phone": zod.string().min(createOrderBodyTwoPhoneMin),
+  "email": zod.string().min(createOrderBodyTwoEmailMin),
+  "pickupLocation": zod.enum(['5 Alhaji Adegoke str, Baruwa, Ipaja, Lagos State']),
+  "fulfilmentMethod": zod.enum(['Pickup']),
+  "items": zod.array(zod.object({
+  "productId": zod.string(),
+  "productName": zod.string(),
+  "size": zod.string(),
+  "color": zod.string().optional(),
+  "quantity": zod.number().min(1),
+  "price": zod.number().min(createOrderBodyTwoItemsItemPriceMin)
+})).min(1),
+  "total": zod.number().min(createOrderBodyTwoTotalMin),
+  "paymentMethod": zod.enum(['OPay', 'PalmPay']),
+  "paymentScreenshot": zod.string().describe('Uploaded payment screenshot as a data URL for server-side processing')
+})])
 
 export const CreateOrderResponse = zod.object({
   "orderId": zod.string(),
   "receivedAt": zod.coerce.date(),
   "total": zod.number(),
+  "fulfilmentMethod": zod.enum(['Delivery', 'Pickup']).optional(),
+  "pickupLocation": zod.string().optional(),
   "message": zod.string().optional()
 })
 
@@ -119,6 +180,9 @@ export const ListMyOrdersResponseItem = zod.object({
   "paymentMethod": zod.enum(['OPay', 'PalmPay']),
   "status": zod.string(),
   "statusMessage": zod.string().nullish(),
+  "fulfilmentMethod": zod.enum(['Delivery', 'Pickup']),
+  "address": zod.string().nullable(),
+  "pickupCode": zod.string().nullable(),
   "items": zod.array(zod.object({
   "productId": zod.string(),
   "productName": zod.string(),
@@ -147,6 +211,9 @@ export const ListAdminOrdersResponseItem = zod.object({
   "paymentMethod": zod.enum(['OPay', 'PalmPay']),
   "status": zod.string(),
   "statusMessage": zod.string().nullish(),
+  "fulfilmentMethod": zod.enum(['Delivery', 'Pickup']),
+  "address": zod.string().nullable(),
+  "pickupCode": zod.string().nullable(),
   "items": zod.array(zod.object({
   "productId": zod.string(),
   "productName": zod.string(),
@@ -161,7 +228,7 @@ export const ListAdminOrdersResponseItem = zod.object({
   "customerName": zod.string(),
   "phone": zod.string(),
   "email": zod.string(),
-  "address": zod.string(),
+  "address": zod.string().nullable(),
   "paymentScreenshot": zod.string()
 }))
 export const ListAdminOrdersResponse = zod.array(ListAdminOrdersResponseItem)
@@ -176,7 +243,8 @@ export const UpdateOrderStatusParams = zod.object({
 
 export const UpdateOrderStatusBody = zod.object({
   "status": zod.enum(['pending', 'confirmed', 'processing', 'out_for_delivery', 'delivered', 'cancelled']),
-  "statusMessage": zod.string().nullish()
+  "statusMessage": zod.string().nullish(),
+  "pickupCode": zod.string().nullish()
 })
 
 export const UpdateOrderStatusResponse = zod.object({
@@ -184,3 +252,5 @@ export const UpdateOrderStatusResponse = zod.object({
   "status": zod.string(),
   "statusMessage": zod.string().nullish()
 })
+
+

@@ -68,6 +68,25 @@ paths:
                 items:
                   $ref: "#/components/schemas/Product"
   /orders:
+    get:
+      operationId: listOrders
+      tags: [orders]
+      summary: List the signed-in customer's orders
+      responses:
+        "200":
+          description: Customer order history
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CustomerOrder"
+        "401":
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
     post:
       operationId: createOrder
       tags: [orders]
@@ -198,6 +217,7 @@ components:
           type: array
           items: { type: string }
         featured: { type: boolean }
+        inStock: { type: boolean }
     OrderItemInput:
       type: object
       required: [productId, productName, size, quantity, price]
@@ -209,13 +229,47 @@ components:
         quantity: { type: number, minimum: 1 }
         price: { type: number, minimum: 0 }
     OrderInput:
+      oneOf:
+        - $ref: "#/components/schemas/DeliveryOrderInput"
+        - $ref: "#/components/schemas/PickupOrderInput"
+    DeliveryOrderInput:
       type: object
-      required: [customerName, phone, email, address, items, total, paymentMethod, paymentScreenshot]
+      additionalProperties: false
+      required: [customerName, phone, email, address, fulfilmentMethod, items, total, paymentMethod, paymentScreenshot]
       properties:
         customerName: { type: string, minLength: 2 }
         phone: { type: string, minLength: 7 }
         email: { type: string, minLength: 5 }
         address: { type: string, minLength: 8 }
+        fulfilmentMethod:
+          type: string
+          enum: [Delivery]
+        items:
+          type: array
+          minItems: 1
+          items:
+            $ref: "#/components/schemas/OrderItemInput"
+        total: { type: number, minimum: 0 }
+        paymentMethod:
+          type: string
+          enum: [OPay, PalmPay]
+        paymentScreenshot:
+          type: string
+          description: Uploaded payment screenshot as a data URL for server-side processing
+    PickupOrderInput:
+      type: object
+      additionalProperties: false
+      required: [customerName, phone, email, pickupLocation, fulfilmentMethod, items, total, paymentMethod, paymentScreenshot]
+      properties:
+        customerName: { type: string, minLength: 2 }
+        phone: { type: string, minLength: 7 }
+        email: { type: string, minLength: 5 }
+        pickupLocation:
+          type: string
+          enum: ["5 Alhaji Adegoke str, Baruwa, Ipaja, Lagos State"]
+        fulfilmentMethod:
+          type: string
+          enum: [Pickup]
         items:
           type: array
           minItems: 1
@@ -235,16 +289,21 @@ components:
         orderId: { type: string }
         receivedAt: { type: string, format: date-time }
         total: { type: number }
+        fulfilmentMethod: { type: string, enum: [Delivery, Pickup] }
+        pickupLocation: { type: string }
         message: { type: string }
     CustomerOrder:
       type: object
-      required: [orderId, total, paymentMethod, status, items, createdAt, updatedAt]
+      required: [orderId, total, paymentMethod, status, items, createdAt, updatedAt, fulfilmentMethod, address, pickupCode]
       properties:
         orderId: { type: string }
         total: { type: string }
         paymentMethod: { type: string, enum: [OPay, PalmPay] }
         status: { type: string }
         statusMessage: { type: string, nullable: true }
+        fulfilmentMethod: { type: string, enum: [Delivery, Pickup] }
+        address: { type: string, nullable: true }
+        pickupCode: { type: string, nullable: true }
         items:
           type: array
           items:
@@ -260,7 +319,7 @@ components:
             customerName: { type: string }
             phone: { type: string }
             email: { type: string }
-            address: { type: string }
+            address: { type: string, nullable: true }
             paymentScreenshot: { type: string }
     OrderStatusUpdate:
       type: object
@@ -270,6 +329,7 @@ components:
           type: string
           enum: [pending, confirmed, processing, out_for_delivery, delivered, cancelled]
         statusMessage: { type: string, nullable: true }
+        pickupCode: { type: string, nullable: true }
     OrderStatusUpdateResponse:
       type: object
       required: [orderId, status]

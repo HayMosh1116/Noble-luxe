@@ -15,6 +15,9 @@ type Order = {
   statusMessage?: string | null;
   createdAt: string;
   updatedAt?: string;
+  fulfilmentMethod: "Delivery" | "Pickup";
+  address?: string | null;
+  pickupCode?: string | null;
   items: {
     productId: string;
     productName: string;
@@ -57,7 +60,7 @@ function Orders() {
 
         const token = await getToken();
         const response = await fetch(
-          "/api/orders/me",
+          "/api/orders",
           {
             credentials: "include",
             headers: token
@@ -179,6 +182,22 @@ function Orders() {
                 </p>
 
                 <div className="mt-5 border-t border-border pt-5">
+                  <div className="mb-4 flex flex-wrap items-start justify-between gap-3 text-sm">
+                    <div>
+                      <p className="font-mono-brand text-[9px] uppercase tracking-[.18em] text-primary">
+                        {order.fulfilmentMethod}
+                      </p>
+                      <p className="mt-1 text-muted-foreground">
+                        {order.address ||
+                          "Pickup location will be confirmed by Noble Luxe."}
+                      </p>
+                    </div>
+                    {order.pickupCode && (
+                      <p className="font-mono-brand text-xs text-primary">
+                        Pickup code: {order.pickupCode}
+                      </p>
+                    )}
+                  </div>
                   <p className="font-mono-brand text-[9px] uppercase tracking-[.18em] text-primary">
                     Items
                   </p>

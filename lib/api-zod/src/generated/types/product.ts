@@ -16,4 +16,5 @@ export interface Product {
   sizes: string[];
   colors: string[];
   featured: boolean;
+  inStock?: boolean;
 }

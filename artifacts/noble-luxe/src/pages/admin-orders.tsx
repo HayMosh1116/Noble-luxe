@@ -8,6 +8,8 @@ type Order = {
   email: string;
   phone: string;
   address?: string;
+  fulfilmentMethod: "Delivery" | "Pickup";
+  pickupCode?: string | null;
 
   items: {
     productId: string;
@@ -53,6 +55,7 @@ export default function AdminOrders() {
   const [updating, setUpdating] = useState("");
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+  const [pickupCodes, setPickupCodes] = useState<Record<string, string>>({});
 
   const load = async () => {
     if (!isLoaded || !user) {
@@ -114,15 +117,19 @@ export default function AdminOrders() {
   const update = async (
     orderId: string,
     status: string,
+    pickupCode?: string,
   ) => {
     try {
       setUpdating(orderId);
       setMessage("");
       setError("");
 
-      const statusMessage =
+       const code = pickupCode?.trim();
+       const statusMessage =
         status === "confirmed"
-          ? "Payment confirmed. Your order is now being prepared."
+           ? code
+             ? `Payment confirmed. Pickup code: ${code}. Your order is ready for collection when Noble Luxe confirms.`
+             : "Payment confirmed. Your order is now being prepared."
           : status === "processing"
             ? "Your order is now being prepared by our team."
             : status === "out_for_delivery"
@@ -152,6 +159,7 @@ export default function AdminOrders() {
           body: JSON.stringify({
             status,
             statusMessage,
+            ...(code ? { pickupCode: code } : {}),
           }),
         },
       );
@@ -266,7 +274,11 @@ export default function AdminOrders() {
                         {order.email} · {order.phone}
                       </p>
 
-                      {order.address && (
+                       <p className="mt-3 font-mono-brand text-[9px] uppercase tracking-[.18em] text-primary">
+                         {order.fulfilmentMethod}
+                       </p>
+
+                       {order.address && (
                         <p className="mt-2 max-w-xl text-sm text-muted-foreground">
                           {order.address}
                         </p>
@@ -335,17 +347,38 @@ export default function AdminOrders() {
                       </a>
                     </div>
                   )}
-                  <div className="mt-6 flex flex-wrap items-center gap-3">
+                   <div className="mt-6 flex flex-wrap items-center gap-3">
+                     {order.fulfilmentMethod === "Pickup" && (
+                       <input
+                         value={
+                           pickupCodes[order.orderId] ??
+                           order.pickupCode ??
+                           ""
+                         }
+                         onChange={(event) =>
+                           setPickupCodes((current) => ({
+                             ...current,
+                             [order.orderId]: event.target.value,
+                           }))
+                         }
+                         placeholder="Enter pickup code"
+                         className="border border-border bg-background px-4 py-3 text-sm text-foreground"
+                         aria-label={`Pickup code for ${order.orderId}`}
+                       />
+                     )}
                     <select
                       value={order.status}
                       disabled={
                         updating === order.orderId
                       }
                       onChange={(event) =>
-                        void update(
-                          order.orderId,
-                          event.target.value,
-                        )
+                           void update(
+                             order.orderId,
+                             event.target.value,
+                             pickupCodes[order.orderId] ??
+                               order.pickupCode ??
+                               undefined,
+                           )
                       }
                       className="border border-border bg-background px-4 py-3 font-mono-brand text-[10px] uppercase tracking-[.12em] text-foreground disabled:opacity-50"
                     >
