@@ -74,6 +74,10 @@ export default function Checkout({
     form.fulfilmentMethod === 'Pickup' ||
     form.address.trim().length >= 8
   );
+  const orderErrorMessage =
+    createOrder.error instanceof Error
+      ? createOrder.error.message
+      : "Please check your details and try again.";
   useEffect(() => {
     if (!cart.length) {
       setLocation('/');
@@ -561,8 +565,8 @@ export default function Checkout({
                   className="border border-destructive/50 bg-destructive/5 p-4 text-sm text-destructive"
                   data-testid="status-order-error"
                 >
-                  We couldn't submit this order. Please
-                  check your details and try again.
+                  We couldn't submit this order.{" "}
+                  {orderErrorMessage}
                 </div>
               )}
               {!isSignedIn && (
