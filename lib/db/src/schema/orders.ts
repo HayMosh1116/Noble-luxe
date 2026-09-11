@@ -17,7 +17,11 @@ export const ordersTable = pgTable("noble_luxe_orders", {
   customerName: text("customer_name").notNull(),
   phone: text("phone").notNull(),
   email: text("email").notNull(),
-  address: text("address").notNull(),
+  address: text("address"),
+  fulfilmentMethod: text("fulfilment_method")
+  .notNull()
+  .default("Delivery"),
+   pickupCode: text("pickup_code"),
 
   items: jsonb("items").notNull(),
 
