@@ -364,6 +364,7 @@ export default function Checkout({
     </p>
   </div>
 )}
+                </div>
               </section>
               {/* STEP 02 */}
               <section>
