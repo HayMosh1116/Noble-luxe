@@ -109,7 +109,12 @@ async function notifyGmail(
     `Customer: ${data.customerName}`,
     `Phone: ${data.phone}`,
     `Email: ${data.email}`,
-    `Address: ${data.address}`,
+   `Fulfilment: ${data.fulfilmentMethod}`,
+`Address: ${
+  data.fulfilmentMethod === "Pickup"
+    ? "Pickup — customer will collect"
+    : data.address
+}`,
     "",
     "Items:",
 ...data.items.map(
@@ -353,6 +358,8 @@ router.get(
         items: ordersTable.items,
         createdAt: ordersTable.createdAt,
         updatedAt: ordersTable.updatedAt,
+        fulfilmentMethod: ordersTable.fulfilmentMethod,
+        pickupCode: ordersTable.pickupCode,
       })
       .from(ordersTable)
       .where(
@@ -505,6 +512,7 @@ router.post(
         phone: data.phone,
         email: data.email,
         address: data.address,
+        fulfilmentMethod: data.fulfilmentMethod,
         items: data.items,
         total: data.total.toFixed(2),
         paymentMethod:
