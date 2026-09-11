@@ -351,7 +351,7 @@ export default function Checkout({
 ) : (
   <div className="sm:col-span-2 border border-primary/30 bg-primary/5 p-5">
     <p className="font-display text-xl">
-      5 Alhaji Adegoke str baruwa ipaja lagos state.
+      Pickup Location...
     </p>
 
     <p className="mt-2 text-sm leading-6 text-muted-foreground">
