@@ -76,22 +76,26 @@ export const createOrderBodyTotalMin = 0;
 
 
 export const CreateOrderBody = zod.object({
-  "customerName": zod.string().min(createOrderBodyCustomerNameMin),
-  "phone": zod.string().min(createOrderBodyPhoneMin),
-  "email": zod.string().min(createOrderBodyEmailMin),
-  "address": zod.string().min(createOrderBodyAddressMin),
-  "items": zod.array(zod.object({
-  "productId": zod.string(),
-  "productName": zod.string(),
-  "size": zod.string(),
-  "color": zod.string().optional(),
-  "quantity": zod.number().min(1),
-  "price": zod.number().min(createOrderBodyItemsItemPriceMin)
-})).min(1),
-  "total": zod.number().min(createOrderBodyTotalMin),
-  "paymentMethod": zod.enum(['OPay', 'PalmPay']),
-  "paymentScreenshot": zod.string().describe('Uploaded payment screenshot as a data URL for server-side processing')
-})
+  customerName: zod.string().min(createOrderBodyCustomerNameMin),
+  phone: zod.string().min(createOrderBodyPhoneMin),
+  email: zod.string().min(createOrderBodyEmailMin),
+  address: zod.string().min(createOrderBodyAddressMin),
+
+  fulfilmentMethod: zod.enum(['Delivery', 'Pickup']),
+
+  items: zod.array(zod.object({
+    productId: zod.string(),
+    productName: zod.string(),
+    size: zod.string(),
+    color: zod.string().optional(),
+    quantity: zod.number().min(1),
+    price: zod.number().min(0),
+  })).min(1),
+
+  total: zod.number().min(0),
+  paymentMethod: zod.enum(['OPay', 'PalmPay']),
+  paymentScreenshot: zod.string(),
+});
 
 export const CreateOrderResponse = zod.object({
   "orderId": zod.string(),
