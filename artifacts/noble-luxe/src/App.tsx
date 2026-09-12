@@ -2,7 +2,8 @@ import { type ReactNode, useEffect, useState } from 'react';
 import { ClerkProvider, SignIn, SignUp, useAuth } from '@clerk/react';
 import { publishableKeyFromHost } from '@clerk/react/internal';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { setAuthTokenGetter } from '@workspace/api-client-react';
+import { setAuthTokenGetter, setBaseUrl } from '@workspace/api-client-react';
+import { getApiBaseUrl } from '@/lib/api-base';
 import { Toaster } from '@/components/ui/toaster';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { ErrorBoundary } from '@/components/error-boundary';
@@ -199,6 +200,7 @@ function RoutedErrorBoundary({
 }
 
 export default function App() {
+  setBaseUrl(getApiBaseUrl());
   const basePath = import.meta.env.BASE_URL.replace(/\/$/, '');
   const clerkPubKey = publishableKeyFromHost(
     window.location.hostname,
