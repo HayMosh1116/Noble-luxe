@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { SignInButton, useAuth, useUser } from "@clerk/react";
 import { Link } from "wouter";
+import { apiUrl } from "@/lib/api-base";
 
 type Order = {
   orderId: string;
@@ -69,7 +70,7 @@ export default function AdminOrders() {
 
       const token = await getToken();
       const response = await fetch(
-        `/api/orders/admin`,
+        apiUrl('/api/orders/admin'),
         {
           credentials: "include",
           headers: token
@@ -142,9 +143,9 @@ export default function AdminOrders() {
 
       const token = await getToken();
       const response = await fetch(
-        `/api/orders/${encodeURIComponent(
+        apiUrl(`/api/orders/${encodeURIComponent(
           orderId,
-        )}/status`,
+        )}/status`),
         {
           method: "PATCH",
           credentials: "include",
