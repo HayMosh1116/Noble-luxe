@@ -1,6 +1,6 @@
-# [Project name]
+# Noble Luxe
 
-_Replace the heading above with the project's name, and this line with one sentence describing what this app does for users._
+Noble Luxe is a Lagos-based luxury streetwear storefront with authenticated checkout, payment screenshot review, customer order history, and admin fulfilment updates.
 
 ## Run & Operate
 
@@ -22,15 +22,22 @@ _Replace the heading above with the project's name, and this line with one sente
 
 ## Where things live
 
-_Populate as you build — short repo map plus pointers to the source-of-truth file for DB schema, API contracts, theme files, etc._
+- `artifacts/noble-luxe` — storefront pages, checkout, account, confirmation, and admin orders.
+- `artifacts/api-server` — Express API routes for products, orders, Clerk auth, and Gmail notifications.
+- `lib/api-spec/openapi.yaml` — source of truth for the API contract.
+- `lib/db/src/schema` — Drizzle/Postgres schema.
 
 ## Architecture decisions
 
-_Populate as you build — non-obvious choices a reader couldn't infer from the code (3-5 bullets)._
+- Delivery and Pickup are separate OpenAPI request branches so address validation is conditional.
+- Pickup uses the fixed Baruwa location and stores that location in the existing nullable order address field.
+- The API artifact owns `/api`; the storefront artifact owns `/`, so both can run in one published project.
+- Customer order reads are authenticated and scoped to the signed-in Clerk user; admin order reads retain the existing admin guard.
 
 ## Product
 
-_Describe the high-level user-facing capabilities of this app once they exist._
+- Customers browse the collection, choose Delivery or Pickup, upload transfer proof, and track order status.
+- Admins review orders, update status, and enter pickup confirmation codes.
 
 ## User preferences
 
@@ -38,7 +45,9 @@ _Populate as you build — explicit user instructions worth remembering across s
 
 ## Gotchas
 
-_Populate as you build — sharp edges, "always run X before Y" rules._
+- After changing `lib/api-spec/openapi.yaml`, run `pnpm --filter @workspace/api-spec run codegen`.
+- Pickup orders must send `pickupLocation` and must not require a delivery address.
+- The API service must remain routed at `/api`; changing it to `/` causes a collision with the storefront.
 
 ## Pointers
 

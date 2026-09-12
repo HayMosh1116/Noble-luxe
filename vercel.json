@@ -4,7 +4,7 @@
   "rewrites": [
     {
       "source": "/api/:path*",
-      "destination": "https://carpal-athletic-interface--ibrahimhaywhy11.replit.app/api/:path*"
+      "destination": "https://noble-luxe-api-and-checkout--donaldmilles56.replit.app/api/:path*"
     },
     {
       "source": "/(.*)",
