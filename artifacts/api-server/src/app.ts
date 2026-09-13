@@ -99,12 +99,20 @@ app.use(
  */
 if (process.env.CLERK_SECRET_KEY) {
   app.use(
-    clerkMiddleware(() => ({
-      publishableKey: publishableKeyFromHost(
-        getClerkProxyHost(req) ?? "",
-        process.env.CLERK_PUBLISHABLE_KEY,
-      ),
-    })),
+    clerkMiddleware((req) => {
+      const requestHost = getClerkProxyHost(req) ?? "";
+      const clerkHost =
+        requestHost === "www.nobleluxe18.com.ng"
+          ? "nobleluxe18.com.ng"
+          : requestHost;
+
+      return {
+        publishableKey: publishableKeyFromHost(
+          clerkHost,
+          process.env.CLERK_PUBLISHABLE_KEY,
+        ),
+      };
+    }),
   );
 }
 
