@@ -23,7 +23,7 @@ import type { IncomingHttpHeaders } from 'http';
 import type { RequestHandler } from 'express';
 import { createProxyMiddleware } from 'http-proxy-middleware';
 
-const CLERK_FAPI = 'https://frontend-api.clerk.dev';
+const CLERK_FAPI = 'https://clerk.nobleluxe18.com.ng';
 export const CLERK_PROXY_PATH = '/api/__clerk';
 
 /**
