@@ -99,9 +99,9 @@ app.use(
  */
 if (process.env.CLERK_SECRET_KEY) {
   app.use(
-    clerkMiddleware((req) => ({
+    clerkMiddleware(() => ({
       publishableKey: publishableKeyFromHost(
-        getClerkProxyHost(req) ?? "",
+        "clerk.nobleluxe18.com.ng",
         process.env.CLERK_PUBLISHABLE_KEY,
       ),
     })),
