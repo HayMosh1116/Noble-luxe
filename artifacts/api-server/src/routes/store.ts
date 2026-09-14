@@ -31,9 +31,14 @@ async function isConfiguredAdmin(
 ): Promise<boolean> {
   const { userId } = getRequestAuth(req);
 
-  if (!userId) {
-    return false;
-  }
+console.log("[ADMIN DEBUG]", {
+  userId,
+  configuredEmail: process.env.ORDER_ADMIN_EMAIL,
+});
+
+if (!userId) {
+  return false;
+}
 
   const configuredEmail =
     process.env.ORDER_ADMIN_EMAIL?.trim().toLowerCase();
