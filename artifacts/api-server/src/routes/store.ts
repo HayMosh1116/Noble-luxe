@@ -31,13 +31,46 @@ async function isConfiguredAdmin(
 ): Promise<boolean> {
   const { userId } = getRequestAuth(req);
 
-console.log("[ADMIN DEBUG]", {
-  userId,
-  configuredEmail: process.env.ORDER_ADMIN_EMAIL,
-});
+  console.log("[ADMIN DEBUG]", {
+    userId,
+    configuredEmail: process.env.ORDER_ADMIN_EMAIL,
+  });
 
-if (!userId) {
-  return false;
+  if (!userId) {
+    console.log("[ADMIN DEBUG] NO USER ID");
+    return false;
+  }
+
+  const configuredEmail =
+    process.env.ORDER_ADMIN_EMAIL?.trim().toLowerCase();
+
+  if (!configuredEmail) {
+    return false;
+  }
+
+  try {
+    const user = await clerkClient.users.getUser(userId);
+
+    const userEmails = user.emailAddresses.map(
+      (emailAddress) =>
+        emailAddress.emailAddress.trim().toLowerCase(),
+    );
+
+    console.log("[ADMIN DEBUG]", {
+      userId,
+      configuredEmail,
+      userEmails,
+    });
+
+    return userEmails.includes(configuredEmail);
+  } catch (error) {
+    req.log.error(
+      { err: error, userId },
+      "Unable to verify configured admin",
+    );
+
+    return false;
+  }
 }
 
   const configuredEmail =
