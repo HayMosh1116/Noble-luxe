@@ -211,7 +211,7 @@ export default function App() {
     clerkHost,
     import.meta.env.VITE_CLERK_PUBLISHABLE_KEY,
   );
-  const clerkProxyUrl = import.meta.env.VITE_CLERK_PROXY_URL;
+
 
   if (!clerkPubKey) {
     throw new Error('Missing VITE_CLERK_PUBLISHABLE_KEY');
@@ -220,7 +220,6 @@ export default function App() {
   return (
     <ClerkProvider
       publishableKey={clerkPubKey}
-      proxyUrl={clerkProxyUrl}
       signInUrl={`${basePath}/sign-in`}
       signUpUrl={`${basePath}/sign-up`}
       signInForceRedirectUrl={`${basePath}/account`}
