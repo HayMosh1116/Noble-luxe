@@ -26,33 +26,36 @@ function getRequestAuth(req: Parameters<typeof getAuth>[0]) {
   return getAuth(req);
 }
 
-async function isConfiguredAdmin(req: Parameters<typeof getAuth>[0]): Promise<boolean> {
-  const { userId, sessionClaims } = getRequestAuth(req);
-  if (!userId) return false;
+async function isConfiguredAdmin(
+  req: Parameters<typeof getAuth>[0],
+): Promise<boolean> {
+  const { userId } = getRequestAuth(req);
 
-  const configuredUserId = process.env.ORDER_ADMIN_USER_ID?.trim();
-  if (configuredUserId && configuredUserId === userId) return true;
+  if (!userId) {
+    return false;
+  }
 
-  const configuredEmail = process.env.ORDER_ADMIN_EMAIL?.trim().toLowerCase();
-  if (!configuredEmail) return false;
+  const configuredEmail =
+    process.env.ORDER_ADMIN_EMAIL?.trim().toLowerCase();
 
-  const claims = sessionClaims as { email?: unknown; email_address?: unknown } | null;
-  const claimEmail =
-    typeof claims?.email === "string"
-      ? claims.email
-      : typeof claims?.email_address === "string"
-        ? claims.email_address
-        : null;
-  if (claimEmail?.toLowerCase() === configuredEmail) return true;
+  if (!configuredEmail) {
+    return false;
+  }
 
   try {
     const user = await clerkClient.users.getUser(userId);
+
     return user.emailAddresses.some(
       (emailAddress) =>
-        emailAddress.emailAddress.toLowerCase() === configuredEmail,
+        emailAddress.emailAddress.trim().toLowerCase() ===
+        configuredEmail,
     );
   } catch (error) {
-    req.log.error({ err: error, userId }, "Unable to verify configured admin");
+    req.log.error(
+      { err: error, userId },
+      "Unable to verify configured admin",
+    );
+
     return false;
   }
 }
