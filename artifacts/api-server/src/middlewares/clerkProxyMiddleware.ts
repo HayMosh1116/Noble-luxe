@@ -86,6 +86,13 @@ export function clerkProxyMiddleware(): RequestHandler {
   proxyReq.setHeader('Clerk-Proxy-Url', proxyUrl);
   proxyReq.setHeader('Clerk-Secret-Key', secretKey);
 
+  console.log("[CLERK OUTBOUND DEBUG]", {
+  origin: proxyReq.getHeader('Origin'),
+  clerkProxyUrl: proxyReq.getHeader('Clerk-Proxy-Url'),
+  host: proxyReq.getHeader('Host'),
+  forwardedHost: proxyReq.getHeader('X-Forwarded-Host'),
+  forwardedProto: proxyReq.getHeader('X-Forwarded-Proto'),
+});
   const xff = req.headers['x-forwarded-for'];
   const clientIp =
     (Array.isArray(xff) ? xff[0] : xff)?.split(',')[0]?.trim() ||
