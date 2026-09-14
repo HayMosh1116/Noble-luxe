@@ -73,31 +73,29 @@ export function clerkProxyMiddleware(): RequestHandler {
       path.replace(new RegExp(`^${CLERK_PROXY_PATH}`), ''),
     on: {
       proxyReq: (proxyReq, req) => {
-        const protocol = req.headers['x-forwarded-proto'] || 'https';
-        const host = getClerkProxyHost(req) || '';
-        const configuredProxyUrl = process.env.CLERK_PROXY_URL?.trim();
-        const proxyUrl =
-          configuredProxyUrl?.replace(/\/+$/, '') ||
-          `${protocol}://${host}${CLERK_PROXY_PATH}`;
-         console.log("[CLERK PROXY DEBUG]", {
-  incomingHost: req.headers.host,
-  forwardedHost: req.headers["x-forwarded-host"],
-  forwardedProto: req.headers["x-forwarded-proto"],
-  proxyUrl,
-});
+  const proxyUrl = 'https://www.nobleluxe18.com.ng/api/__clerk';
 
-        proxyReq.setHeader('Clerk-Proxy-Url', proxyUrl);
-        proxyReq.setHeader('Clerk-Secret-Key', secretKey);
+  console.log("[CLERK PROXY DEBUG]", {
+    incomingHost: req.headers.host,
+    forwardedHost: req.headers["x-forwarded-host"],
+    forwardedProto: req.headers["x-forwarded-proto"],
+    origin: req.headers.origin,
+    proxyUrl,
+  });
 
-        const xff = req.headers['x-forwarded-for'];
-        const clientIp =
-          (Array.isArray(xff) ? xff[0] : xff)?.split(',')[0]?.trim() ||
-          req.socket?.remoteAddress ||
-          '';
-        if (clientIp) {
-          proxyReq.setHeader('X-Forwarded-For', clientIp);
-        }
-      },
+  proxyReq.setHeader('Clerk-Proxy-Url', proxyUrl);
+  proxyReq.setHeader('Clerk-Secret-Key', secretKey);
+
+  const xff = req.headers['x-forwarded-for'];
+  const clientIp =
+    (Array.isArray(xff) ? xff[0] : xff)?.split(',')[0]?.trim() ||
+    req.socket?.remoteAddress ||
+    '';
+
+  if (clientIp) {
+    proxyReq.setHeader('X-Forwarded-For', clientIp);
+  }
+},
       // Clerk's dynamic Frontend API responses (/v1/environment, /v1/client,
       // JWKS, ...) arrive without a Content-Length, so relaying them would use
       // Transfer-Encoding: chunked — which the deployment edge (Cloud Run)
