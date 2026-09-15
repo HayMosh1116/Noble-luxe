@@ -1,5 +1,5 @@
 import express from "express";
-import type { Request, Response, NextFunction, RequestHandler } from "express";
+import type { RequestHandler } from "express";
 import cors from "cors";
 import { pinoHttp } from "pino-http";
 import type { IncomingHttpHeaders } from "node:http";
@@ -174,19 +174,14 @@ if (process.env.NODE_ENV === "production" && !process.env.VERCEL) {
 
   app.use(express.static(storefrontDistPath, { index: false }));
 
-  const serveStorefront: RequestHandler = (
-  _req: Request,
-  res: Response,
-  next: NextFunction,
-) => {
-  res.sendFile(
-    resolve(storefrontDistPath, "index.html"),
-    (error: Error) => {
-      if (error) {
-        next(error);
-      }
-    },
-  );
+  const serveStorefront: RequestHandler = (_req, res, next) => {
+  const indexPath = resolve(storefrontDistPath, "index.html");
+
+  res.sendFile(indexPath, (error) => {
+    if (error) {
+      next(error);
+    }
+  });
 };
   app.get(
     /^(?!\/api(?:\/|$)).*/,
