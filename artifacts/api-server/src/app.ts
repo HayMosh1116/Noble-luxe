@@ -1,4 +1,5 @@
 import express from "express";
+import type { RequestHandler } from "express";
 import cors from "cors";
 import { pinoHttp } from "pino-http";
 import type { IncomingHttpHeaders } from "node:http";
@@ -8,7 +9,10 @@ import { dirname, resolve } from "node:path";
 import router from "./routes/index.js";
 import { logger } from "./lib/logger.js";
 
-import { clerkMiddleware } from "@clerk/express";
+import {
+  clerkMiddleware,
+  type ClerkMiddlewareOptionsCallback,
+} from "@clerk/express";
 import { publishableKeyFromHost } from "@clerk/shared/keys";
 
 import {
@@ -134,10 +138,12 @@ app.use(
  * that state; protected handlers still return 401 through their auth helper.
  */
 if (process.env.CLERK_SECRET_KEY) {
+  const clerkOptions: ClerkMiddlewareOptionsCallback = (req) => ({
+    publishableKey: getClerkPublishableKey(req),
+  });
+
   app.use(
-    clerkMiddleware((req) => ({
-      publishableKey: getClerkPublishableKey(req),
-    })),
+    clerkMiddleware(clerkOptions),
   );
 }
 
@@ -166,13 +172,18 @@ if (process.env.NODE_ENV === "production" && !process.env.VERCEL) {
 
   app.use(express.static(storefrontDistPath, { index: false }));
 
-  app.get(/^(?!\/api(?:\/|$)).*/, (_req, res, next) => {
+  const serveStorefront: RequestHandler = (_req, res, next) => {
     res.sendFile(resolve(storefrontDistPath, "index.html"), (error) => {
       if (error) {
         next(error);
       }
     });
-  });
+  };
+
+  app.get(
+    /^(?!\/api(?:\/|$)).*/,
+    serveStorefront,
+  );
 }
 
 export default app;
