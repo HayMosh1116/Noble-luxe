@@ -175,9 +175,9 @@ if (process.env.NODE_ENV === "production" && !process.env.VERCEL) {
   app.use(express.static(storefrontDistPath, { index: false }));
 
   const serveStorefront: RequestHandler = (
-  _req,
-  res,
-  next,
+  _req: Request,
+  res: Response,
+  next: NextFunction,
 ) => {
   res.sendFile(
     resolve(storefrontDistPath, "index.html"),
