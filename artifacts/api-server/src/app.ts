@@ -119,7 +119,7 @@ app.use("/api", router);
  * compiled Noble Luxe SPA from that same service so the published app has a
  * working root route while `/api/*` remains the API surface.
  */
-if (process.env.NODE_ENV === "production") {
+if (process.env.NODE_ENV === "production" && !process.env.VERCEL) {
   const storefrontDistPath = resolve(
     dirname(fileURLToPath(import.meta.url)),
     "../../noble-luxe/dist/public",

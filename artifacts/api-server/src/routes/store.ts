@@ -10,12 +10,10 @@ import {
   CreateOrderResponse,
 } from "@workspace/api-zod";
 import { db, ordersTable } from "@workspace/db";
-import { ReplitConnectors } from "@replit/connectors-sdk";
 import { getAuth } from "@clerk/express";
 import { clerkClient } from "@clerk/express";
 import { eq, desc } from "drizzle-orm";
 const router: IRouter = Router();
-const connectors = new ReplitConnectors();
 const PICKUP_LOCATION =
   "5 Alhaji Adegoke str, Baruwa, Ipaja, Lagos State";
 
@@ -73,142 +71,69 @@ async function isConfiguredAdmin(
   }
 }
 
-  const configuredEmail =
-    process.env.ORDER_ADMIN_EMAIL?.trim().toLowerCase();
-
-  if (!configuredEmail) {
-    return false;
-  }
-
-  try {
-    const user = await clerkClient.users.getUser(userId);
-
-    return user.emailAddresses.some(
-      (emailAddress) =>
-        emailAddress.emailAddress.trim().toLowerCase() ===
-        configuredEmail,
-    );
-  } catch (error) {
-    req.log.error(
-      { err: error, userId },
-      "Unable to verify configured admin",
-    );
-
-    return false;
-  }
-}
 /*
  * =========================================================
  * GMAIL — NEW ORDER NOTIFICATION
  * =========================================================
  */
-async function notifyGmail(
-  data: typeof CreateOrderBody._output,
-  orderId: string,
-) {
-  const profileResponse = await connectors.proxy(
-    "google-mail",
-    "/gmail/v1/users/me/profile",
-    { method: "GET" },
-  );
-  if (!profileResponse.ok) {
-    throw new Error(
-      `Gmail profile request failed with ${profileResponse.status}`,
-    );
-  }
-  const profile =
-    (await profileResponse.json()) as {
-      emailAddress?: string;
-    };
-  const recipient =
-    process.env.ORDER_NOTIFICATION_EMAIL ||
-    profile.emailAddress;
-  if (!recipient) {
-    throw new Error(
-      "No order notification email is configured",
-    );
-  }
-  const screenshotMatch =
-    data.paymentScreenshot.match(
-      /^data:([^;]+);base64,(.+)$/,
-    );
-  const contentType =
-    screenshotMatch?.[1] || "image/png";
-  const screenshot =
-    screenshotMatch?.[2] ||
-    data.paymentScreenshot;
-  const boundary =
-    `noble-luxe-${orderId.toLowerCase()}`;
-  const lines = [
-    `From: ${recipient}`,
-    `To: ${recipient}`,
-    `Subject: NOBLE LUXE — NEW ORDER ${orderId}`,
-    "MIME-Version: 1.0",
-    `Content-Type: multipart/mixed; boundary="${boundary}"`,
-    "",
-    `--${boundary}`,
-    "Content-Type: text/plain; charset=UTF-8",
-    "Content-Transfer-Encoding: 8bit",
-    "",
-    "NOBLE LUXE — NEW ORDER",
-    "",
-    `Order ID: ${orderId}`,
-    `Customer: ${data.customerName}`,
-    `Phone: ${data.phone}`,
-    `Email: ${data.email}`,
-   `Fulfilment: ${data.fulfilmentMethod}`,
-    `Address: ${
-      data.fulfilmentMethod === "Pickup"
-        ? `Pickup — ${data.pickupLocation}`
-        : data.address
-    }`,
-    "",
-    "Items:",
-...data.items.map(
-  (item: typeof data.items[number]) =>
-        `${item.productName} — Size ${item.size}${
-          item.color
-            ? ` — Color ${item.color}`
-            : ""
-        } — Qty ${item.quantity} — ₦${item.price.toLocaleString()}`,
-    ),
-    "",
-    `Payment: ${data.paymentMethod}`,
-    `Total: ₦${data.total.toLocaleString()}`,
-    "",
-    "Payment screenshot is attached.",
-    "",
-    `--${boundary}`,
-    `Content-Type: ${contentType}; name="payment-screenshot"`,
-    "Content-Transfer-Encoding: base64",
-    'Content-Disposition: attachment; filename="payment-screenshot"',
-    "",
-    screenshot,
-    `--${boundary}--`,
-    "",
-  ].join("\r\n");
-  const raw = Buffer.from(
-    lines,
-    "utf8",
-  ).toString("base64url");
-  const sendResponse = await connectors.proxy(
-    "google-mail",
-    "/gmail/v1/users/me/messages/send",
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ raw }),
-    },
-  );
-  if (!sendResponse.ok) {
-    throw new Error(
-      `Gmail send failed with ${sendResponse.status}`,
-    );
-  }
+type GmailToken = { access_token?: string; expires_in?: number };
+let cachedGmailToken: { value: string; expiresAt: number } | null = null;
+
+async function getGmailAccessToken(): Promise<string> {
+  const now = Date.now();
+  if (cachedGmailToken && cachedGmailToken.expiresAt > now + 60_000) return cachedGmailToken.value;
+  const clientId = process.env.GMAIL_CLIENT_ID?.trim();
+  const clientSecret = process.env.GMAIL_CLIENT_SECRET?.trim();
+  const refreshToken = process.env.GMAIL_REFRESH_TOKEN?.trim();
+  if (!clientId || !clientSecret || !refreshToken) throw new Error("Gmail OAuth is not configured. Set GMAIL_CLIENT_ID, GMAIL_CLIENT_SECRET, and GMAIL_REFRESH_TOKEN.");
+  const tokenResponse = await fetch("https://oauth2.googleapis.com/token", {
+    method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams({ client_id: clientId, client_secret: clientSecret, refresh_token: refreshToken, grant_type: "refresh_token" }),
+  });
+  if (!tokenResponse.ok) throw new Error("Gmail OAuth token request failed with " + tokenResponse.status);
+  const token = (await tokenResponse.json()) as GmailToken;
+  if (!token.access_token) throw new Error("Gmail OAuth token response did not include access_token");
+  cachedGmailToken = { value: token.access_token, expiresAt: now + (token.expires_in || 3600) * 1000 };
+  return token.access_token;
 }
-/*
+
+function gmailSender(): string {
+  const sender = process.env.GMAIL_SENDER_EMAIL?.trim() || process.env.ORDER_NOTIFICATION_EMAIL?.trim();
+  if (!sender) throw new Error("No Gmail sender is configured. Set GMAIL_SENDER_EMAIL or ORDER_NOTIFICATION_EMAIL.");
+  return sender;
+}
+
+async function sendGmailRaw(raw: string): Promise<void> {
+  const accessToken = await getGmailAccessToken();
+  const response = await fetch("https://gmail.googleapis.com/gmail/v1/users/me/messages/send", {
+    method: "POST", headers: { Authorization: "Bearer " + accessToken, "Content-Type": "application/json" },
+    body: JSON.stringify({ raw }),
+  });
+  if (!response.ok) throw new Error("Gmail send failed with " + response.status);
+}
+
+async function notifyGmail(data: typeof CreateOrderBody._output, orderId: string) {
+  const recipient = process.env.ORDER_NOTIFICATION_EMAIL?.trim();
+  if (!recipient) throw new Error("No order notification email is configured");
+  const sender = gmailSender();
+  const screenshotMatch = data.paymentScreenshot.match(/^data:([^;]+);base64,(.+)$/);
+  const contentType = screenshotMatch?.[1] || "image/png";
+  const screenshot = screenshotMatch?.[2] || data.paymentScreenshot;
+  const boundary = "noble-luxe-" + orderId.toLowerCase();
+  const lines = [
+    "From: " + sender, "To: " + recipient, "Subject: NOBLE LUXE — NEW ORDER " + orderId,
+    "MIME-Version: 1.0", "Content-Type: multipart/mixed; boundary=\"" + boundary + "\"", "",
+    "--" + boundary, "Content-Type: text/plain; charset=UTF-8", "Content-Transfer-Encoding: 8bit", "",
+    "NOBLE LUXE — NEW ORDER", "", "Order ID: " + orderId, "Customer: " + data.customerName,
+    "Phone: " + data.phone, "Email: " + data.email, "Fulfilment: " + data.fulfilmentMethod,
+    "Address: " + (data.fulfilmentMethod === "Pickup" ? "Pickup — " + data.pickupLocation : data.address), "", "Items:",
+    ...data.items.map((item: typeof data.items[number]) => item.productName + " — Size " + item.size + (item.color ? " — Color " + item.color : "") + " — Qty " + item.quantity + " — ₦" + item.price.toLocaleString()),
+    "", "Payment: " + data.paymentMethod, "Total: ₦" + data.total.toLocaleString(), "", "Payment screenshot is attached.", "",
+    "--" + boundary, "Content-Type: " + contentType + "; name=\"payment-screenshot\"", "Content-Transfer-Encoding: base64",
+    "Content-Disposition: attachment; filename=\"payment-screenshot\"", "", screenshot, "--" + boundary + "--", "",
+  ].join("\r\n");
+  await sendGmailRaw(Buffer.from(lines, "utf8").toString("base64url"));
+}/*
  * =========================================================
  * CUSTOMER STATUS EMAIL
  * =========================================================
@@ -552,6 +477,10 @@ router.post(
       return;
     }
     const data = parsed.data;
+    if (data.paymentScreenshot.startsWith("data:") && Buffer.byteLength(data.paymentScreenshot, "utf8") > 4_000_000) {
+      res.status(400).json({ error: "Please upload a payment screenshot under 3MB." });
+      return;
+    }
     if (
       data.fulfilmentMethod === "Pickup" &&
       data.pickupLocation !== PICKUP_LOCATION

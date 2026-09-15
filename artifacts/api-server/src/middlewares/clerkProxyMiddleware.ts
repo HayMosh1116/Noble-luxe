@@ -73,26 +73,12 @@ export function clerkProxyMiddleware(): RequestHandler {
       path.replace(new RegExp(`^${CLERK_PROXY_PATH}`), ''),
     on: {
       proxyReq: (proxyReq, req) => {
-  const proxyUrl = 'https://www.nobleluxe18.com.ng/api/__clerk';
-
-  console.log("[CLERK PROXY DEBUG]", {
-    incomingHost: req.headers.host,
-    forwardedHost: req.headers["x-forwarded-host"],
-    forwardedProto: req.headers["x-forwarded-proto"],
-    origin: req.headers.origin,
-    proxyUrl,
-  });
+  const proxyUrl =
+    process.env.CLERK_PROXY_URL?.trim() ||
+    `https://${getClerkProxyHost(req) || "nobleluxe18.com.ng"}${CLERK_PROXY_PATH}`;
 
   proxyReq.setHeader('Clerk-Proxy-Url', proxyUrl);
   proxyReq.setHeader('Clerk-Secret-Key', secretKey);
-
-  console.log("[CLERK OUTBOUND DEBUG]", {
-  origin: proxyReq.getHeader('Origin'),
-  clerkProxyUrl: proxyReq.getHeader('Clerk-Proxy-Url'),
-  host: proxyReq.getHeader('Host'),
-  forwardedHost: proxyReq.getHeader('X-Forwarded-Host'),
-  forwardedProto: proxyReq.getHeader('X-Forwarded-Proto'),
-});
   const xff = req.headers['x-forwarded-for'];
   const clientIp =
     (Array.isArray(xff) ? xff[0] : xff)?.split(',')[0]?.trim() ||

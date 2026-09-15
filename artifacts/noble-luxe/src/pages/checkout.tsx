@@ -111,8 +111,8 @@ export default function Checkout({
       setFileError('Please choose an image file.');
       return;
     }
-    if (file.size > 8 * 1024 * 1024) {
-      setFileError('Please keep the image under 8MB.');
+    if (file.size > 3 * 1024 * 1024) {
+      setFileError('Please keep the image under 3MB for secure checkout.');
       return;
     }
     setFileError('');
