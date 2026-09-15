@@ -1,5 +1,5 @@
 import express from "express";
-import type { Request, Response, NextFunction } from "express";
+import type { Request, Response, NextFunction, RequestHandler } from "express";
 import cors from "cors";
 import { pinoHttp } from "pino-http";
 import type { IncomingHttpHeaders } from "node:http";
