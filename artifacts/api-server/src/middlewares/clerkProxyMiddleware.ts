@@ -47,13 +47,13 @@ export function getClerkProxyHost(req: {
  * not need to proxy Clerk requests.
  */
 export function clerkProxyMiddleware(): RequestHandler {
-  const middleware: RequestHandler = (
-    _req,
-    _res,
-    next,
+  const middleware = (
+    _req: any,
+    _res: any,
+    next: () => void,
   ) => {
     next();
   };
 
-  return middleware;
+  return middleware as RequestHandler;
 }
