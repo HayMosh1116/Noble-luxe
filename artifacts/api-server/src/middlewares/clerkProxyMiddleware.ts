@@ -1,3 +1,15 @@
+/**
+ * Clerk Frontend API Proxy Middleware
+ *
+ * The Noble Luxe production Clerk instance uses the custom
+ * Frontend API domain:
+ *
+ * https://clerk.nobleluxe18.com.ng
+ *
+ * The old Replit/Cloud Run proxy implementation is no longer
+ * required for the Vercel API.
+ */
+
 import type { IncomingHttpHeaders } from "node:http";
 import type { RequestHandler } from "express";
 
@@ -28,22 +40,20 @@ export function getClerkProxyHost(req: {
 }
 
 /**
- * Clerk Frontend API proxy.
+ * Clerk proxy middleware.
  *
- * The Noble Luxe production Clerk instance now uses the
- * custom Frontend API domain:
- *
- * https://clerk.nobleluxe18.com.ng
- *
- * Therefore the old Replit/Cloud Run proxy implementation
- * is no longer required by the Vercel API.
+ * The production Clerk Frontend API is already configured
+ * on the Noble Luxe custom domain, so the Vercel API does
+ * not need to proxy Clerk requests.
  */
 export function clerkProxyMiddleware(): RequestHandler {
-  return (
-    _req: Parameters<RequestHandler>[0],
-    _res: Parameters<RequestHandler>[1],
-    next: Parameters<RequestHandler>[2],
+  const middleware: RequestHandler = (
+    _req,
+    _res,
+    next,
   ) => {
     next();
   };
+
+  return middleware;
 }
