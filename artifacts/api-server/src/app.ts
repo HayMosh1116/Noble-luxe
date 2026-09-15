@@ -1,4 +1,4 @@
-import express, { type Express } from "express";
+import express, { type Express, type Request } from "express";
 import cors from "cors";
 import pinoHttp from "pino-http";
 import { fileURLToPath } from "node:url";
@@ -8,12 +8,48 @@ import router from "./routes";
 import { logger } from "./lib/logger";
 
 import { clerkMiddleware } from "@clerk/express";
+import { publishableKeyFromHost } from "@clerk/shared/keys";
 
 import {
   CLERK_PROXY_PATH,
   clerkProxyMiddleware,
+  getClerkProxyHost,
 } from "./middlewares/clerkProxyMiddleware";
 const app: Express = express();
+
+const NOBLE_LUXE_CLERK_HOST = "nobleluxe18.com.ng";
+const CLERK_ALLOWED_HOSTS = new Set([
+  NOBLE_LUXE_CLERK_HOST,
+  `www.${NOBLE_LUXE_CLERK_HOST}`,
+]);
+
+function getRequestHostname(req: {
+  headers: Record<string, string | string[] | undefined>;
+}): string | undefined {
+  const host = getClerkProxyHost(req);
+  return host
+    ?.trim()
+    .toLowerCase()
+    .replace(/\.$/, "")
+    .split(":")[0];
+}
+
+function getClerkPublishableKey(req: Request): string | undefined {
+  const requestHostname = getRequestHostname(req);
+  const configuredKey = process.env.CLERK_PUBLISHABLE_KEY?.trim();
+
+  if (!requestHostname || !CLERK_ALLOWED_HOSTS.has(requestHostname)) {
+    return configuredKey || undefined;
+  }
+
+  // The browser uses the Production Clerk instance behind the Noble Luxe
+  // custom domain. Deriving the key here keeps API verification aligned with
+  // the key emitted by Clerk on both the apex and www storefront hostnames.
+  return publishableKeyFromHost(
+    NOBLE_LUXE_CLERK_HOST,
+    configuredKey,
+  );
+}
 
 /*
  * =========================================================
@@ -96,9 +132,9 @@ app.use(
  */
 if (process.env.CLERK_SECRET_KEY) {
   app.use(
-    clerkMiddleware({
-      publishableKey: process.env.CLERK_PUBLISHABLE_KEY,
-    }),
+    clerkMiddleware((req) => ({
+      publishableKey: getClerkPublishableKey(req),
+    })),
   );
 }
 
