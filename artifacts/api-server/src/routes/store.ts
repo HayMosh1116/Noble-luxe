@@ -159,25 +159,10 @@ async function notifyCustomer(
     "Thank you for choosing Noble Luxe.",
   ].join("\n");
   const raw = Buffer.from(
-    `To: ${email}\r\nSubject: ${subject}\r\nContent-Type: text/plain; charset=UTF-8\r\n\r\n${body}`,
+    `From: ${gmailSender()}\r\nTo: ${email}\r\nSubject: ${subject}\r\nContent-Type: text/plain; charset=UTF-8\r\n\r\n${body}`,
     "utf8",
   ).toString("base64url");
-  const response = await connectors.proxy(
-    "google-mail",
-    "/gmail/v1/users/me/messages/send",
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ raw }),
-    },
-  );
-  if (!response.ok) {
-    throw new Error(
-      `Customer notification failed with ${response.status}`,
-    );
-  }
+  await sendGmailRaw(raw);
 }
 /*
  * =========================================================
