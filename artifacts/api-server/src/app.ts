@@ -1,5 +1,5 @@
 import express from "express";
-import type { RequestHandler } from "express";
+import type { NextFunction, Request, RequestHandler, Response } from "express";
 import cors from "cors";
 import { pinoHttp } from "pino-http";
 import type { IncomingHttpHeaders } from "node:http";
@@ -139,7 +139,7 @@ app.use(
  */
 if (process.env.CLERK_SECRET_KEY) {
   const clerkOptions: ClerkMiddlewareOptionsCallback = (req) => ({
-    publishableKey: getClerkPublishableKey(req),
+    publishableKey: getClerkPublishableKey({ headers: req.headers }),
   });
 
   app.use(
@@ -172,8 +172,12 @@ if (process.env.NODE_ENV === "production" && !process.env.VERCEL) {
 
   app.use(express.static(storefrontDistPath, { index: false }));
 
-  const serveStorefront: RequestHandler = (_req, res, next) => {
-    res.sendFile(resolve(storefrontDistPath, "index.html"), (error) => {
+  const serveStorefront: RequestHandler = (
+    _req: Request,
+    res: Response,
+    next: NextFunction,
+  ) => {
+    res.sendFile(resolve(storefrontDistPath, "index.html"), (error?: Error) => {
       if (error) {
         next(error);
       }
