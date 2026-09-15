@@ -8,14 +8,11 @@ import router from "./routes";
 import { logger } from "./lib/logger";
 
 import { clerkMiddleware } from "@clerk/express";
-import { publishableKeyFromHost } from "@clerk/shared/keys";
 
 import {
   CLERK_PROXY_PATH,
   clerkProxyMiddleware,
-  getClerkProxyHost,
 } from "./middlewares/clerkProxyMiddleware";
-
 const app: Express = express();
 
 /*
@@ -99,19 +96,8 @@ app.use(
  */
 if (process.env.CLERK_SECRET_KEY) {
   app.use(
-    clerkMiddleware((req) => {
-      const requestHost = getClerkProxyHost(req) ?? "";
-      const clerkHost =
-        requestHost === "www.nobleluxe18.com.ng"
-          ? "nobleluxe18.com.ng"
-          : requestHost;
-
-      return {
-        publishableKey: publishableKeyFromHost(
-          clerkHost,
-          process.env.CLERK_PUBLISHABLE_KEY,
-        ),
-      };
+    clerkMiddleware({
+      publishableKey: process.env.CLERK_PUBLISHABLE_KEY,
     }),
   );
 }
