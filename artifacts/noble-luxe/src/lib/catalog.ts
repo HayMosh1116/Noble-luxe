@@ -193,13 +193,11 @@ const armlessColors = [
 
 const hoodieColors = [
   'Orange',
-  'Cream',
 ];
 
 const joggers1Colors = [
   'Black',
   'Red',
-  'Ash',
   'Navy Blue',
 ];
 
