@@ -219,7 +219,6 @@ const joggers2Colors = [
 const shortJoggersColors = [
   'Blue',
   'Red',
-  'Black',
   'Navy Blue',
 ];
 
