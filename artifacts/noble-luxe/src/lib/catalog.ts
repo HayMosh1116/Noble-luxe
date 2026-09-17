@@ -196,7 +196,6 @@ const hoodieColors = [
 ];
 
 const joggers1Colors = [
-  'Black',
   'Red',
   'Navy Blue',
 ];
