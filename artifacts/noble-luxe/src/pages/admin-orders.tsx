@@ -129,14 +129,14 @@ export default function AdminOrders() {
        const statusMessage =
         status === "confirmed"
            ? code
-             ? `Payment confirmed. Pickup code: ${code}. Your order is ready for collection when Noble Luxe confirms.`
+             ? `Payment confirmed. Pickup code: ${code}. Your order is ready for collection, come to the pickup location with the code..`
              : "Payment confirmed. Your order is now being prepared."
           : status === "processing"
             ? "Your order is now being prepared by our team."
             : status === "out_for_delivery"
               ? "Your order is out for delivery."
               : status === "delivered"
-                ? "Your order has been delivered. Thank you for choosing Noble Luxe."
+                ? "Your order has been pickedup. Thank you for choosing Noble Luxe."
                 : status === "cancelled"
                   ? "Your order has been cancelled. Please contact Noble Luxe if you need assistance."
                   : "Payment is awaiting review.";
