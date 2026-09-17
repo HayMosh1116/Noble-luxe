@@ -707,6 +707,7 @@ export const FALLBACK_PRODUCTS: CatalogProduct[] = [
     name: 'NL LACE SHIRT(RWG)',
     category: 'T-Shirts',
     price: 11000,
+    inStock: false,
     imageUrl: LACE_SHIRTRWG_FRONT  ,
     description:
       'A refined Noble Luxe lace shirt with a distinctive front and back finish..',
