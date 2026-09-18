@@ -197,11 +197,11 @@ const hoodieColors = [
 
 const joggers1Colors = [
   'Navy Blue',
+  'Red',
 ];
 
 const basicTopColors = [
   'Pink',
-  'Black',
   'White',
   'Brown',
 ];
@@ -434,7 +434,7 @@ export const FALLBACK_PRODUCTS: CatalogProduct[] = [
     id: 'nl-008',
     name: 'NL Basic Top',
     category: 'Tops',
-    price: 9000,
+    price: 7500,
     imageUrl: BASIC_TOP_FRONT,
     description:
       'A clean Noble Luxe basic top available in four versatile colours.',
