@@ -208,7 +208,6 @@ const basicTopColors = [
 
 const joggers2Colors = [
   'Red',
-  'Black',
   'Navy Blue',
 ];
 
