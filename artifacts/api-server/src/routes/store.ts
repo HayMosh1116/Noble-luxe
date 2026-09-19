@@ -13,6 +13,11 @@ import { db, ordersTable } from "@workspace/db";
 import { getAuth } from "@clerk/express";
 import { clerkClient } from "@clerk/express";
 import { eq, desc } from "drizzle-orm";
+import {
+  sendAdminNewOrderEmail,
+  sendCustomerOrderConfirmationEmail,
+  sendCustomerStatusEmail,
+} from "../lib/mailer";
 const router: IRouter = Router();
 const PICKUP_LOCATION =
   "5 Alhaji Adegoke str, Baruwa, Ipaja, Lagos State";
@@ -73,96 +78,64 @@ async function isConfiguredAdmin(
 
 /*
  * =========================================================
- * GMAIL — NEW ORDER NOTIFICATION
+ * EMAIL NOTIFICATIONS (Resend)
  * =========================================================
  */
-type GmailToken = { access_token?: string; expires_in?: number };
-let cachedGmailToken: { value: string; expiresAt: number } | null = null;
-
-async function getGmailAccessToken(): Promise<string> {
-  const now = Date.now();
-  if (cachedGmailToken && cachedGmailToken.expiresAt > now + 60_000) return cachedGmailToken.value;
-  const clientId = process.env.GMAIL_CLIENT_ID?.trim();
-  const clientSecret = process.env.GMAIL_CLIENT_SECRET?.trim();
-  const refreshToken = process.env.GMAIL_REFRESH_TOKEN?.trim();
-  if (!clientId || !clientSecret || !refreshToken) throw new Error("Gmail OAuth is not configured. Set GMAIL_CLIENT_ID, GMAIL_CLIENT_SECRET, and GMAIL_REFRESH_TOKEN.");
-  const tokenResponse = await fetch("https://oauth2.googleapis.com/token", {
-    method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body: new URLSearchParams({ client_id: clientId, client_secret: clientSecret, refresh_token: refreshToken, grant_type: "refresh_token" }),
-  });
-  if (!tokenResponse.ok) throw new Error("Gmail OAuth token request failed with " + tokenResponse.status);
-  const token = (await tokenResponse.json()) as GmailToken;
-  if (!token.access_token) throw new Error("Gmail OAuth token response did not include access_token");
-  cachedGmailToken = { value: token.access_token, expiresAt: now + (token.expires_in || 3600) * 1000 };
-  return token.access_token;
+function emailOrderPayload(
+  data: typeof CreateOrderBody._output,
+) {
+  const pickupLocation =
+    data.fulfilmentMethod === "Pickup"
+      ? data.pickupLocation
+      : null;
+  return {
+    customerName: data.customerName,
+    phone: data.phone,
+    email: data.email,
+    address: pickupLocation ?? (data as { address: string }).address,
+    fulfilmentMethod: data.fulfilmentMethod,
+    pickupLocation,
+    paymentMethod: data.paymentMethod,
+    total: data.total,
+    items: data.items,
+    paymentScreenshot: data.paymentScreenshot,
+  };
 }
 
-function gmailSender(): string {
-  const sender = process.env.GMAIL_SENDER_EMAIL?.trim() || process.env.ORDER_NOTIFICATION_EMAIL?.trim();
-  if (!sender) throw new Error("No Gmail sender is configured. Set GMAIL_SENDER_EMAIL or ORDER_NOTIFICATION_EMAIL.");
-  return sender;
+async function notifyAdminNewOrder(
+  data: typeof CreateOrderBody._output,
+  orderId: string,
+) {
+  await sendAdminNewOrderEmail(
+    emailOrderPayload(data),
+    orderId,
+  );
 }
 
-async function sendGmailRaw(raw: string): Promise<void> {
-  const accessToken = await getGmailAccessToken();
-  const response = await fetch("https://gmail.googleapis.com/gmail/v1/users/me/messages/send", {
-    method: "POST", headers: { Authorization: "Bearer " + accessToken, "Content-Type": "application/json" },
-    body: JSON.stringify({ raw }),
-  });
-  if (!response.ok) throw new Error("Gmail send failed with " + response.status);
+async function notifyCustomerNewOrder(
+  data: typeof CreateOrderBody._output,
+  orderId: string,
+) {
+  await sendCustomerOrderConfirmationEmail(
+    emailOrderPayload(data),
+    orderId,
+  );
 }
 
-async function notifyGmail(data: typeof CreateOrderBody._output, orderId: string) {
-  const recipient = process.env.ORDER_NOTIFICATION_EMAIL?.trim();
-  if (!recipient) throw new Error("No order notification email is configured");
-  const sender = gmailSender();
-  const screenshotMatch = data.paymentScreenshot.match(/^data:([^;]+);base64,(.+)$/);
-  const contentType = screenshotMatch?.[1] || "image/png";
-  const screenshot = screenshotMatch?.[2] || data.paymentScreenshot;
-  const boundary = "noble-luxe-" + orderId.toLowerCase();
-  const lines = [
-    "From: " + sender, "To: " + recipient, "Subject: NOBLE LUXE — NEW ORDER " + orderId,
-    "MIME-Version: 1.0", "Content-Type: multipart/mixed; boundary=\"" + boundary + "\"", "",
-    "--" + boundary, "Content-Type: text/plain; charset=UTF-8", "Content-Transfer-Encoding: 8bit", "",
-    "NOBLE LUXE — NEW ORDER", "", "Order ID: " + orderId, "Customer: " + data.customerName,
-    "Phone: " + data.phone, "Email: " + data.email, "Fulfilment: " + data.fulfilmentMethod,
-    "Address: " + (data.fulfilmentMethod === "Pickup" ? "Pickup — " + data.pickupLocation : data.address), "", "Items:",
-    ...data.items.map((item: typeof data.items[number]) => item.productName + " — Size " + item.size + (item.color ? " — Color " + item.color : "") + " — Qty " + item.quantity + " — ₦" + item.price.toLocaleString()),
-    "", "Payment: " + data.paymentMethod, "Total: ₦" + data.total.toLocaleString(), "", "Payment screenshot is attached.", "",
-    "--" + boundary, "Content-Type: " + contentType + "; name=\"payment-screenshot\"", "Content-Transfer-Encoding: base64",
-    "Content-Disposition: attachment; filename=\"payment-screenshot\"", "", screenshot, "--" + boundary + "--", "",
-  ].join("\r\n");
-  await sendGmailRaw(Buffer.from(lines, "utf8").toString("base64url"));
-}/*
- * =========================================================
- * CUSTOMER STATUS EMAIL
- * =========================================================
- */
 async function notifyCustomer(
   email: string,
   orderId: string,
   status: string,
   statusMessage?: string | null,
+  pickupCode?: string | null,
 ) {
-  const subject =
-    `NOBLE LUXE — ${orderId} update`;
-  const body = [
-    "NOBLE LUXE",
-    "",
-    `Your order ${orderId} is now ${status.replaceAll(
-      "_",
-      " ",
-    )}.`,
-    statusMessage ||
-      "We will keep you updated as your order moves through the atelier.",
-    "",
-    "Thank you for choosing Noble Luxe.",
-  ].join("\n");
-  const raw = Buffer.from(
-    `From: ${gmailSender()}\r\nTo: ${email}\r\nSubject: ${subject}\r\nContent-Type: text/plain; charset=UTF-8\r\n\r\n${body}`,
-    "utf8",
-  ).toString("base64url");
-  await sendGmailRaw(raw);
+  await sendCustomerStatusEmail(
+    email,
+    orderId,
+    status,
+    statusMessage,
+    pickupCode,
+  );
 }
 /*
  * =========================================================
@@ -418,6 +391,7 @@ router.patch(
         updated.orderId,
         updated.status,
         updated.statusMessage,
+        updated.pickupCode,
       );
     } catch (error) {
       req.log.error(
@@ -514,21 +488,27 @@ router.post(
       "Noble Luxe order received",
     );
     try {
-      await notifyGmail(
-        data,
-        orderId,
-      );
+      await notifyAdminNewOrder(data, orderId);
       req.log.info(
         { orderId },
-        "Order notification sent to Gmail",
+        "New order email sent to admin",
       );
     } catch (error) {
       req.log.error(
-        {
-          err: error,
-          orderId,
-        },
-        "Order recorded but Gmail notification failed",
+        { err: error, orderId },
+        "Order recorded but admin email failed",
+      );
+    }
+    try {
+      await notifyCustomerNewOrder(data, orderId);
+      req.log.info(
+        { orderId },
+        "Order confirmation email sent to customer",
+      );
+    } catch (error) {
+      req.log.error(
+        { err: error, orderId },
+        "Order recorded but customer confirmation email failed",
       );
     }
     res
