@@ -125,8 +125,11 @@ function Orders() {
               user?.primaryEmailAddress?.emailAddress}
           </span>
 
-          <SignOutButton>
-            <button className="text-[10px] uppercase tracking-[.18em] text-muted-foreground hover:text-primary">
+          <SignOutButton redirectUrl="/">
+            <button
+              type="button"
+              className="inline-flex h-10 items-center justify-center border border-primary bg-primary px-5 text-[10px] font-bold uppercase tracking-[.18em] text-primary-foreground shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:bg-primary/90 hover:shadow-md active:translate-y-0 active:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+            >
               Sign out
             </button>
           </SignOutButton>
