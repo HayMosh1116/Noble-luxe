@@ -37,44 +37,46 @@
 }
 
 :root {
-  --background: 30 9% 7%;
-  --foreground: 42 23% 92%;
-  --border: 42 13% 21%;
-  --input: 42 13% 21%;
-  --ring: 42 57% 58%;
-  --card: 30 9% 10%;
-  --card-foreground: 42 23% 92%;
-  --card-border: 42 13% 20%;
-  --popover: 30 9% 10%;
-  --popover-foreground: 42 23% 92%;
-  --popover-border: 42 13% 21%;
-  --primary: 42 57% 58%;
-  --primary-foreground: 30 9% 7%;
-  --secondary: 36 11% 15%;
-  --secondary-foreground: 42 23% 92%;
-  --muted: 36 11% 15%;
-  --muted-foreground: 39 10% 60%;
-  --accent: 42 72% 69%;
-  --accent-foreground: 30 9% 7%;
-  --destructive: 0 62% 55%;
-  --destructive-foreground: 42 23% 92%;
+  --background: 40 33% 97%;
+  --foreground: 30 9% 7%;
+  --border: 36 15% 84%;
+  --input: 36 15% 84%;
+  --ring: 42 57% 45%;
+  --card: 40 25% 94%;
+  --card-foreground: 30 9% 7%;
+  --card-border: 36 15% 84%;
+  --popover: 40 33% 97%;
+  --popover-foreground: 30 9% 7%;
+  --popover-border: 36 15% 84%;
+  --primary: 42 57% 45%;
+  --primary-foreground: 40 33% 97%;
+  --secondary: 36 20% 91%;
+  --secondary-foreground: 30 9% 7%;
+  --muted: 36 20% 91%;
+  --muted-foreground: 30 8% 40%;
+  --accent: 42 72% 38%;
+  --accent-foreground: 40 33% 97%;
+  --destructive: 0 62% 45%;
+  --destructive-foreground: 40 33% 97%;
+
   --app-font-sans: 'Manrope', sans-serif;
   --app-font-serif: 'Bodoni Moda', Georgia, serif;
   --app-font-mono: 'DM Mono', monospace;
+
   --radius: 0.35rem;
-  --elevate-1: rgba(255, 255, 255, 0.04);
-  --elevate-2: rgba(255, 255, 255, 0.08);
-  --button-outline: rgba(255, 255, 255, 0.12);
-  --badge-outline: rgba(255, 255, 255, 0.06);
+  --elevate-1: rgba(0, 0, 0, 0.04);
+  --elevate-2: rgba(0, 0, 0, 0.08);
+  --button-outline: rgba(0, 0, 0, 0.12);
+  --badge-outline: rgba(0, 0, 0, 0.06);
   --opaque-button-border-intensity: 8;
-  --sidebar: 30 9% 8%;
-  --sidebar-foreground: 42 23% 92%;
-  --sidebar-border: 42 13% 21%;
-  --sidebar-primary: 42 57% 58%;
-  --sidebar-primary-foreground: 30 9% 7%;
-  --sidebar-accent: 36 11% 15%;
-  --sidebar-accent-foreground: 42 23% 92%;
-  --sidebar-ring: 42 57% 58%;
+
+  --sidebar: 40 25% 94%;
+  --sidebar-foreground: 30 9% 7%;
+  --sidebar-border: 36 15% 84%;
+  --sidebar-primary: 42 57% 45%;
+  --sidebar-primary-foreground: 40 33% 97%;
+  --sidebar-accent: 36 20% 91%;
+  --sidebar-ring: 42 57% 45%;
 }
 
 .dark {
