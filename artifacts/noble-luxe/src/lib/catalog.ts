@@ -148,12 +148,6 @@ const LACE_SHIRTDBWB_FRONT =
 const LACE_SHIRTDBWB_BACK =
   'https://i.ibb.co/GvTxWsm0/Rxc-P4l-Swo-T.jpg';
 
-const VINTAGEMEOW_FRONT =
-  'https://i.ibb.co/GfVDYBzw/h9xr-Ff-UZfs.jpg';
-
-const VINTAGEMEOW_BACK =
-  'https://i.ibb.co/x8z49mQd/Yis-NLJ2ola.jpg';
-
 const VINTAGEBOOM_FRONT =
   'https://i.ibb.co/Gf8wXNjV/Hgix-I8362-P.jpg';
 
@@ -201,8 +195,6 @@ const joggers1Colors = [
 ];
 
 const basicTopColors = [
-  'Pink',
-  'White',
   'Brown',
 ];
 
@@ -228,39 +220,7 @@ const roundNeck1Colors = [
  */
 
 export const FALLBACK_PRODUCTS: CatalogProduct[] = [
-  /*
-   * -------------------------------------------------------
-   * NL-001
-   * -------------------------------------------------------
-   */
-
-  {
-    id: 'nl-001',
-    name: 'Lace Shirt(BWB)',
-    category: 'Tops',
-    price: 11000,
-    inStock: false,
-    imageUrl: LACE_SHIRT_FRONT,
-    description:
-      'A refined Noble Luxe lace shirt with a distinctive front and back finish.',
-    sizes: ['XL', 'XXL'],
-    colors: [''],
-    featured: true,
-    colorImages: {
-      Black: {
-        name: '',
-        front: LACE_SHIRT_FRONT,
-        back: LACE_SHIRT_BACK,
-      },
-    },
-  },
-
-  /*
-   * -------------------------------------------------------
-   * NL-002
-   * -------------------------------------------------------
-   */
-
+ 
   {
     id: 'nl-002',
     name: 'NL Round-Neck 2',
@@ -695,33 +655,6 @@ export const FALLBACK_PRODUCTS: CatalogProduct[] = [
     },
   },
 
-      /*
-   * -------------------------------------------------------
-   * NL-018 LACE SHIRT RWG
-   * -------------------------------------------------------
-   */
-
-    {
-    id: 'nl-018',
-    name: 'NL LACE SHIRT(RWG)',
-    category: 'T-Shirts',
-    price: 11000,
-    inStock: false,
-    imageUrl: LACE_SHIRTRWG_FRONT  ,
-    description:
-      'A refined Noble Luxe lace shirt with a distinctive front and back finish..',
-    sizes: ['XL', 'XXL'],
-    colors: [''],
-    featured: true,
-    colorImages: {
-      Black: {
-        name: '',
-        front: LACE_SHIRTRWG_FRONT  ,
-        back: LACE_SHIRTRWG_BACK  ,
-      },
-    },
-  },
-
         /*
    * -------------------------------------------------------
    * NL-019 LACE SHIRT BWG
@@ -774,31 +707,6 @@ export const FALLBACK_PRODUCTS: CatalogProduct[] = [
     },
   },
 
-      /*
-   * -------------------------------------------------------
-   * NL-21 VINTAGEMEOW
-   * -------------------------------------------------------
-   */
-
-    {
-    id: 'nl-21',
-    name: 'NL Vintage(MEOW)',
-    category: 'T-Shirts',
-    price: 9000,
-    imageUrl: VINTAGEMEOW_FRONT ,
-    description:
-      'A vintage-inspired Noble Luxe piece with a distinctive front and back design.',
-    sizes: ['XL', 'XXL'],
-    colors: [''],
-    featured: true,
-    colorImages: {
-      Black: {
-        name: '',
-        front: VINTAGEMEOW_FRONT ,
-        back: VINTAGEMEOW_BACK ,
-      },
-    },
-  },
 
         /*
    * -------------------------------------------------------
