@@ -128,12 +128,14 @@ function Router() {
         <Route
           path="/"
           component={() => (
-            <Storefront
-              cart={cart.cart}
-              onAdd={cart.add}
-              onUpdate={cart.update}
-              onRemove={cart.remove}
-            />
+<Storefront
+  cart={cart.cart}
+  onAdd={cart.add}
+  onUpdate={cart.update}
+  onRemove={cart.remove}
+  theme={theme}
+  onToggleTheme={toggleTheme}
+/>
           )}
         />
 
