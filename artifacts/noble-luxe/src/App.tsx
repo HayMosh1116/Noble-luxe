@@ -120,6 +120,7 @@ const add = (
 
 function Router() {
   const cart = useCart();
+  const { theme, toggleTheme } = useTheme();
   const basePath = import.meta.env.BASE_URL.replace(/\/$/, '');
 
   return (
