@@ -6,11 +6,13 @@ import {
   ArrowUpRight,
   Heart,
   Minus,
+  Moon,
   Plus,
   Search,
   ShoppingBag,
   SlidersHorizontal,
   Sparkles,
+  Sun,
   X,
 } from 'lucide-react';
 
@@ -65,6 +67,9 @@ function WhatsAppSticky() {
 type StorefrontProps = {
   cart: CartItem[];
 
+  theme: 'light' | 'dark';
+  onToggleTheme: () => void;
+
   onAdd: (
     product: Product,
     size?: string,
@@ -109,13 +114,16 @@ function BrandMark({
     </Link>
   );
 }
-
 function Header({
   cartCount,
   onCart,
+  theme,
+  onToggleTheme,
 }: {
   cartCount: number;
   onCart: () => void;
+  theme: 'light' | 'dark';
+  onToggleTheme: () => void;
 }) {
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -182,7 +190,23 @@ function Header({
             Account
           </Link>
         </nav>
-
+                 <button
+          type="button"
+          onClick={onToggleTheme}
+          aria-label={
+            theme === 'dark'
+              ? 'Switch to light mode'
+              : 'Switch to dark mode'
+          }
+          className="flex h-9 w-9 items-center justify-center border border-border text-muted-foreground transition-colors hover:border-primary hover:text-primary"
+          data-testid="button-toggle-theme"
+        >
+          {theme === 'dark' ? (
+            <Sun className="h-4 w-4" strokeWidth={1.4} />
+          ) : (
+            <Moon className="h-4 w-4" strokeWidth={1.4} />
+          )}
+        </button>
         <button
           className="relative flex items-center gap-2 text-[11px] uppercase tracking-[0.2em] hover:text-primary"
           onClick={onCart}
@@ -713,6 +737,8 @@ export default function Storefront({
   onAdd,
   onUpdate,
   onRemove,
+  theme,
+  onToggleTheme,
 }: StorefrontProps) {
   const [search, setSearch] =
     useState('');
@@ -857,12 +883,13 @@ export default function Storefront({
           {addedMessage}
         </div>
       )}
-
       <Header
         cartCount={cartCount}
         onCart={() =>
           setCartOpen(true)
         }
+        theme={theme}
+        onToggleTheme={onToggleTheme}
       />
 
       <main>
