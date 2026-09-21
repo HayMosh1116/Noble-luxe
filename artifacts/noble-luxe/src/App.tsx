@@ -199,7 +199,42 @@ function RoutedErrorBoundary({
   );
 }
 
+function useTheme() {
+  const [theme, setTheme] = useState<'light' | 'dark'>(() => {
+    const savedTheme = localStorage.getItem('noble-luxe-theme');
+
+    if (savedTheme === 'light' || savedTheme === 'dark') {
+      return savedTheme;
+    }
+
+    return window.matchMedia('(prefers-color-scheme: dark)').matches
+      ? 'dark'
+      : 'light';
+  });
+
+  useEffect(() => {
+    const root = document.documentElement;
+
+    root.classList.toggle('dark', theme === 'dark');
+
+    localStorage.setItem('noble-luxe-theme', theme);
+  }, [theme]);
+
+  const toggleTheme = () => {
+    setTheme((currentTheme) =>
+      currentTheme === 'dark' ? 'light' : 'dark',
+    );
+  };
+
+  return {
+    theme,
+    toggleTheme,
+  };
+}
+
 export default function App() {
+  const { theme, toggleTheme } = useTheme();
+
   setBaseUrl(getApiBaseUrl());
   const basePath = import.meta.env.BASE_URL.replace(/\/$/, '');
   const hostname = window.location.hostname;
