@@ -1111,10 +1111,10 @@ export default function Storefront({
           )}
         </section>
 
-        <section
-          id="journal"
-          className="border-y border-border bg-[#161512]"
-        >
+<section
+  id="journal"
+  className="border-y border-border bg-card"
+>
           <div className="mx-auto grid max-w-[1440px] gap-10 px-5 py-20 lg:grid-cols-[1.2fr_.8fr] lg:items-center lg:px-10 lg:py-28">
             <div>
               <p className="font-mono-brand text-[10px] uppercase tracking-[0.2em] text-primary">
