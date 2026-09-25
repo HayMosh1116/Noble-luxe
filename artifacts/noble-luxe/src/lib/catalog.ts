@@ -58,12 +58,6 @@ const ARMLESS_BACK =
 
 /* New products */
 
-const HOODIE_FRONT =
-  'https://i.ibb.co/qLYHR0DP/Qcct5d-JUA5.jpg';
-
-const HOODIE_BACK =
-  'https://i.ibb.co/tTMqjXmG/w-UIs-AX27v-A.jpg';
-
 const JOGGERS_1_FRONT =
   'https://i.ibb.co/YFR5bGd2/jboafl7g-GJ.jpg';
 
@@ -167,7 +161,6 @@ const VINTAGEBG_BACK =
 
 const roundNeck2Colors = [
   'Black',
-  'White',
   'Purple',
   'Brown',
   'Ash',
@@ -176,17 +169,12 @@ const roundNeck2Colors = [
 ];
 
 const sweatShirtColors = [
-  'Army Green',
   'Mint Green',
   'Orange',
 ];
 
 const armlessColors = [
   'Black',
-];
-
-const hoodieColors = [
-  'Orange',
 ];
 
 const joggers1Colors = [
@@ -206,7 +194,6 @@ const joggers2Colors = [
 const shortJoggersColors = [
   'Blue',
   'Red',
-  'Navy Blue',
 ];
 
 const roundNeck1Colors = [
@@ -323,35 +310,6 @@ export const FALLBACK_PRODUCTS: CatalogProduct[] = [
         back: ARMLESS_BACK,
       },
     },
-  },
-
-  /*
-   * -------------------------------------------------------
-   * NL-006 — HOODIE
-   * -------------------------------------------------------
-   */
-
-  {
-    id: 'nl-006',
-    name: 'NL Hoodie',
-    category: 'Hoodies',
-    price: 17000,
-    imageUrl: HOODIE_FRONT,
-    description:
-      'A statement Noble Luxe hoodie with a clean front and distinctive back finish.',
-    sizes: ['XL', 'XXL'],
-    colors: hoodieColors,
-    featured: true,
-    colorImages: Object.fromEntries(
-      hoodieColors.map((color) => [
-        color,
-        {
-          name: color,
-          front: HOODIE_FRONT,
-          back: HOODIE_BACK,
-        },
-      ]),
-    ),
   },
 
   /*
