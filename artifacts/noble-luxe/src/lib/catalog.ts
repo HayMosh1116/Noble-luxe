@@ -136,12 +136,6 @@ const LACE_SHIRTBWG_FRONT =
 const LACE_SHIRTBWG_BACK =
   'https://i.ibb.co/Xr75Brwy/cpzc-TNHk-E2.jpg';
 
-const LACE_SHIRTDBWB_FRONT =
-  'https://i.ibb.co/0jBkWn16/Nu-GUVzh-Wp4.jpg';
-
-const LACE_SHIRTDBWB_BACK =
-  'https://i.ibb.co/GvTxWsm0/Rxc-P4l-Swo-T.jpg';
-
 const VINTAGEBOOM_FRONT =
   'https://i.ibb.co/Gf8wXNjV/Hgix-I8362-P.jpg';
 
@@ -635,32 +629,6 @@ export const FALLBACK_PRODUCTS: CatalogProduct[] = [
         name: '',
         front: LACE_SHIRTBWG_FRONT  ,
         back: LACE_SHIRTBWG_BACK  ,
-      },
-    },
-  },
-
-          /*
-   * -------------------------------------------------------
-   * NL-20 LACE SHIRT DBWB
-   * -------------------------------------------------------
-   */
-
-    {
-    id: 'nl-20',
-    name: 'NL LACE SHIRT(DBWB) DASH',
-    category: 'T-Shirts',
-    price: 11000,
-    imageUrl: LACE_SHIRTDBWB_FRONT  ,
-    description:
-      'A refined Noble Luxe lace shirt with a distinctive front and back finish..',
-    sizes: ['XL', 'XXL'],
-    colors: [''],
-    featured: true,
-    colorImages: {
-      Black: {
-        name: '',
-        front: LACE_SHIRTDBWB_FRONT  ,
-        back: LACE_SHIRTDBWB_BACK  ,
       },
     },
   },
