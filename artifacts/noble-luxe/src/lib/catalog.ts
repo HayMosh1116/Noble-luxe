@@ -64,12 +64,6 @@ const JOGGERS_1_FRONT =
 const JOGGERS_1_BACK =
   'https://i.ibb.co/bgh0qRbq/IZJsk-Ghb-I4.jpg';
 
-const BASIC_TOP_FRONT =
-  'https://i.ibb.co/HLKZWS68/I5kw-WDymih.jpg';
-
-const BASIC_TOP_BACK =
-  'https://i.ibb.co/TxpTRCvf/O92i-O39-IIb.jpg';
-
 const JOGGERS_2_FRONT =
   'https://i.ibb.co/Psvkgbhc/1eub-P95-Jdm.jpg';
 
@@ -174,10 +168,6 @@ const armlessColors = [
 const joggers1Colors = [
   'Navy Blue',
   'Red',
-];
-
-const basicTopColors = [
-  'Brown',
 ];
 
 const joggers2Colors = [
@@ -335,34 +325,6 @@ export const FALLBACK_PRODUCTS: CatalogProduct[] = [
     ),
   },
 
-  /*
-   * -------------------------------------------------------
-   * NL-008 — BASIC TOP
-   * -------------------------------------------------------
-   */
-
-  {
-    id: 'nl-008',
-    name: 'NL Basic Top',
-    category: 'Tops',
-    price: 7500,
-    imageUrl: BASIC_TOP_FRONT,
-    description:
-      'A clean Noble Luxe basic top available in four versatile colours.',
-    sizes: ['XL', 'XXL'],
-    colors: basicTopColors,
-    featured: false,
-    colorImages: Object.fromEntries(
-      basicTopColors.map((color) => [
-        color,
-        {
-          name: color,
-          front: BASIC_TOP_FRONT,
-          back: BASIC_TOP_BACK,
-        },
-      ]),
-    ),
-  },
 
   /*
    * -------------------------------------------------------
