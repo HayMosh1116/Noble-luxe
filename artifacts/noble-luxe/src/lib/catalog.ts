@@ -166,13 +166,11 @@ const armlessColors = [
 ];
 
 const joggers1Colors = [
-  'Navy Blue',
   'Red',
 ];
 
 const joggers2Colors = [
   'Red',
-  'Navy Blue',
 ];
 
 const shortJoggersColors = [
