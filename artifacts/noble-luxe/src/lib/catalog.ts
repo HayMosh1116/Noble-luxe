@@ -118,18 +118,6 @@ const VINTAGEBWY_FRONT =
 const VINTAGEBWY_BACK =
   'https://i.ibb.co/QFzXr054/jk-Lg-IEy-M3j.jpg';
 
-const LACE_SHIRTRWG_FRONT =
-  'https://i.ibb.co/4Z9tbW09/ksb-Qmu-R63n.jpg';
-
-const LACE_SHIRTRWG_BACK =
-  'https://i.ibb.co/jZTNbjfj/6uf-F7pywfo.jpg';
-
-const LACE_SHIRTBWG_FRONT =
-  'https://i.ibb.co/MDBczQ21/UV8-OS3lpzr.jpg';
-
-const LACE_SHIRTBWG_BACK =
-  'https://i.ibb.co/Xr75Brwy/cpzc-TNHk-E2.jpg';
-
 const VINTAGEBOOM_FRONT =
   'https://i.ibb.co/Gf8wXNjV/Hgix-I8362-P.jpg';
 
@@ -567,31 +555,6 @@ export const FALLBACK_PRODUCTS: CatalogProduct[] = [
     },
   },
 
-        /*
-   * -------------------------------------------------------
-   * NL-019 LACE SHIRT BWG
-   * -------------------------------------------------------
-   */
-
-    {
-    id: 'nl-019',
-    name: 'NL LACE SHIRT(BWG) STRAIGHT',
-    category: 'T-Shirts',
-    price: 11000,
-    imageUrl: LACE_SHIRTBWG_FRONT  ,
-    description:
-      'A refined Noble Luxe lace shirt with a distinctive front and back finish..',
-    sizes: ['XL', 'XXL'],
-    colors: [''],
-    featured: true,
-    colorImages: {
-      Black: {
-        name: '',
-        front: LACE_SHIRTBWG_FRONT  ,
-        back: LACE_SHIRTBWG_BACK  ,
-      },
-    },
-  },
 
 
         /*
