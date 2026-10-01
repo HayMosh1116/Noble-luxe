@@ -1,3 +1,5 @@
+import { apiUrl } from '@/lib/api-base';
+
 import type { Product } from '@workspace/api-client-react';
 
 export type CartItem = Product & {
@@ -615,89 +617,132 @@ export const FALLBACK_PRODUCTS: CatalogProduct[] = DEFAULT_PRODUCTS;
 
 /*
  * =========================================================
- * PERSISTENT PRODUCT & STOCK MANAGEMENT
+ * DATABASE-BACKED CATALOG ACCESS
  * =========================================================
- * Allows stock updates and product edits (via the Admin page
- * or checkout order deductions) to persist in the browser.
+ * The backend/database is the single source of truth for
+ * products, prices, collections and stock. Nothing product
+ * related is stored in localStorage anymore.
  */
 
-const STORAGE_KEY = 'noble_luxe_products_v2';
-
-export const getLiveCatalog = (): CatalogProduct[] => {
-  if (typeof window === 'undefined') return DEFAULT_PRODUCTS;
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(DEFAULT_PRODUCTS));
-      return DEFAULT_PRODUCTS;
-    }
-    const parsed = JSON.parse(raw) as CatalogProduct[];
-    if (!Array.isArray(parsed) || parsed.length === 0) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(DEFAULT_PRODUCTS));
-      return DEFAULT_PRODUCTS;
-    }
-    return parsed;
-  } catch (err) {
-    console.error('Error loading live catalog:', err);
+export const fetchLiveCatalog = async (): Promise<CatalogProduct[]> => {
+  const res = await fetch(apiUrl('/api/products'));
+  if (!res.ok) throw new Error('Failed to load products');
+  const data = (await res.json()) as CatalogProduct[];
+  if (!Array.isArray(data) || data.length === 0) {
     return DEFAULT_PRODUCTS;
   }
+  return data;
 };
 
-export const saveLiveCatalog = (products: CatalogProduct[]): void => {
+export const refreshCatalogEvent = (): void => {
   if (typeof window === 'undefined') return;
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(products));
-    window.dispatchEvent(new Event('noble_luxe_catalog_updated'));
-  } catch (err) {
-    console.error('Error saving live catalog:', err);
+  window.dispatchEvent(new Event('noble_luxe_catalog_updated'));
+};
+
+const adminHeaders = (pin: string): HeadersInit => ({
+  'Content-Type': 'application/json',
+  'x-admin-pin': pin,
+});
+
+/*
+ * =========================================================
+ * ADMIN API (PIN VERIFIED SERVER-SIDE)
+ * =========================================================
+ */
+
+export const verifyAdminPin = async (
+  pin: string,
+): Promise<{ valid: boolean; error?: string }> => {
+  const res = await fetch(apiUrl('/api/admin/verify-pin'), {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ pin }),
+  });
+  if (res.ok) return { valid: true };
+  const data = await res.json().catch(() => ({}));
+  return { valid: false, error: data.error || 'Incorrect admin PIN.' };
+};
+
+export const apiUpdateProductStock = async (
+  pin: string,
+  productId: string,
+  stock: number,
+): Promise<CatalogProduct> => {
+  const res = await fetch(apiUrl(`/api/products/${encodeURIComponent(productId)}/stock`), {
+    method: 'PATCH',
+    headers: adminHeaders(pin),
+    body: JSON.stringify({ stock }),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.error || 'Failed to update stock.');
+  return data.product as CatalogProduct;
+};
+
+export const apiCreateProduct = async (
+  pin: string,
+  product: Omit<CatalogProduct, 'id'> & { id?: string },
+): Promise<CatalogProduct> => {
+  const res = await fetch(apiUrl('/api/products'), {
+    method: 'POST',
+    headers: adminHeaders(pin),
+    body: JSON.stringify(product),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.error || 'Failed to add product.');
+  return data.product as CatalogProduct;
+};
+
+export const apiUpdateProduct = async (
+  pin: string,
+  productId: string,
+  changes: Partial<CatalogProduct>,
+): Promise<CatalogProduct> => {
+  const res = await fetch(apiUrl(`/api/products/${encodeURIComponent(productId)}`), {
+    method: 'PATCH',
+    headers: adminHeaders(pin),
+    body: JSON.stringify(changes),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.error || 'Failed to update product.');
+  return data.product as CatalogProduct;
+};
+
+export const apiDeleteProduct = async (
+  pin: string,
+  productId: string,
+): Promise<void> => {
+  const res = await fetch(apiUrl(`/api/products/${encodeURIComponent(productId)}`), {
+    method: 'DELETE',
+    headers: adminHeaders(pin),
+  });
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}));
+    throw new Error(data.error || 'Failed to delete product.');
   }
 };
 
-export const updateProductStock = (productId: string, newStock: number): void => {
-  const current = getLiveCatalog();
-  const updated = current.map((p) =>
-    p.id === productId ? { ...p, stock: Math.max(0, newStock) } : p,
-  );
-  saveLiveCatalog(updated);
-};
-
-export const updateProduct = (updatedProduct: CatalogProduct): void => {
-  const current = getLiveCatalog();
-  const updated = current.map((p) =>
-    p.id === updatedProduct.id ? updatedProduct : p,
-  );
-  saveLiveCatalog(updated);
-};
-
-export const addProduct = (newProduct: CatalogProduct): void => {
-  const current = getLiveCatalog();
-  saveLiveCatalog([newProduct, ...current]);
-};
-
-export const deleteProduct = (productId: string): void => {
-  const current = getLiveCatalog();
-  const updated = current.filter((p) => p.id !== productId);
-  saveLiveCatalog(updated);
-};
-
-export const decrementStockForOrder = (
-  items: { id?: string; productId?: string; quantity: number }[],
-): void => {
-  const current = getLiveCatalog();
-  const updated = current.map((product) => {
-    const match = items.find((i) => (i.id || i.productId) === product.id);
-    if (!match) return product;
-    const currentStock = typeof product.stock === 'number' ? product.stock : 10;
-    const newStock = Math.max(0, currentStock - match.quantity);
-    return { ...product, stock: newStock };
+export const apiSaveCart = async (
+  isSignedIn: boolean,
+  items: CartItem[],
+): Promise<void> => {
+  if (!isSignedIn) return;
+  const res = await fetch(apiUrl('/api/cart'), {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ items }),
   });
-  saveLiveCatalog(updated);
+  if (!res.ok) throw new Error('Failed to save bag');
 };
 
-export const resetCatalogToDefault = (): void => {
-  if (typeof window === 'undefined') return;
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(DEFAULT_PRODUCTS));
-  window.dispatchEvent(new Event('noble_luxe_catalog_updated'));
+export const apiLoadCart = async (): Promise<CartItem[]> => {
+  const res = await fetch(apiUrl('/api/cart'));
+  if (!res.ok) return [];
+  return (await res.json()) as CartItem[];
+};
+
+export const apiClearCart = async (): Promise<void> => {
+  const res = await fetch(apiUrl('/api/cart'), { method: 'DELETE' });
+  if (!res.ok) throw new Error('Failed to clear bag');
 };
 
 /*
