@@ -20,12 +20,15 @@ import {
   TrendingDown,
 } from 'lucide-react';
 import {
+  DEFAULT_PRODUCTS,
   NOBLE_COLLECTIONS,
-  getLiveCatalog,
-  saveLiveCatalog,
-  updateProductStock,
-  deleteProduct,
-  resetCatalogToDefault,
+  fetchLiveCatalog,
+  refreshCatalogEvent,
+  verifyAdminPin,
+  apiUpdateProductStock,
+  apiCreateProduct,
+  apiUpdateProduct,
+  apiDeleteProduct,
   formatCurrency,
   type CatalogProduct,
   type CollectionName,
@@ -33,21 +36,21 @@ import {
 import { useToast } from '@/hooks/use-toast';
 
 
-const MASTER_PIN_KEY = 'noble_luxe_admin_pin';
-const MASTER_SESSION_KEY = 'noble_luxe_admin_unlocked';
-const DEFAULT_MASTER_PIN = '1116';
+const MASTER_SESSION_PIN_KEY = 'noble_luxe_admin_verified_pin';
 
 export default function AdminInventory() {
-  const [isUnlocked, setIsUnlocked] = useState<boolean>(() => {
+  const [verifiedPin, setVerifiedPin] = useState<string>(() => {
     try {
-      return sessionStorage.getItem(MASTER_SESSION_KEY) === 'true';
+      return sessionStorage.getItem(MASTER_SESSION_PIN_KEY) || '';
     } catch {
-      return false;
+      return '';
     }
   });
+  const isUnlocked = Boolean(verifiedPin);
   const [pinInput, setPinInput] = useState('');
   const [showPin, setShowPin] = useState(false);
   const [pinError, setPinError] = useState('');
+  const [isVerifying, setIsVerifying] = useState(false);
 
   const [showChangePinModal, setShowChangePinModal] = useState(false);
   const [currentPinInput, setCurrentPinInput] = useState('');
@@ -55,34 +58,36 @@ export default function AdminInventory() {
   const [confirmPinInput, setConfirmPinInput] = useState('');
   const [changePinError, setChangePinError] = useState('');
 
-  const getActivePin = () => {
-    try {
-      return localStorage.getItem(MASTER_PIN_KEY) || DEFAULT_MASTER_PIN;
-    } catch {
-      return DEFAULT_MASTER_PIN;
-    }
-  };
-
-  const handleUnlock = (e?: React.FormEvent) => {
+  const handleUnlock = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
-    const activePin = getActivePin();
-    if (pinInput.trim() === activePin) {
-      sessionStorage.setItem(MASTER_SESSION_KEY, 'true');
-      setIsUnlocked(true);
-      setPinError('');
-      setPinInput('');
-      toast({
-        title: 'Access Granted',
-        description: 'Noble Luxe Stock Desk unlocked.',
-      });
-    } else {
-      setPinError('Incorrect master passcode. Access denied.');
+    const pin = pinInput.trim();
+    if (!pin) return;
+    setPinError('');
+    setIsVerifying(true);
+    try {
+      const res = await verifyAdminPin(pin);
+      if (res.valid) {
+        sessionStorage.setItem(MASTER_SESSION_PIN_KEY, pin);
+        setVerifiedPin(pin);
+        setPinInput('');
+        toast({
+          title: 'Access Granted',
+          description: 'Noble Luxe Stock Desk verified by server.',
+        });
+        loadProducts();
+      } else {
+        setPinError(res.error || 'Incorrect master passcode. Access denied.');
+      }
+    } catch {
+      setPinError('Failed to verify PIN with backend.');
+    } finally {
+      setIsVerifying(false);
     }
   };
 
   const handleLock = () => {
-    sessionStorage.removeItem(MASTER_SESSION_KEY);
-    setIsUnlocked(false);
+    sessionStorage.removeItem(MASTER_SESSION_PIN_KEY);
+    setVerifiedPin('');
     toast({
       title: 'Desk Locked',
       description: 'Stock manager has been locked.',
@@ -91,41 +96,25 @@ export default function AdminInventory() {
 
   const handleChangePin = (e: React.FormEvent) => {
     e.preventDefault();
-    setChangePinError('');
-    const activePin = getActivePin();
-    if (currentPinInput.trim() !== activePin) {
-      setChangePinError('Current passcode is incorrect.');
-      return;
-    }
-    if (newPinInput.trim().length < 4) {
-      setChangePinError('New passcode must be at least 4 digits/characters.');
-      return;
-    }
-    if (newPinInput.trim() !== confirmPinInput.trim()) {
-      setChangePinError('New passcodes do not match.');
-      return;
-    }
-    localStorage.setItem(MASTER_PIN_KEY, newPinInput.trim());
-    setShowChangePinModal(false);
-    setCurrentPinInput('');
-    setNewPinInput('');
-    setConfirmPinInput('');
-    toast({
-      title: 'Passcode Updated',
-      description: 'Your master passcode has been changed successfully.',
-    });
+    setChangePinError('Admin PIN is verified server-side. Set ADMIN_INVENTORY_PIN in your Vercel Environment Variables to change it.');
   };
 
-  const [products, setProducts] = useState<CatalogProduct[]>([]);
+  const [products, setProducts] = useState<CatalogProduct[]>(DEFAULT_PRODUCTS);
   const [selectedCollection, setSelectedCollection] = useState<string>('All Pieces');
   const [search, setSearch] = useState('');
-  const [editingProduct, setEditingProduct] = useState<CatalogProduct | null>(null);
   const [draftStocks, setDraftStocks] = useState<Record<string, number>>({});
   const [showAddModal, setShowAddModal] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const { toast } = useToast();
 
   const loadProducts = () => {
-    setProducts(getLiveCatalog());
+    fetchLiveCatalog()
+      .then((items) => {
+        if (Array.isArray(items) && items.length > 0) {
+          setProducts(items);
+        }
+      })
+      .catch((err) => console.error('Failed to load products from database:', err));
   };
 
   useEffect(() => {
@@ -135,19 +124,35 @@ export default function AdminInventory() {
     return () => window.removeEventListener('noble_luxe_catalog_updated', handleUpdate);
   }, []);
 
-  const handleCommitStock = (id: string) => {
+  const [editingProduct, setEditingProduct] = useState<CatalogProduct | null>(null);
+
+  const handleCommitStock = async (id: string) => {
     const p = products.find((item) => item.id === id);
     if (!p) return;
     const targetStock = draftStocks[id] !== undefined ? draftStocks[id] : (p.stock ?? 0);
     const finalStock = Math.max(0, targetStock);
-    updateProductStock(id, finalStock);
-    setProducts((prev) =>
-      prev.map((item) => (item.id === id ? { ...item, stock: finalStock } : item))
-    );
-    toast({
-      title: 'Stock Updated',
-      description: `${p.name} stock set to ${finalStock}.`,
-    });
+    try {
+      await apiUpdateProductStock(verifiedPin, id, finalStock);
+      setProducts((prev) =>
+        prev.map((item) => (item.id === id ? { ...item, stock: finalStock } : item))
+      );
+      setDraftStocks((prev) => {
+        const next = { ...prev };
+        delete next[id];
+        return next;
+      });
+      refreshCatalogEvent();
+      toast({
+        title: 'Stock Updated in Database',
+        description: `${p.name} stock set to ${finalStock}.`,
+      });
+    } catch (err: any) {
+      toast({
+        title: 'Stock update failed',
+        description: err?.message || 'Database update failed.',
+        variant: 'destructive',
+      });
+    }
   };
 
   const handleStockChange = (id: string, delta: number) => {
@@ -189,9 +194,10 @@ export default function AdminInventory() {
     }
   };
 
-  const handleSaveEdit = (e: React.FormEvent) => {
+  const handleSaveEdit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingProduct) return;
+    setIsSaving(true);
     const primaryColor = editingProduct.colors?.[0] || 'Black';
     const updatedProduct: CatalogProduct = {
       ...editingProduct,
@@ -204,15 +210,24 @@ export default function AdminInventory() {
         },
       },
     };
-    const current = getLiveCatalog();
-    const updated = current.map((p) => (p.id === updatedProduct.id ? updatedProduct : p));
-    saveLiveCatalog(updated);
-    setProducts(updated);
-    setEditingProduct(null);
-    toast({
-      title: 'Product Saved',
-      description: `${updatedProduct.name} changes have been saved.`,
-    });
+    try {
+      await apiUpdateProduct(verifiedPin, updatedProduct.id, updatedProduct);
+      loadProducts();
+      refreshCatalogEvent();
+      setEditingProduct(null);
+      toast({
+        title: 'Product Saved to Database',
+        description: `${updatedProduct.name} changes have been saved.`,
+      });
+    } catch (err: any) {
+      toast({
+        title: 'Save failed',
+        description: err?.message || 'Could not save product in database.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const [newProduct, setNewProduct] = useState<Partial<CatalogProduct> & { backImageUrl?: string }>({
