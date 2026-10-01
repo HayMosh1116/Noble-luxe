@@ -203,7 +203,7 @@ export const DEFAULT_PRODUCTS: CatalogProduct[] = [
     collection: 'Lace Shirts',
     category: 'Lace Shirts',
     price: 10000,
-    stock: 10,
+    stock: 0,
     imageUrl: LACE_SHIRT_FRONT,
     description: 'A refined Noble Luxe lace shirt with a distinctive front and back finish.',
     sizes: ['XL', 'XXL'],
