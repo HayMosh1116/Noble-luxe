@@ -120,6 +120,7 @@ export default function AdminInventory() {
   const [selectedCollection, setSelectedCollection] = useState<string>('All Pieces');
   const [search, setSearch] = useState('');
   const [editingProduct, setEditingProduct] = useState<CatalogProduct | null>(null);
+  const [draftStocks, setDraftStocks] = useState<Record<string, number>>({});
   const [showAddModal, setShowAddModal] = useState(false);
   const { toast } = useToast();
 
@@ -134,11 +135,28 @@ export default function AdminInventory() {
     return () => window.removeEventListener('noble_luxe_catalog_updated', handleUpdate);
   }, []);
 
+  const handleCommitStock = (id: string) => {
+    const p = products.find((item) => item.id === id);
+    if (!p) return;
+    const targetStock = draftStocks[id] !== undefined ? draftStocks[id] : (p.stock ?? 0);
+    const finalStock = Math.max(0, targetStock);
+    updateProductStock(id, finalStock);
+    setProducts((prev) =>
+      prev.map((item) => (item.id === id ? { ...item, stock: finalStock } : item))
+    );
+    toast({
+      title: 'Stock Updated',
+      description: `${p.name} stock set to ${finalStock}.`,
+    });
+  };
+
   const handleStockChange = (id: string, delta: number) => {
     const p = products.find((item) => item.id === id);
     if (!p) return;
     const newStock = Math.max(0, (p.stock ?? 0) + delta);
     updateProductStock(id, newStock);
+    setDraftStocks((prev) => ({ ...prev, [id]: newStock }));
+    setProducts((prev) => prev.map((item) => (item.id === id ? { ...item, stock: newStock } : item)));
     toast({
       title: 'Stock Updated',
       description: `${p.name} stock set to ${newStock}`,
@@ -222,8 +240,23 @@ export default function AdminInventory() {
       featured: true,
     };
     const current = getLiveCatalog();
-    saveLiveCatalog([fullProduct, ...current]);
+    const updatedList = [fullProduct, ...current];
+    saveLiveCatalog(updatedList);
+    setProducts(updatedList);
     setShowAddModal(false);
+    setNewProduct({
+      id: `nl-${Date.now().toString().slice(-4)}`,
+      name: '',
+      collection: 'Round Necks',
+      category: 'Round Necks',
+      price: 10000,
+      stock: 10,
+      imageUrl: '',
+      description: '',
+      sizes: ['XL', 'XXL'],
+      colors: ['Black'],
+      featured: true,
+    });
     toast({
       title: 'Product Created',
       description: `${fullProduct.name} has been added to ${fullProduct.collection}.`,
@@ -390,30 +423,45 @@ export default function AdminInventory() {
                     </td>
 
                     <td className="py-3 px-4">
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-1.5">
                         <button
+                          type="button"
                           onClick={() => handleStockChange(product.id, -1)}
-                          className="h-6 w-6 border border-border flex items-center justify-center hover:border-primary hover:text-primary transition"
+                          className="h-7 w-7 border border-border flex items-center justify-center hover:border-primary hover:text-primary transition text-xs"
+                          title="Decrease by 1"
                         >
                           -
                         </button>
                         <input
                           type="number"
-                          value={stock}
-                          onChange={(e) => handleSetStockDirect(product.id, e.target.value)}
-                          className="w-14 text-center py-1 bg-secondary border border-border text-xs font-mono-brand"
+                          min="0"
+                          value={draftStocks[product.id] !== undefined ? draftStocks[product.id] : stock}
+                          onChange={(e) => {
+                            const val = parseInt(e.target.value, 10);
+                            setDraftStocks((prev) => ({ ...prev, [product.id]: isNaN(val) ? 0 : Math.max(0, val) }));
+                          }}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              handleCommitStock(product.id);
+                            }
+                          }}
+                          className="w-14 text-center py-1 bg-secondary border border-border text-xs font-mono-brand text-foreground"
                         />
                         <button
+                          type="button"
                           onClick={() => handleStockChange(product.id, 1)}
-                          className="h-6 w-6 border border-border flex items-center justify-center hover:border-primary hover:text-primary transition"
+                          className="h-7 w-7 border border-border flex items-center justify-center hover:border-primary hover:text-primary transition text-xs"
+                          title="Increase by 1"
                         >
                           +
                         </button>
                         <button
-                          onClick={() => handleStockChange(product.id, 5)}
-                          className="px-2 py-0.5 border border-border text-[10px] font-mono-brand hover:border-primary hover:text-primary transition"
+                          type="button"
+                          onClick={() => handleCommitStock(product.id)}
+                          className="px-2.5 py-1 bg-primary text-[10px] font-bold uppercase tracking-wider text-primary-foreground hover:opacity-90 transition rounded-none"
+                          title="Save this stock level"
                         >
-                          +5
+                          Update
                         </button>
                       </div>
                     </td>
