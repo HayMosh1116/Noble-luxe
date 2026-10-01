@@ -174,13 +174,23 @@ export default function AdminInventory() {
     updateProductStock(id, num);
   };
 
-  const handleDelete = (id: string, name: string) => {
+  const handleDelete = async (id: string, name: string) => {
     if (confirm(`Are you sure you want to delete ${name}?`)) {
-      deleteProduct(id);
-      toast({
-        title: 'Product Deleted',
-        description: `${name} has been removed.`,
-      });
+      try {
+        await apiDeleteProduct(verifiedPin, id);
+        loadProducts();
+        refreshCatalogEvent();
+        toast({
+          title: 'Product Deleted',
+          description: `${name} has been removed from database.`,
+        });
+      } catch (err: any) {
+        toast({
+          title: 'Delete Failed',
+          description: err?.message || 'Could not delete product.',
+          variant: 'destructive',
+        });
+      }
     }
   };
 
@@ -246,7 +256,7 @@ export default function AdminInventory() {
   });
   const [editingBackImageUrl, setEditingBackImageUrl] = useState<string>('');
 
-  const handleCreateProduct = (e: React.FormEvent) => {
+  const handleCreateProduct = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newProduct.name || !newProduct.imageUrl) {
       toast({
@@ -277,11 +287,23 @@ export default function AdminInventory() {
         },
       },
     };
-    const current = getLiveCatalog();
-    const updatedList = [fullProduct, ...current];
-    saveLiveCatalog(updatedList);
-    setProducts(updatedList);
-    setShowAddModal(false);
+    try {
+      await apiCreateProduct(verifiedPin, fullProduct);
+      loadProducts();
+      refreshCatalogEvent();
+      setShowAddModal(false);
+      toast({
+        title: 'Product Created in Database',
+        description: `${fullProduct.name} has been added to ${fullProduct.collection}.`,
+      });
+    } catch (err: any) {
+      toast({
+        title: 'Creation Failed',
+        description: err?.message || 'Failed to save product in database.',
+        variant: 'destructive',
+      });
+      return;
+    }
     setNewProduct({
       id: `nl-${Date.now().toString().slice(-4)}`,
       name: '',
@@ -316,6 +338,88 @@ export default function AdminInventory() {
   const outOfStockCount = products.filter((p) => (p.stock ?? 0) === 0).length;
   const lowStockCount = products.filter((p) => (p.stock ?? 0) > 0 && (p.stock ?? 0) < 3).length;
 
+  if (!isUnlocked) {
+    return (
+      <div className="noble-noise min-h-screen bg-background text-foreground flex flex-col justify-between p-4 sm:p-6">
+        <header className="border-b border-border pb-4 flex items-center justify-between">
+          <Link
+            href="/"
+            className="inline-flex items-center gap-2 text-xs font-mono-brand uppercase tracking-wider text-muted-foreground hover:text-primary transition"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Showroom
+          </Link>
+          <span className="font-display text-sm tracking-wider text-primary">NOBLE LUXE</span>
+        </header>
+
+        <main className="flex-1 flex items-center justify-center py-12">
+          <div className="w-full max-w-md border border-border bg-card/90 backdrop-blur-md p-8 sm:p-10 shadow-2xl text-center">
+            <div className="mx-auto mb-6 flex h-14 w-14 items-center justify-center rounded-full bg-primary/10 border border-primary/20 text-primary">
+              <Lock className="h-7 w-7" />
+            </div>
+            <h1 className="font-display text-2xl tracking-wider text-foreground uppercase">
+              Admin Access Required
+            </h1>
+            <p className="mt-2 text-xs text-muted-foreground leading-relaxed">
+              Enter the master administrative PIN to unlock the stock desk and manage NOBLE LUXE inventory.
+            </p>
+
+            <form onSubmit={handleUnlock} className="mt-8 space-y-4">
+              <div className="relative">
+                <input
+                  type={showPin ? 'text' : 'password'}
+                  value={pinInput}
+                  onChange={(e) => {
+                    setPinInput(e.target.value);
+                    if (pinError) setPinError('');
+                  }}
+                  placeholder="Enter Master PIN"
+                  autoFocus
+                  required
+                  className="w-full border border-border bg-background px-4 py-3 text-center text-lg tracking-widest text-foreground placeholder:text-sm placeholder:tracking-normal focus:outline-none focus:border-primary font-mono-brand"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPin(!showPin)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                >
+                  {showPin ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              </div>
+
+              {pinError && (
+                <div className="flex items-center justify-center gap-2 border border-destructive/40 bg-destructive/10 p-3 text-xs text-destructive">
+                  <AlertTriangle className="h-4 w-4 shrink-0" />
+                  <span>{pinError}</span>
+                </div>
+              )}
+
+              <button
+                type="submit"
+                disabled={isVerifying || !pinInput.trim()}
+                className="w-full bg-primary text-primary-foreground py-3 text-xs font-semibold uppercase tracking-wider hover:bg-accent transition disabled:opacity-50 flex items-center justify-center gap-2"
+              >
+                {isVerifying ? (
+                  <>
+                    <RefreshCw className="h-4 w-4 animate-spin" /> Verifying...
+                  </>
+                ) : (
+                  <>
+                    <ShieldCheck className="h-4 w-4" /> Unlock Inventory
+                  </>
+                )}
+              </button>
+            </form>
+          </div>
+        </main>
+
+        <footer className="text-center text-[11px] font-mono-brand text-muted-foreground">
+          Protected Administrative Session
+        </footer>
+      </div>
+    );
+  }
+
   return (
     <div className="noble-noise min-h-screen bg-background text-foreground pb-20">
       {/* Header */}
@@ -342,6 +446,14 @@ export default function AdminInventory() {
             >
               Customer Orders
             </Link>
+            <button
+              onClick={handleLock}
+              title="Lock Desk"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 border border-border text-xs font-mono-brand uppercase tracking-wider hover:border-destructive hover:text-destructive transition"
+            >
+              <Lock className="h-3.5 w-3.5" />
+              Lock Desk
+            </button>
             <button
               onClick={() => setShowAddModal(true)}
               className="inline-flex items-center gap-1.5 bg-primary text-primary-foreground px-4 py-2 text-xs font-semibold uppercase tracking-wider hover:bg-accent transition"
