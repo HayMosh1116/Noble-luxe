@@ -194,31 +194,6 @@ const sweatShirtColors = [
  */
 
 export const DEFAULT_PRODUCTS: CatalogProduct[] = [
-  /*
-   * -------------------------------------------------------
-   * 1. LACE SHIRTS
-   * -------------------------------------------------------
-   */
-  {
-    id: 'nl-001',
-    name: 'NL Lace Shirt',
-    collection: 'Lace Shirts',
-    category: 'Lace Shirts',
-    price: 10000,
-    stock: 0,
-    imageUrl: LACE_SHIRT_FRONT,
-    description: 'A refined Noble Luxe lace shirt with a distinctive front and back finish.',
-    sizes: ['XL', 'XXL'],
-    colors: ['Black'],
-    featured: true,
-    colorImages: {
-      Black: {
-        name: 'Black',
-        front: LACE_SHIRT_FRONT,
-        back: LACE_SHIRT_BACK,
-      },
-    },
-  },
 
   /*
    * -------------------------------------------------------
