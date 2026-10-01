@@ -451,15 +451,11 @@ function ProductCard({
             <span className="font-mono-brand text-[9px] uppercase tracking-wider text-destructive font-semibold">
               • Out of stock
             </span>
-          ) : (product as CatalogProduct).stock === 1 ? (
+          ) : (product as CatalogProduct).stock! <= 3 ? (
             <span className="font-mono-brand text-[9px] uppercase tracking-wider text-amber-500 font-semibold animate-pulse">
-              • Only 1 item left in stock
+              • Only {(product as CatalogProduct).stock} {(product as CatalogProduct).stock === 1 ? 'piece' : 'pieces'} left
             </span>
-          ) : (
-            <span className="font-mono-brand text-[9px] uppercase tracking-wider text-muted-foreground/80">
-              • In stock ({(product as CatalogProduct).stock} units)
-            </span>
-          )}
+          ) : null}
         </div>
       )}
 
@@ -766,7 +762,11 @@ export default function Storefront({
   useEffect(() => {
     const onCatalogUpdate = () => setLiveCatalog(getLiveCatalog());
     window.addEventListener('noble_luxe_catalog_updated', onCatalogUpdate);
-    return () => window.removeEventListener('noble_luxe_catalog_updated', onCatalogUpdate);
+    window.addEventListener('storage', onCatalogUpdate);
+    return () => {
+      window.removeEventListener('noble_luxe_catalog_updated', onCatalogUpdate);
+      window.removeEventListener('storage', onCatalogUpdate);
+    };
   }, []);
 
   const [cartOpen, setCartOpen] =
