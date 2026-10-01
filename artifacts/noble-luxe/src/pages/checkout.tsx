@@ -16,7 +16,7 @@ import {
 import { useCreateOrder } from '@workspace/api-client-react';
 import type { OrderInput } from '@workspace/api-client-react';
 import type { CartItem } from '@/lib/catalog';
-import { formatCurrency, productImage, decrementStockForOrder } from '@/lib/catalog';
+import { formatCurrency, productImage } from '@/lib/catalog';
 type CheckoutProps = {
   cart: CartItem[];
   onUpdate: (id: string, size: string, delta: number) => void;
@@ -165,7 +165,7 @@ export default function Checkout({
       { data: payload },
       {
         onSuccess: (confirmation) => {
-          decrementStockForOrder(cart);
+          // Stock is atomically decremented in database on backend
           onClear();
           sessionStorage.setItem(
             `noble-luxe-order-${confirmation.orderId}`,
