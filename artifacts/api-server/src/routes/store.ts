@@ -717,7 +717,7 @@ router.get("/products", async (req, res) => {
       .orderBy(desc(productsTable.createdAt));
 
     if (rows.length > 0) {
-      const parsed = rows.map((r) => ({
+      const parsed: any[] = rows.map((r: any) => ({
         id: r.id,
         name: r.name,
         collection: r.collection,
@@ -733,9 +733,10 @@ router.get("/products", async (req, res) => {
       }));
 
       const queryParams = ListProductsQueryParams.safeParse(req.query);
-      const { category, search } = queryParams.success ? queryParams.data : {};
+      const qData = (queryParams.success ? queryParams.data : {}) as { category?: string; search?: string };
+      const { category, search } = qData;
 
-      const filtered = parsed.filter((product) => {
+      const filtered = (parsed as any[]).filter((product: any) => {
         const categoryMatch =
           !category ||
           category === "All" ||
@@ -1185,7 +1186,7 @@ router.patch(
  * =========================================================
  */
 function emailOrderPayload(
-  data: typeof CreateOrderBody._output,
+  data: any,
 ) {
   const pickupLocation =
     data.fulfilmentMethod === "Pickup"
@@ -1195,9 +1196,9 @@ function emailOrderPayload(
     customerName: data.customerName,
     phone: data.phone,
     email: data.email,
-    address: pickupLocation ?? (data as { address: string }).address,
-    fulfilmentMethod: data.fulfilmentMethod,
-    pickupLocation,
+    address: (pickupLocation || data.address || "") as string,
+    fulfilmentMethod: (data.fulfilmentMethod || "Delivery") as string,
+    pickupLocation: pickupLocation as string | null,
     paymentMethod: data.paymentMethod,
     total: data.total,
     items: data.items,
@@ -1250,7 +1251,7 @@ router.post("/orders", async (req, res): Promise<void> => {
     });
     return;
   }
-  const data = parsed.data;
+  const data: any = parsed.data;
   if (
     data.paymentScreenshot.startsWith("data:") &&
     Buffer.byteLength(data.paymentScreenshot, "utf8") > 4_000_000
@@ -1299,21 +1300,22 @@ router.post("/orders", async (req, res): Promise<void> => {
   }
 
   const orderId = `NL-${Date.now().toString(36).toUpperCase().slice(-6)}`;
-  await db.insert(ordersTable).values({
+  const orderData: any = data;
+  await (db.insert(ordersTable) as any).values({
     orderId,
     userId,
-    customerName: data.customerName,
-    phone: data.phone,
-    email: data.email,
+    customerName: orderData.customerName,
+    phone: orderData.phone,
+    email: orderData.email,
     address:
-      data.fulfilmentMethod === "Pickup"
-        ? data.pickupLocation
-        : data.address,
-    fulfilmentMethod: data.fulfilmentMethod,
-    items: data.items,
-    total: data.total.toFixed(2),
-    paymentMethod: data.paymentMethod,
-    paymentScreenshot: data.paymentScreenshot,
+      orderData.fulfilmentMethod === "Pickup"
+        ? (orderData.pickupLocation || "")
+        : (orderData.address || ""),
+    fulfilmentMethod: orderData.fulfilmentMethod || "Delivery",
+    items: orderData.items,
+    total: orderData.total.toFixed(2),
+    paymentMethod: orderData.paymentMethod,
+    paymentScreenshot: orderData.paymentScreenshot,
     status: "pending",
     statusMessage: "Payment received. Our team is reviewing your transfer.",
   });
