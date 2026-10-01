@@ -16,6 +16,7 @@ import Confirmation from '@/pages/confirmation';
 import Contact from '@/pages/contact';
 import Account from '@/pages/account';
 import AdminOrders from '@/pages/admin-orders';
+import AdminInventory from '@/pages/admin-inventory';
 import type { CartItem } from '@/lib/catalog';
 
 const queryClient = new QueryClient();
@@ -156,6 +157,8 @@ function Router() {
         <Route path="/contact" component={Contact} />
         <Route path="/account" component={Account} />
         <Route path="/admin-orders" component={AdminOrders} />
+        <Route path="/admin-inventory" component={AdminInventory} />
+        <Route path="/admin/inventory" component={AdminInventory} />
 
         <Route
           path="/sign-in/*?"

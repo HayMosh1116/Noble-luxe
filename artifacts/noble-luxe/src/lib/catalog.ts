@@ -14,7 +14,30 @@ export type CatalogColor = {
   back?: string;
 };
 
+export type CollectionName =
+  | 'All Pieces'
+  | 'Joggers'
+  | 'Basic Tops'
+  | 'Round Necks'
+  | 'Short Joggers'
+  | 'Vintage'
+  | 'Lace Shirts'
+  | 'Hoodies';
+
+export const NOBLE_COLLECTIONS: CollectionName[] = [
+  'All Pieces',
+  'Joggers',
+  'Basic Tops',
+  'Round Necks',
+  'Short Joggers',
+  'Vintage',
+  'Lace Shirts',
+  'Hoodies',
+];
+
 export type CatalogProduct = Product & {
+  collection: Exclude<CollectionName, 'All Pieces'>;
+  stock: number;
   colorImages?: Record<string, CatalogColor>;
 };
 
@@ -129,6 +152,7 @@ const VINTAGEBG_FRONT =
 
 const VINTAGEBG_BACK =
   'https://i.ibb.co/gFPCV8B7/0-Hf-HYf-Fe-GV.jpg';
+
 /*
  * =========================================================
  * AVAILABLE COLOURS
@@ -149,43 +173,65 @@ const sweatShirtColors = [
   'Orange',
 ];
 
-const armlessColors = [
-  'Black',
-];
-
-const joggers1Colors = [
-  'Red',
-];
-
-const joggers2Colors = [
-  'Red',
-];
-
-const shortJoggersColors = [
-  'Blue',
-  'Red',
-];
-
-const roundNeck1Colors = [
-  'Brown',
-];
-
 /*
  * =========================================================
- * CATALOGUE
+ * NOBLE LUXE MASTER PRODUCT CATALOG
+ *
+ * TO ADD OR CHANGE PRODUCTS IN CODE:
+ * Every product contains:
+ * - id: unique ID (e.g. 'nl-001')
+ * - name: product name
+ * - collection: 'Joggers' | 'Basic Tops' | 'Round Necks' | 'Short Joggers' | 'Vintage' | 'Lace Shirts' | 'Hoodies'
+ * - price: price in NGN
+ * - stock: available inventory count (0 = Out of Stock)
+ * - imageUrl: image URL
+ * - description: description text
+ * - sizes: available sizes ['XL', 'XXL', etc.]
+ * - colors: available colors
  * =========================================================
  */
 
-export const FALLBACK_PRODUCTS: CatalogProduct[] = [
- 
+export const DEFAULT_PRODUCTS: CatalogProduct[] = [
+  /*
+   * -------------------------------------------------------
+   * 1. LACE SHIRTS
+   * -------------------------------------------------------
+   */
+  {
+    id: 'nl-001',
+    name: 'NL Lace Shirt',
+    collection: 'Lace Shirts',
+    category: 'Lace Shirts',
+    price: 10000,
+    stock: 10,
+    imageUrl: LACE_SHIRT_FRONT,
+    description: 'A refined Noble Luxe lace shirt with a distinctive front and back finish.',
+    sizes: ['XL', 'XXL'],
+    colors: ['Black'],
+    featured: true,
+    colorImages: {
+      Black: {
+        name: 'Black',
+        front: LACE_SHIRT_FRONT,
+        back: LACE_SHIRT_BACK,
+      },
+    },
+  },
+
+  /*
+   * -------------------------------------------------------
+   * 2. ROUND NECKS
+   * -------------------------------------------------------
+   */
   {
     id: 'nl-002',
     name: 'NL Round-Neck 2',
-    category: 'T-Shirts',
+    collection: 'Round Necks',
+    category: 'Round Necks',
     price: 12000,
+    stock: 15,
     imageUrl: ROUND_NECK_2_FRONT,
-    description:
-      'A clean Noble Luxe round-neck piece available in multiple colours.',
+    description: 'A clean Noble Luxe round-neck piece available in multiple colours.',
     sizes: ['XL', 'XXL'],
     colors: roundNeck2Colors,
     featured: true,
@@ -200,21 +246,151 @@ export const FALLBACK_PRODUCTS: CatalogProduct[] = [
       ]),
     ),
   },
+  {
+    id: 'nl-011',
+    name: 'NL Round Neck 1 (All Man)',
+    collection: 'Round Necks',
+    category: 'Round Necks',
+    price: 11000,
+    stock: 12,
+    imageUrl: ROUND_NECK_1_MULTI_FRONT,
+    description: 'Signature graphic round neck piece crafted for luxury streetwear.',
+    sizes: ['XL', 'XXL'],
+    colors: ['Multi', 'White', 'Black'],
+    featured: true,
+    colorImages: {
+      Multi: {
+        name: 'Multi',
+        front: ROUND_NECK_1_MULTI_FRONT,
+        back: ROUND_NECK_1_MULTI_BACK,
+      },
+      White: {
+        name: 'White',
+        front: ROUND_NECK_1_WHITE_A_FRONT,
+        back: ROUND_NECK_1_WHITE_A_BACK,
+      },
+      Black: {
+        name: 'Black',
+        front: ROUND_NECK_1_BLACK_A_FRONT,
+        back: ROUND_NECK_1_BLACK_A_BACK,
+      },
+    },
+  },
+  {
+    id: 'nl-012',
+    name: 'NL Round Neck 1(Chasing the bag)',
+    collection: 'Round Necks',
+    category: 'Round Necks',
+    price: 11000,
+    stock: 8,
+    imageUrl: ROUND_NECK_1_BLACK_A_FRONT,
+    description: 'Distinctive street luxury graphic tee with front and back print.',
+    sizes: ['XL', 'XXL'],
+    colors: ['Black', 'White'],
+    featured: true,
+    colorImages: {
+      Black: {
+        name: 'Black',
+        front: ROUND_NECK_1_BLACK_A_FRONT,
+        back: ROUND_NECK_1_BLACK_A_BACK,
+      },
+      White: {
+        name: 'White',
+        front: ROUND_NECK_1_WHITE_A_FRONT,
+        back: ROUND_NECK_1_WHITE_A_BACK,
+      },
+    },
+  },
+  {
+    id: 'nl-013',
+    name: 'NL Round Neck 1(Disturbing yankee)',
+    collection: 'Round Necks',
+    category: 'Round Necks',
+    price: 11000,
+    stock: 9,
+    imageUrl: ROUND_NECK_1_BLACK_B_FRONT,
+    description: 'Standout design piece from the exclusive Noble Luxe collection.',
+    sizes: ['XL', 'XXL'],
+    colors: ['Black', 'White'],
+    featured: true,
+    colorImages: {
+      Black: {
+        name: 'Black',
+        front: ROUND_NECK_1_BLACK_B_FRONT,
+        back: ROUND_NECK_1_BLACK_B_BACK,
+      },
+      White: {
+        name: 'White',
+        front: ROUND_NECK_1_WHITE_B_FRONT,
+        back: ROUND_NECK_1_WHITE_B_BACK,
+      },
+    },
+  },
+  {
+    id: 'nl-014',
+    name: 'NL Round Neck 1 (Never Give Up)',
+    collection: 'Round Necks',
+    category: 'Round Necks',
+    price: 11000,
+    stock: 14,
+    imageUrl: ROUND_NECK_1_WHITE_A_FRONT,
+    description: 'Inspirational luxury round-neck with detailed craftsmanship.',
+    sizes: ['XL', 'XXL'],
+    colors: ['White', 'Black'],
+    featured: true,
+    colorImages: {
+      White: {
+        name: 'White',
+        front: ROUND_NECK_1_WHITE_A_FRONT,
+        back: ROUND_NECK_1_WHITE_A_BACK,
+      },
+      Black: {
+        name: 'Black',
+        front: ROUND_NECK_1_BLACK_A_FRONT,
+        back: ROUND_NECK_1_BLACK_A_BACK,
+      },
+    },
+  },
+  {
+    id: 'nl-015',
+    name: 'NL Round Neck 1 (Rich Friends)',
+    collection: 'Round Necks',
+    category: 'Round Necks',
+    price: 11000,
+    stock: 10,
+    imageUrl: ROUND_NECK_1_WHITE_B_FRONT,
+    description: 'Bold statement piece crafted from heavyweight luxury cotton.',
+    sizes: ['XL', 'XXL'],
+    colors: ['White', 'Black'],
+    featured: true,
+    colorImages: {
+      White: {
+        name: 'White',
+        front: ROUND_NECK_1_WHITE_B_FRONT,
+        back: ROUND_NECK_1_WHITE_B_BACK,
+      },
+      Black: {
+        name: 'Black',
+        front: ROUND_NECK_1_BLACK_B_FRONT,
+        back: ROUND_NECK_1_BLACK_B_BACK,
+      },
+    },
+  },
 
   /*
    * -------------------------------------------------------
-   * NL-003
+   * 3. HOODIES / SWEATSHIRTS
    * -------------------------------------------------------
    */
-
   {
     id: 'nl-003',
-    name: 'NL Sweat Shirt',
-    category: 'Sweatshirts',
+    name: 'NL Sweat Shirt & Hoodie',
+    collection: 'Hoodies',
+    category: 'Hoodies',
     price: 14000,
+    stock: 10,
     imageUrl: SWEAT_SHIRT_FRONT,
-    description:
-      'A comfortable Noble Luxe sweatshirt offered in statement seasonal colours.',
+    description: 'A comfortable Noble Luxe sweatshirt offered in statement seasonal colours.',
     sizes: ['XL', 'XXL'],
     colors: sweatShirtColors,
     featured: true,
@@ -232,46 +408,126 @@ export const FALLBACK_PRODUCTS: CatalogProduct[] = [
 
   /*
    * -------------------------------------------------------
-   * NL-004
+   * 4. VINTAGE
    * -------------------------------------------------------
    */
-
   {
     id: 'nl-004',
     name: 'NL Vintage(BWGO)',
-    category: 'T-Shirts',
+    collection: 'Vintage',
+    category: 'Vintage',
     price: 9000,
+    stock: 8,
     imageUrl: VINTAGE_FRONT,
-    description:
-      'A vintage-inspired Noble Luxe piece with a distinctive front and back design.',
+    description: 'A vintage-inspired Noble Luxe piece with a distinctive front and back design.',
     sizes: ['XL', 'XXL'],
-    colors: [''],
+    colors: ['Black'],
     featured: true,
     colorImages: {
       Black: {
-        name: '',
+        name: 'Black',
         front: VINTAGE_FRONT,
         back: VINTAGE_BACK,
+      },
+    },
+  },
+  {
+    id: 'nl-016',
+    name: 'NL Vintage(TM)',
+    collection: 'Vintage',
+    category: 'Vintage',
+    price: 9000,
+    stock: 12,
+    imageUrl: VINTAGETM_FRONT,
+    description: 'A vintage-inspired Noble Luxe piece with a distinctive front and back design.',
+    sizes: ['XL', 'XXL'],
+    colors: ['Black'],
+    featured: true,
+    colorImages: {
+      Black: {
+        name: 'Black',
+        front: VINTAGETM_FRONT,
+        back: VINTAGETM_BACK,
+      },
+    },
+  },
+  {
+    id: 'nl-017',
+    name: 'NL Vintage(BWY)',
+    collection: 'Vintage',
+    category: 'Vintage',
+    price: 9000,
+    stock: 7,
+    imageUrl: VINTAGEBWY_FRONT,
+    description: 'A vintage-inspired Noble Luxe piece with a distinctive front and back design.',
+    sizes: ['XL', 'XXL'],
+    colors: ['Black'],
+    featured: true,
+    colorImages: {
+      Black: {
+        name: 'Black',
+        front: VINTAGEBWY_FRONT,
+        back: VINTAGEBWY_BACK,
+      },
+    },
+  },
+  {
+    id: 'nl-22',
+    name: 'NL Vintage(BOOM)',
+    collection: 'Vintage',
+    category: 'Vintage',
+    price: 9000,
+    stock: 15,
+    imageUrl: VINTAGEBOOM_FRONT,
+    description: 'A vintage-inspired Noble Luxe piece with a distinctive front and back design.',
+    sizes: ['XL', 'XXL'],
+    colors: ['Black'],
+    featured: true,
+    colorImages: {
+      Black: {
+        name: 'Black',
+        front: VINTAGEBOOM_FRONT,
+        back: VINTAGEBOOM_BACK,
+      },
+    },
+  },
+  {
+    id: 'nl-23',
+    name: 'NL Vintage(BG)',
+    collection: 'Vintage',
+    category: 'Vintage',
+    price: 9000,
+    stock: 6,
+    imageUrl: VINTAGEBG_FRONT,
+    description: 'A vintage-inspired Noble Luxe piece with a distinctive front and back design.',
+    sizes: ['XL', 'XXL'],
+    colors: ['Black'],
+    featured: true,
+    colorImages: {
+      Black: {
+        name: 'Black',
+        front: VINTAGEBG_FRONT,
+        back: VINTAGEBG_BACK,
       },
     },
   },
 
   /*
    * -------------------------------------------------------
-   * NL-005
+   * 5. BASIC TOPS
    * -------------------------------------------------------
    */
-
   {
     id: 'nl-005',
-    name: 'NL Armless',
-    category: 'Tops',
-    price: 12000,
+    name: 'NL Armless Basic Top',
+    collection: 'Basic Tops',
+    category: 'Basic Tops',
+    price: 11000,
+    stock: 11,
     imageUrl: ARMLESS_FRONT,
-    description:
-      'A clean Noble Luxe armless piece designed for a relaxed streetwear fit.',
+    description: 'A clean Noble Luxe armless piece designed for a relaxed streetwear fit.',
     sizes: ['XL', 'XXL'],
-    colors: armlessColors,
+    colors: ['Black'],
     featured: true,
     colorImages: {
       Black: {
@@ -284,337 +540,169 @@ export const FALLBACK_PRODUCTS: CatalogProduct[] = [
 
   /*
    * -------------------------------------------------------
-   * NL-007 — JOGGERS 1
+   * 6. JOGGERS
    * -------------------------------------------------------
    */
-
   {
     id: 'nl-007',
     name: 'NL Joggers 1',
+    collection: 'Joggers',
     category: 'Joggers',
     price: 15000,
+    stock: 10,
     imageUrl: JOGGERS_1_FRONT,
-    description:
-      'Noble Luxe joggers built for a relaxed streetwear silhouette.',
-    sizes: ['XL', 'XXL'],
-    colors: joggers1Colors,
+    description: 'Heavyweight premium joggers with customized Noble Luxe tailoring.',
+    sizes: ['L', 'XL', 'XXL'],
+    colors: ['Black'],
     featured: true,
-    colorImages: Object.fromEntries(
-      joggers1Colors.map((color) => [
-        color,
-        {
-          name: color,
-          front: JOGGERS_1_FRONT,
-          back: JOGGERS_1_BACK,
-        },
-      ]),
-    ),
+    colorImages: {
+      Black: {
+        name: 'Black',
+        front: JOGGERS_1_FRONT,
+        back: JOGGERS_1_BACK,
+      },
+    },
   },
-
-
-  /*
-   * -------------------------------------------------------
-   * NL-009 — JOGGERS 2
-   * -------------------------------------------------------
-   */
-
   {
     id: 'nl-009',
     name: 'NL Joggers 2',
+    collection: 'Joggers',
     category: 'Joggers',
     price: 15000,
+    stock: 8,
     imageUrl: JOGGERS_2_FRONT,
-    description:
-      'A second Noble Luxe joggers silhouette with a refined front and back finish.',
-    sizes: ['XL', 'XXL'],
-    colors: joggers2Colors,
-    featured: false,
-    colorImages: Object.fromEntries(
-      joggers2Colors.map((color) => [
-        color,
-        {
-          name: color,
-          front: JOGGERS_2_FRONT,
-          back: JOGGERS_2_BACK,
-        },
-      ]),
-    ),
+    description: 'Relaxed fit luxury fleece joggers with signature silhouette.',
+    sizes: ['L', 'XL', 'XXL'],
+    colors: ['Black'],
+    featured: true,
+    colorImages: {
+      Black: {
+        name: 'Black',
+        front: JOGGERS_2_FRONT,
+        back: JOGGERS_2_BACK,
+      },
+    },
   },
 
   /*
    * -------------------------------------------------------
-   * NL-010 — SHORT JOGGERS
+   * 7. SHORT JOGGERS
    * -------------------------------------------------------
    */
-
   {
     id: 'nl-010',
     name: 'NL Short Joggers',
-    category: 'Shorts',
-    price: 10000,
+    collection: 'Short Joggers',
+    category: 'Short Joggers',
+    price: 12000,
+    stock: 14,
     imageUrl: SHORT_JOGGERS_FRONT,
-    description:
-      'Relaxed Noble Luxe short joggers designed for everyday streetwear.',
-    sizes: ['XL', 'XXL'],
-    colors: shortJoggersColors,
-    featured: false,
-    colorImages: Object.fromEntries(
-      shortJoggersColors.map((color) => [
-        color,
-        {
-          name: color,
-          front: SHORT_JOGGERS_FRONT,
-          back: SHORT_JOGGERS_BACK,
-        },
-      ]),
-    ),
-  },
-
-  /*
-   * -------------------------------------------------------
-   * NL-011 — ROUND NECK 1 MULTI
-   * -------------------------------------------------------
-   */
-
-  {
-    id: 'nl-011',
-    name: 'NL Round Neck 1 (All Man)',
-    category: 'T-Shirts',
-    price: 15000,
-    imageUrl: ROUND_NECK_1_MULTI_FRONT,
-    description:
-      'A Noble Luxe round-neck essential available in brown, white, pink and black.',
-    sizes: ['XL', 'XXL'],
-    colors: roundNeck1Colors,
-    featured: true,
-    colorImages: Object.fromEntries(
-      roundNeck1Colors.map((color) => [
-        color,
-        {
-          name: color,
-          front: ROUND_NECK_1_MULTI_FRONT,
-          back: ROUND_NECK_1_MULTI_BACK,
-        },
-      ]),
-    ),
-  },
-
-  /*
-   * -------------------------------------------------------
-   * NL-012 — ROUND NECK 1 BLACK A
-   * -------------------------------------------------------
-   */
-
-  {
-    id: 'nl-012',
-    name: 'NL Round Neck 1(Chasing the bag)',
-    category: 'T-Shirts',
-    price: 15000,
-    imageUrl: ROUND_NECK_1_BLACK_A_FRONT,
-    description:
-      'Noble Luxe round-neck black edition with a distinctive front and back design.',
-    sizes: ['XL', 'XXL'],
+    description: 'Comfortable luxury short joggers designed for daily casual wear.',
+    sizes: ['M', 'L', 'XL'],
     colors: ['Black'],
-    featured: false,
+    featured: true,
     colorImages: {
       Black: {
         name: 'Black',
-        front: ROUND_NECK_1_BLACK_A_FRONT,
-        back: ROUND_NECK_1_BLACK_A_BACK,
-      },
-    },
-  },
-
-  /*
-   * -------------------------------------------------------
-   * NL-013 — ROUND NECK 1 BLACK B
-   * -------------------------------------------------------
-   */
-
-  {
-    id: 'nl-013',
-    name: 'NL Round Neck 1(Disturbing yankee)',
-    category: 'T-Shirts',
-    price: 15000,
-    imageUrl: ROUND_NECK_1_BLACK_B_FRONT,
-    description:
-      'Noble Luxe round-neck black edition with another signature front and back finish.',
-    sizes: ['XL', 'XXL'],
-    colors: ['Black'],
-    featured: false,
-    colorImages: {
-      Black: {
-        name: 'Black',
-        front: ROUND_NECK_1_BLACK_B_FRONT,
-        back: ROUND_NECK_1_BLACK_B_BACK,
-      },
-    },
-  },
-
-/*
-   * -------------------------------------------------------
-   * NL-014 — ROUND NECK 1 WHITE A
-   * -------------------------------------------------------
-   */
-
-{
-    id: 'nl-014',
-    name: 'NL Round Neck 1 (Never Give Up)',
-    category: 'T-Shirts',
-    price: 15000,
-    imageUrl: ROUND_NECK_1_WHITE_A_FRONT,
-    description:
-      'Noble Luxe round-neck white edition with another signature front and back finish.',
-    sizes: ['XL', 'XXL'],
-    colors: ['White'],
-    featured: false,
-    colorImages: {
-      Black: {
-        name: 'White',
-        front: ROUND_NECK_1_WHITE_A_FRONT,
-        back: ROUND_NECK_1_WHITE_A_BACK,
-      },
-    },
-  },
-
-/*
-   * -------------------------------------------------------
-   * NL-015 — ROUND NECK 1 WHITE B
-   * -------------------------------------------------------
-   */
-
-{
-    id: 'nl-015',
-    name: 'NL Round Neck 1 (Rich Friends)',
-    category: 'T-Shirts',
-    price: 15000,
-    imageUrl: ROUND_NECK_1_WHITE_B_FRONT,
-    description:
-      'Noble Luxe round-neck white edition with another signature front and back finish.',
-    sizes: ['XL', 'XXL'],
-    colors: ['White'],
-    featured: false,
-    colorImages: {
-      Black: {
-        name: 'White',
-        front: ROUND_NECK_1_WHITE_B_FRONT,
-        back: ROUND_NECK_1_WHITE_B_BACK,
-      },
-    },
-  },
-
-    /*
-   * -------------------------------------------------------
-   * NL-016 VINTAGE TM
-   * -------------------------------------------------------
-   */
-
-  {
-    id: 'nl-016',
-    name: 'NL Vintage(TM)',
-    category: 'T-Shirts',
-    price: 9000,
-    imageUrl: VINTAGETM_FRONT,
-    description:
-      'A vintage-inspired Noble Luxe piece with a distinctive front and back design.',
-    sizes: ['XL', 'XXL'],
-    colors: [''],
-    featured: true,
-    colorImages: {
-      Black: {
-        name: '',
-        front: VINTAGETM_FRONT,
-        back: VINTAGETM_BACK,
-      },
-    },
-  },
-
-    /*
-   * -------------------------------------------------------
-   * NL-017 VINTAGEBWY
-   * -------------------------------------------------------
-   */
-
-    {
-    id: 'nl-017',
-    name: 'NL Vintage(BWY)',
-    category: 'T-Shirts',
-    price: 9000,
-    imageUrl: VINTAGEBWY_FRONT ,
-    description:
-      'A vintage-inspired Noble Luxe piece with a distinctive front and back design.',
-    sizes: ['XL', 'XXL'],
-    colors: [''],
-    featured: true,
-    colorImages: {
-      Black: {
-        name: '',
-        front: VINTAGEBWY_FRONT ,
-        back: VINTAGEBWY_BACK ,
-      },
-    },
-  },
-
-
-
-        /*
-   * -------------------------------------------------------
-   * NL-22 VINTAGEBOOM
-   * -------------------------------------------------------
-   */
-
-    {
-    id: 'nl-22',
-    name: 'NL Vintage(BOOM)',
-    category: 'T-Shirts',
-    price: 9000,
-    imageUrl: VINTAGEBOOM_FRONT ,
-    description:
-      'A vintage-inspired Noble Luxe piece with a distinctive front and back design.',
-    sizes: ['XL', 'XXL'],
-    colors: [''],
-    featured: true,
-    colorImages: {
-      Black: {
-        name: '',
-        front: VINTAGEBOOM_FRONT ,
-        back: VINTAGEBOOM_BACK ,
-      },
-    },
-  },
-
-          /*
-   * -------------------------------------------------------
-   * NL-23 VINTAGEBG
-   * -------------------------------------------------------
-   */
-
-    {
-    id: 'nl-23',
-    name: 'NL Vintage(BG)',
-    category: 'T-Shirts',
-    price: 9000,
-    imageUrl: VINTAGEBG_FRONT ,
-    description:
-      'A vintage-inspired Noble Luxe piece with a distinctive front and back design.',
-    sizes: ['XL', 'XXL'],
-    colors: [''],
-    featured: true,
-    colorImages: {
-      Black: {
-        name: '',
-        front: VINTAGEBG_FRONT ,
-        back: VINTAGEBG_BACK ,
+        front: SHORT_JOGGERS_FRONT,
+        back: SHORT_JOGGERS_BACK,
       },
     },
   },
 ];
 
-
+export const FALLBACK_PRODUCTS: CatalogProduct[] = DEFAULT_PRODUCTS;
 
 /*
  * =========================================================
- * CURRENCY
+ * PERSISTENT PRODUCT & STOCK MANAGEMENT
+ * =========================================================
+ * Allows stock updates and product edits (via the Admin page
+ * or checkout order deductions) to persist in the browser.
+ */
+
+const STORAGE_KEY = 'noble_luxe_products_v2';
+
+export const getLiveCatalog = (): CatalogProduct[] => {
+  if (typeof window === 'undefined') return DEFAULT_PRODUCTS;
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(DEFAULT_PRODUCTS));
+      return DEFAULT_PRODUCTS;
+    }
+    const parsed = JSON.parse(raw) as CatalogProduct[];
+    if (!Array.isArray(parsed) || parsed.length === 0) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(DEFAULT_PRODUCTS));
+      return DEFAULT_PRODUCTS;
+    }
+    return parsed;
+  } catch (err) {
+    console.error('Error loading live catalog:', err);
+    return DEFAULT_PRODUCTS;
+  }
+};
+
+export const saveLiveCatalog = (products: CatalogProduct[]): void => {
+  if (typeof window === 'undefined') return;
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(products));
+    window.dispatchEvent(new Event('noble_luxe_catalog_updated'));
+  } catch (err) {
+    console.error('Error saving live catalog:', err);
+  }
+};
+
+export const updateProductStock = (productId: string, newStock: number): void => {
+  const current = getLiveCatalog();
+  const updated = current.map((p) =>
+    p.id === productId ? { ...p, stock: Math.max(0, newStock) } : p,
+  );
+  saveLiveCatalog(updated);
+};
+
+export const updateProduct = (updatedProduct: CatalogProduct): void => {
+  const current = getLiveCatalog();
+  const updated = current.map((p) =>
+    p.id === updatedProduct.id ? updatedProduct : p,
+  );
+  saveLiveCatalog(updated);
+};
+
+export const addProduct = (newProduct: CatalogProduct): void => {
+  const current = getLiveCatalog();
+  saveLiveCatalog([newProduct, ...current]);
+};
+
+export const deleteProduct = (productId: string): void => {
+  const current = getLiveCatalog();
+  const updated = current.filter((p) => p.id !== productId);
+  saveLiveCatalog(updated);
+};
+
+export const decrementStockForOrder = (
+  items: { id?: string; productId?: string; quantity: number }[],
+): void => {
+  const current = getLiveCatalog();
+  const updated = current.map((product) => {
+    const match = items.find((i) => (i.id || i.productId) === product.id);
+    if (!match) return product;
+    const currentStock = typeof product.stock === 'number' ? product.stock : 10;
+    const newStock = Math.max(0, currentStock - match.quantity);
+    return { ...product, stock: newStock };
+  });
+  saveLiveCatalog(updated);
+};
+
+export const resetCatalogToDefault = (): void => {
+  if (typeof window === 'undefined') return;
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(DEFAULT_PRODUCTS));
+  window.dispatchEvent(new Event('noble_luxe_catalog_updated'));
+};
+
+/*
+ * =========================================================
+ * UTILITIES
  * =========================================================
  */
 
@@ -625,95 +713,59 @@ export const formatCurrency = (value: number) =>
     maximumFractionDigits: 0,
   }).format(value);
 
-/*
- * =========================================================
- * PRODUCT COLOURS
- * =========================================================
- */
-
 export const getProductColors = (
   product: Product,
 ): CatalogColor[] => {
-  const catalogProduct =
-    product as CatalogProduct;
+  const catalogProduct = product as CatalogProduct;
 
   if (catalogProduct.colorImages) {
-    return Object.values(
-      catalogProduct.colorImages,
-    );
+    return Object.values(catalogProduct.colorImages);
   }
 
-  return (product.colors || []).map(
-    (color) => ({
-      name: color,
-      front:
-        product.imageUrl ||
-        FALLBACK_PRODUCTS[0].imageUrl,
-    }),
-  );
+  return (product.colors || []).map((color) => ({
+    name: color,
+    front: product.imageUrl || FALLBACK_PRODUCTS[0].imageUrl,
+  }));
 };
-
-/*
- * =========================================================
- * FRONT / BACK IMAGE
- * =========================================================
- */
 
 export const getColorImages = (
   product: Product,
-  color?: string,
-): {
-  front: string;
-  back?: string;
-} => {
-  const catalogProduct =
-    product as CatalogProduct;
+  selectedColorName?: string,
+): { front: string; back?: string } => {
+  const catalogProduct = product as CatalogProduct;
 
-  const colors =
-    catalogProduct.colorImages;
-
-  if (
-    colors &&
-    color &&
-    colors[color]
-  ) {
+  if (!catalogProduct.colorImages) {
     return {
-      front: colors[color].front,
-      back: colors[color].back,
+      front: product.imageUrl || FALLBACK_PRODUCTS[0].imageUrl,
+      back: undefined,
     };
   }
 
-  if (colors) {
-    const firstColor =
-      Object.values(colors)[0];
+  if (selectedColorName && catalogProduct.colorImages[selectedColorName]) {
+    const item = catalogProduct.colorImages[selectedColorName];
+    return {
+      front: item.front,
+      back: item.back,
+    };
+  }
 
-    if (firstColor) {
-      return {
-        front: firstColor.front,
-        back: firstColor.back,
-      };
-    }
+  const first = Object.values(catalogProduct.colorImages)[0];
+  if (first) {
+    return {
+      front: first.front,
+      back: first.back,
+    };
   }
 
   return {
-    front:
-      product.imageUrl ||
-      FALLBACK_PRODUCTS[0].imageUrl,
+    front: product.imageUrl || FALLBACK_PRODUCTS[0].imageUrl,
+    back: undefined,
   };
 };
 
-/*
- * =========================================================
- * MAIN PRODUCT IMAGE
- * =========================================================
- */
-
 export const productImage = (
   product: Product,
-): string =>
-  product.imageUrl ||
-  FALLBACK_PRODUCTS.find(
-    (item) =>
-      item.id === product.id,
-  )?.imageUrl ||
-  FALLBACK_PRODUCTS[0].imageUrl;
+  selectedColorName?: string,
+): string => {
+  return getColorImages(product, selectedColorName).front;
+};

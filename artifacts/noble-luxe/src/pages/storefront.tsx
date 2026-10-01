@@ -26,6 +26,8 @@ import type { Product } from '@workspace/api-client-react';
 
 import {
   FALLBACK_PRODUCTS,
+  NOBLE_COLLECTIONS,
+  getLiveCatalog,
   formatCurrency,
   getColorImages,
   getProductColors,
@@ -90,10 +92,7 @@ type StorefrontProps = {
   ) => void;
 };
 
-const categories = [
-  'All pieces',
-  'Essentials',
-];
+const categories = NOBLE_COLLECTIONS;
 
 function BrandMark({
   compact = false,
@@ -403,9 +402,9 @@ function ProductCard({
           }
         >
       <button
-  disabled={product.inStock === false}
+  disabled={product.inStock === false || (product as CatalogProduct).stock === 0}
   onClick={() => {
-    if (product.inStock === false) return;
+    if (product.inStock === false || (product as CatalogProduct).stock === 0) return;
 
     onAdd(
       product,
@@ -416,12 +415,12 @@ function ProductCard({
     );
   }}
   className={`w-full rounded-none border px-4 py-3 text-[10px] font-semibold uppercase tracking-[0.25em] transition-all duration-300 ${
-    product.inStock === false
+    (product.inStock === false || (product as CatalogProduct).stock === 0)
       ? 'cursor-not-allowed border-border bg-muted/40 text-muted-foreground/70'
       : 'border-primary bg-primary text-primary-foreground hover:bg-transparent hover:text-primary'
   }`}
 >
-  {product.inStock === false ? 'OUT OF STOCK' : 'ADD TO BAG'}
+  {(product.inStock === false || (product as CatalogProduct).stock === 0) ? 'OUT OF STOCK' : 'ADD TO BAG'}
 </button>
         </div>
       </div>
@@ -445,6 +444,24 @@ function ProductCard({
           {formatCurrency(product.price)}
         </p>
       </div>
+
+      {(product as CatalogProduct).stock !== undefined && (
+        <div className="mt-2">
+          {(product as CatalogProduct).stock === 0 ? (
+            <span className="font-mono-brand text-[9px] uppercase tracking-wider text-destructive font-semibold">
+              • Out of stock
+            </span>
+          ) : (product as CatalogProduct).stock === 1 ? (
+            <span className="font-mono-brand text-[9px] uppercase tracking-wider text-amber-500 font-semibold animate-pulse">
+              • Only 1 item left in stock
+            </span>
+          ) : (
+            <span className="font-mono-brand text-[9px] uppercase tracking-wider text-muted-foreground/80">
+              • In stock ({(product as CatalogProduct).stock} units)
+            </span>
+          )}
+        </div>
+      )}
 
       {availableColors.length > 0 && (
         <div className="mt-5">
@@ -743,8 +760,14 @@ export default function Storefront({
   const [search, setSearch] =
     useState('');
 
-  const [category, setCategory] =
-    useState('All pieces');
+  const [category, setCategory] = useState<string>('All Pieces');
+  const [liveCatalog, setLiveCatalog] = useState(getLiveCatalog());
+
+  useEffect(() => {
+    const onCatalogUpdate = () => setLiveCatalog(getLiveCatalog());
+    window.addEventListener('noble_luxe_catalog_updated', onCatalogUpdate);
+    return () => window.removeEventListener('noble_luxe_catalog_updated', onCatalogUpdate);
+  }, []);
 
   const [cartOpen, setCartOpen] =
     useState(false);
@@ -786,31 +809,21 @@ export default function Storefront({
    * the five products you supplied.
    */
 
-  const localProducts =
-    FALLBACK_PRODUCTS.filter(
-      (product) => {
-        const matchesCategory =
-          category === 'All pieces' ||
-          product.category ===
-            category;
+  const localProducts = liveCatalog.filter((product) => {
+    const matchesCategory =
+      category === 'All Pieces' ||
+      category === 'All pieces' ||
+      product.collection === category ||
+      product.category === category;
 
-        const searchText =
-          search.trim().toLowerCase();
+    const searchText = search.trim().toLowerCase();
+    const matchesSearch =
+      !searchText ||
+      product.name.toLowerCase().includes(searchText) ||
+      product.description.toLowerCase().includes(searchText);
 
-        const matchesSearch =
-          !searchText ||
-          product.name
-            .toLowerCase()
-            .includes(searchText) ||
-          product.description
-            .toLowerCase()
-            .includes(searchText);
-
-        return (
-          matchesCategory &&
-          matchesSearch
-        );
-      },
+    return matchesCategory && matchesSearch;
+  },
     );
 
   const products =
