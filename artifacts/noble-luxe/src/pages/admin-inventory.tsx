@@ -3,6 +3,12 @@ import { Link } from 'wouter';
 import {
   ArrowLeft,
   Package,
+  Lock,
+  Unlock,
+  Key,
+  Eye,
+  EyeOff,
+  ShieldCheck,
   Plus,
   RefreshCw,
   Search,
@@ -26,7 +32,90 @@ import {
 } from '@/lib/catalog';
 import { useToast } from '@/hooks/use-toast';
 
+
+const MASTER_PIN_KEY = 'noble_luxe_admin_pin';
+const MASTER_SESSION_KEY = 'noble_luxe_admin_unlocked';
+const DEFAULT_MASTER_PIN = '1116';
+
 export default function AdminInventory() {
+  const [isUnlocked, setIsUnlocked] = useState<boolean>(() => {
+    try {
+      return sessionStorage.getItem(MASTER_SESSION_KEY) === 'true';
+    } catch {
+      return false;
+    }
+  });
+  const [pinInput, setPinInput] = useState('');
+  const [showPin, setShowPin] = useState(false);
+  const [pinError, setPinError] = useState('');
+
+  const [showChangePinModal, setShowChangePinModal] = useState(false);
+  const [currentPinInput, setCurrentPinInput] = useState('');
+  const [newPinInput, setNewPinInput] = useState('');
+  const [confirmPinInput, setConfirmPinInput] = useState('');
+  const [changePinError, setChangePinError] = useState('');
+
+  const getActivePin = () => {
+    try {
+      return localStorage.getItem(MASTER_PIN_KEY) || DEFAULT_MASTER_PIN;
+    } catch {
+      return DEFAULT_MASTER_PIN;
+    }
+  };
+
+  const handleUnlock = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    const activePin = getActivePin();
+    if (pinInput.trim() === activePin) {
+      sessionStorage.setItem(MASTER_SESSION_KEY, 'true');
+      setIsUnlocked(true);
+      setPinError('');
+      setPinInput('');
+      toast({
+        title: 'Access Granted',
+        description: 'Noble Luxe Stock Desk unlocked.',
+      });
+    } else {
+      setPinError('Incorrect master passcode. Access denied.');
+    }
+  };
+
+  const handleLock = () => {
+    sessionStorage.removeItem(MASTER_SESSION_KEY);
+    setIsUnlocked(false);
+    toast({
+      title: 'Desk Locked',
+      description: 'Stock manager has been locked.',
+    });
+  };
+
+  const handleChangePin = (e: React.FormEvent) => {
+    e.preventDefault();
+    setChangePinError('');
+    const activePin = getActivePin();
+    if (currentPinInput.trim() !== activePin) {
+      setChangePinError('Current passcode is incorrect.');
+      return;
+    }
+    if (newPinInput.trim().length < 4) {
+      setChangePinError('New passcode must be at least 4 digits/characters.');
+      return;
+    }
+    if (newPinInput.trim() !== confirmPinInput.trim()) {
+      setChangePinError('New passcodes do not match.');
+      return;
+    }
+    localStorage.setItem(MASTER_PIN_KEY, newPinInput.trim());
+    setShowChangePinModal(false);
+    setCurrentPinInput('');
+    setNewPinInput('');
+    setConfirmPinInput('');
+    toast({
+      title: 'Passcode Updated',
+      description: 'Your master passcode has been changed successfully.',
+    });
+  };
+
   const [products, setProducts] = useState<CatalogProduct[]>([]);
   const [selectedCollection, setSelectedCollection] = useState<string>('All Pieces');
   const [search, setSearch] = useState('');
@@ -567,6 +656,91 @@ export default function AdminInventory() {
                   className="px-4 py-2 bg-primary text-primary-foreground text-xs uppercase tracking-wider font-semibold hover:bg-accent"
                 >
                   Create Product
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Change PIN Modal */}
+      {showChangePinModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+          <div className="w-full max-w-md border border-border bg-card p-6 shadow-2xl">
+            <div className="flex items-center justify-between pb-4 border-b border-border">
+              <h2 className="font-display text-xl font-light flex items-center gap-2">
+                <Key className="w-5 h-5 text-primary" /> Change Master Passcode
+              </h2>
+              <button
+                onClick={() => setShowChangePinModal(false)}
+                className="text-muted-foreground hover:text-foreground"
+              >
+                &times;
+              </button>
+            </div>
+
+            <form onSubmit={handleChangePin} className="mt-4 space-y-4">
+              <div>
+                <label className="block text-xs font-mono-brand uppercase tracking-wider text-muted-foreground mb-1">
+                  Current Passcode
+                </label>
+                <input
+                  type="password"
+                  value={currentPinInput}
+                  onChange={(e) => setCurrentPinInput(e.target.value)}
+                  placeholder="Enter current PIN"
+                  required
+                  className="w-full border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:border-primary"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-mono-brand uppercase tracking-wider text-muted-foreground mb-1">
+                  New Passcode (min 4 characters)
+                </label>
+                <input
+                  type="password"
+                  value={newPinInput}
+                  onChange={(e) => setNewPinInput(e.target.value)}
+                  placeholder="Enter new PIN"
+                  required
+                  className="w-full border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:border-primary"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-mono-brand uppercase tracking-wider text-muted-foreground mb-1">
+                  Confirm New Passcode
+                </label>
+                <input
+                  type="password"
+                  value={confirmPinInput}
+                  onChange={(e) => setConfirmPinInput(e.target.value)}
+                  placeholder="Confirm new PIN"
+                  required
+                  className="w-full border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:border-primary"
+                />
+              </div>
+
+              {changePinError && (
+                <div className="border border-destructive/40 bg-destructive/10 p-2.5 text-xs text-destructive text-center">
+                  {changePinError}
+                </div>
+              )}
+
+              <div className="flex gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setShowChangePinModal(false)}
+                  className="flex-1 border border-border py-2 text-xs font-bold uppercase tracking-wider text-muted-foreground hover:text-foreground"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 bg-primary py-2 text-xs font-bold uppercase tracking-wider text-primary-foreground hover:opacity-90"
+                >
+                  Save Passcode
                 </button>
               </div>
             </form>
