@@ -27,7 +27,8 @@ import type { Product } from '@workspace/api-client-react';
 import {
   FALLBACK_PRODUCTS,
   NOBLE_COLLECTIONS,
-  getLiveCatalog,
+  DEFAULT_PRODUCTS,
+  fetchLiveCatalog,
   formatCurrency,
   getColorImages,
   getProductColors,
@@ -757,15 +758,30 @@ export default function Storefront({
     useState('');
 
   const [category, setCategory] = useState<string>('All Pieces');
-  const [liveCatalog, setLiveCatalog] = useState(getLiveCatalog());
+  const [liveCatalog, setLiveCatalog] = useState<CatalogProduct[]>(DEFAULT_PRODUCTS);
 
   useEffect(() => {
-    const onCatalogUpdate = () => setLiveCatalog(getLiveCatalog());
-    window.addEventListener('noble_luxe_catalog_updated', onCatalogUpdate);
-    window.addEventListener('storage', onCatalogUpdate);
+    let mounted = true;
+    const loadProducts = () => {
+      fetchLiveCatalog()
+        .then((items) => {
+          if (mounted && Array.isArray(items) && items.length > 0) {
+            setLiveCatalog(items);
+          }
+        })
+        .catch((err) => console.error('Error fetching live products from DB:', err));
+    };
+
+    loadProducts();
+    const interval = setInterval(loadProducts, 10000); // Poll every 10s for real-time stock sync across devices
+    window.addEventListener('noble_luxe_catalog_updated', loadProducts);
+    window.addEventListener('focus', loadProducts);
+
     return () => {
-      window.removeEventListener('noble_luxe_catalog_updated', onCatalogUpdate);
-      window.removeEventListener('storage', onCatalogUpdate);
+      mounted = false;
+      clearInterval(interval);
+      window.removeEventListener('noble_luxe_catalog_updated', loadProducts);
+      window.removeEventListener('focus', loadProducts);
     };
   }, []);
 
