@@ -192,17 +192,30 @@ export default function AdminInventory() {
   const handleSaveEdit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingProduct) return;
+    const primaryColor = editingProduct.colors?.[0] || 'Black';
+    const updatedProduct: CatalogProduct = {
+      ...editingProduct,
+      colorImages: {
+        ...(editingProduct.colorImages || {}),
+        [primaryColor]: {
+          name: primaryColor,
+          front: editingProduct.imageUrl,
+          back: editingBackImageUrl.trim() ? editingBackImageUrl.trim() : undefined,
+        },
+      },
+    };
     const current = getLiveCatalog();
-    const updated = current.map((p) => (p.id === editingProduct.id ? editingProduct : p));
+    const updated = current.map((p) => (p.id === updatedProduct.id ? updatedProduct : p));
     saveLiveCatalog(updated);
+    setProducts(updated);
     setEditingProduct(null);
     toast({
       title: 'Product Saved',
-      description: `${editingProduct.name} changes have been saved.`,
+      description: `${updatedProduct.name} changes have been saved.`,
     });
   };
 
-  const [newProduct, setNewProduct] = useState<Partial<CatalogProduct>>({
+  const [newProduct, setNewProduct] = useState<Partial<CatalogProduct> & { backImageUrl?: string }>({
     id: `nl-${Date.now().toString().slice(-4)}`,
     name: '',
     collection: 'Round Necks',
@@ -210,11 +223,13 @@ export default function AdminInventory() {
     price: 10000,
     stock: 10,
     imageUrl: '',
+    backImageUrl: '',
     description: '',
     sizes: ['XL', 'XXL'],
     colors: ['Black'],
     featured: true,
   });
+  const [editingBackImageUrl, setEditingBackImageUrl] = useState<string>('');
 
   const handleCreateProduct = (e: React.FormEvent) => {
     e.preventDefault();
@@ -226,6 +241,7 @@ export default function AdminInventory() {
       });
       return;
     }
+    const primaryColor = newProduct.colors?.[0] || 'Black';
     const fullProduct: CatalogProduct = {
       id: newProduct.id || `nl-${Date.now().toString().slice(-4)}`,
       name: newProduct.name,
@@ -238,6 +254,13 @@ export default function AdminInventory() {
       sizes: newProduct.sizes || ['XL', 'XXL'],
       colors: newProduct.colors || ['Black'],
       featured: true,
+      colorImages: {
+        [primaryColor]: {
+          name: primaryColor,
+          front: newProduct.imageUrl!,
+          back: newProduct.backImageUrl?.trim() ? newProduct.backImageUrl.trim() : undefined,
+        },
+      },
     };
     const current = getLiveCatalog();
     const updatedList = [fullProduct, ...current];
@@ -568,13 +591,24 @@ export default function AdminInventory() {
                   />
                 </div>
                 <div>
-                  <label className="block text-[10px] font-mono-brand uppercase tracking-wider text-muted-foreground mb-1">Image URL</label>
+                  <label className="block text-[10px] font-mono-brand uppercase tracking-wider text-muted-foreground mb-1">Front Picture URL *</label>
                   <input
                     type="text"
                     value={editingProduct.imageUrl}
                     onChange={(e) => setEditingProduct({ ...editingProduct, imageUrl: e.target.value })}
+                    placeholder="https://..."
                     className="w-full bg-secondary border border-border p-2 text-xs"
                     required
+                  />
+                </div>
+                <div>
+                  <label className="block text-[10px] font-mono-brand uppercase tracking-wider text-muted-foreground mb-1">Back Picture URL (Optional)</label>
+                  <input
+                    type="text"
+                    value={editingBackImageUrl}
+                    onChange={(e) => setEditingBackImageUrl(e.target.value)}
+                    placeholder="https://... (enables Tap to see back)"
+                    className="w-full bg-secondary border border-border p-2 text-xs"
                   />
                 </div>
               </div>
@@ -669,7 +703,7 @@ export default function AdminInventory() {
                   />
                 </div>
                 <div>
-                  <label className="block text-[10px] font-mono-brand uppercase tracking-wider text-muted-foreground mb-1">Image URL</label>
+                  <label className="block text-[10px] font-mono-brand uppercase tracking-wider text-muted-foreground mb-1">Front Picture URL *</label>
                   <input
                     type="text"
                     value={newProduct.imageUrl}
@@ -677,6 +711,16 @@ export default function AdminInventory() {
                     placeholder="https://..."
                     className="w-full bg-secondary border border-border p-2 text-xs"
                     required
+                  />
+                </div>
+                <div>
+                  <label className="block text-[10px] font-mono-brand uppercase tracking-wider text-muted-foreground mb-1">Back Picture URL (Optional)</label>
+                  <input
+                    type="text"
+                    value={newProduct.backImageUrl || ''}
+                    onChange={(e) => setNewProduct({ ...newProduct, backImageUrl: e.target.value })}
+                    placeholder="https://... (enables Tap to see back on store)"
+                    className="w-full bg-secondary border border-border p-2 text-xs"
                   />
                 </div>
               </div>
