@@ -1,5 +1,5 @@
-import { type ReactNode, useEffect, useState } from 'react';
-import { ClerkProvider, SignIn, SignUp, useAuth } from '@clerk/react';
+import { type ReactNode, useEffect, useState, useCallback, useRef } from 'react';
+import { ClerkProvider, SignIn, SignUp, useAuth, useUser } from '@clerk/react';
 import { publishableKeyFromHost } from '@clerk/react/internal';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { setAuthTokenGetter, setBaseUrl } from '@workspace/api-client-react';
@@ -17,17 +17,15 @@ import Contact from '@/pages/contact';
 import Account from '@/pages/account';
 import AdminOrders from '@/pages/admin-orders';
 import AdminInventory from '@/pages/admin-inventory';
-import type { CartItem } from '@/lib/catalog';
+import { type CartItem, apiLoadCart, apiSaveCart } from '@/lib/catalog';
 
 const queryClient = new QueryClient();
-const CART_KEY = 'noble-luxe-cart';
 
 function ClerkApiAuthBridge() {
   const { getToken } = useAuth();
 
   useEffect(() => {
     setAuthTokenGetter(getToken);
-
     return () => {
       setAuthTokenGetter(null);
     };
@@ -36,91 +34,146 @@ function ClerkApiAuthBridge() {
   return null;
 }
 
-function useCart() {
+function useAccountCart() {
+  const { user, isLoaded, isSignedIn } = useUser();
+  const userId = user?.id || null;
+  const prevUserIdRef = useRef<string | null>(null);
+
+  const getStorageKey = (uid: string | null) =>
+    uid ? `noble-luxe-cart-user-${uid}` : 'noble-luxe-cart-guest';
+
   const [cart, setCart] = useState<CartItem[]>(() => {
+    if (typeof window === 'undefined') return [];
     try {
-      return JSON.parse(localStorage.getItem(CART_KEY) || '[]') as CartItem[];
+      const key = getStorageKey(userId);
+      return JSON.parse(localStorage.getItem(key) || '[]');
     } catch {
       return [];
     }
   });
 
+  // When user switches or logs out, immediately switch to that account's cart!
   useEffect(() => {
-    localStorage.setItem(CART_KEY, JSON.stringify(cart));
-  }, [cart]);
+    if (!isLoaded) return;
 
-const add = (
-  product: Product,
-  selectedSize?: string,
-  selectedColor?: string,
-  selectedColorFront?: string,
-  selectedColorBack?: string,
-) =>
-  setCart((current) => {
-    const size =
-      selectedSize ||
-      product.sizes?.[0] ||
-      "One size";
+    if (prevUserIdRef.current !== userId) {
+      prevUserIdRef.current = userId;
 
-    const color =
-      selectedColor ||
-      product.colors?.[0] ||
-      "Default";
+      const key = getStorageKey(userId);
+      let initial: CartItem[] = [];
+      try {
+        initial = JSON.parse(localStorage.getItem(key) || '[]');
+      } catch {
+        initial = [];
+      }
+      setCart(initial);
 
-    const existing = current.find(
-      (item) =>
-        item.id === product.id &&
-        item.selectedSize === size &&
-        item.selectedColor === color,
-    );
+      // If signed in, fetch persisted cart from backend database
+      if (isSignedIn && userId) {
+        apiLoadCart()
+          .then((serverCart) => {
+            if (Array.isArray(serverCart)) {
+              setCart(serverCart);
+              localStorage.setItem(key, JSON.stringify(serverCart));
+            }
+          })
+          .catch((err) => console.error('Failed to load server bag:', err));
+      }
+    }
+  }, [userId, isLoaded, isSignedIn]);
 
-    return existing
-      ? current.map((item) =>
-          item === existing
-            ? {
-                ...item,
-                quantity: item.quantity + 1,
-              }
-            : item,
-        )
-      : [
-          ...current,
-          {
-            ...product,
-            selectedSize: size,
-            selectedColor: color,
-            selectedColorFront,
-            selectedColorBack,
-            quantity: 1,
-          },
-        ];
-  });
+  // Sync cart changes to local user-scoped storage & backend DB
+  const persistCart = useCallback(
+    (newCart: CartItem[]) => {
+      const key = getStorageKey(userId);
+      try {
+        localStorage.setItem(key, JSON.stringify(newCart));
+      } catch (e) {
+        console.error('Error saving local cart:', e);
+      }
+      if (isSignedIn) {
+        apiSaveCart(true, newCart).catch((err) =>
+          console.error('Failed to sync bag to DB:', err),
+        );
+      }
+    },
+    [userId, isSignedIn],
+  );
 
-  const update = (id: string, size: string, delta: number) =>
-    setCart((current) =>
-      current.flatMap((item) =>
+  const add = (
+    product: Product,
+    selectedSize?: string,
+    selectedColor?: string,
+    selectedColorFront?: string,
+    selectedColorBack?: string,
+  ) => {
+    setCart((current) => {
+      const size = selectedSize || product.sizes?.[0] || 'One size';
+      const color = selectedColor || product.colors?.[0] || 'Default';
+
+      const existing = current.find(
+        (item) =>
+          item.id === product.id &&
+          item.selectedSize === size &&
+          item.selectedColor === color,
+      );
+
+      const next = existing
+        ? current.map((item) =>
+            item === existing
+              ? { ...item, quantity: item.quantity + 1 }
+              : item,
+          )
+        : [
+            ...current,
+            {
+              ...product,
+              selectedSize: size,
+              selectedColor: color,
+              selectedColorFront,
+              selectedColorBack,
+              quantity: 1,
+            },
+          ];
+      persistCart(next);
+      return next;
+    });
+  };
+
+  const update = (id: string, size: string, delta: number) => {
+    setCart((current) => {
+      const next = current.flatMap((item) =>
         item.id === id && item.selectedSize === size
           ? item.quantity + delta > 0
             ? [{ ...item, quantity: item.quantity + delta }]
             : []
-          : [item]
-      )
-    );
+          : [item],
+      );
+      persistCart(next);
+      return next;
+    });
+  };
 
-  const remove = (id: string, size: string) =>
-    setCart((current) =>
-      current.filter(
-        (item) => !(item.id === id && item.selectedSize === size)
-      )
-    );
+  const remove = (id: string, size: string) => {
+    setCart((current) => {
+      const next = current.filter(
+        (item) => !(item.id === id && item.selectedSize === size),
+      );
+      persistCart(next);
+      return next;
+    });
+  };
 
-  const clear = () => setCart([]);
+  const clear = () => {
+    setCart([]);
+    persistCart([]);
+  };
 
   return { cart, add, update, remove, clear };
 }
 
 function Router() {
-  const cart = useCart();
+  const cart = useAccountCart();
   const { theme, toggleTheme } = useTheme();
   const basePath = import.meta.env.BASE_URL.replace(/\/$/, '');
 
@@ -130,14 +183,14 @@ function Router() {
         <Route
           path="/"
           component={() => (
-<Storefront
-  cart={cart.cart}
-  onAdd={cart.add}
-  onUpdate={cart.update}
-  onRemove={cart.remove}
-  theme={theme}
-  onToggleTheme={toggleTheme}
-/>
+            <Storefront
+              cart={cart.cart}
+              onAdd={cart.add}
+              onUpdate={cart.update}
+              onRemove={cart.remove}
+              theme={theme}
+              onToggleTheme={toggleTheme}
+            />
           )}
         />
 
@@ -191,18 +244,10 @@ function Router() {
   );
 }
 
-function RoutedErrorBoundary({
-  children,
-}: {
-  children: ReactNode;
-}) {
+function RoutedErrorBoundary({ children }: { children: ReactNode }) {
   const [location] = useLocation();
 
-  return (
-    <ErrorBoundary resetKey={location}>
-      {children}
-    </ErrorBoundary>
-  );
+  return <ErrorBoundary resetKey={location}>{children}</ErrorBoundary>;
 }
 
 function useTheme() {
@@ -220,39 +265,27 @@ function useTheme() {
 
   useEffect(() => {
     const root = document.documentElement;
-
     root.classList.toggle('dark', theme === 'dark');
-
     localStorage.setItem('noble-luxe-theme', theme);
   }, [theme]);
 
   const toggleTheme = () => {
-    setTheme((currentTheme) =>
-      currentTheme === 'dark' ? 'light' : 'dark',
-    );
+    setTheme((currentTheme) => (currentTheme === 'dark' ? 'light' : 'dark'));
   };
 
-  return {
-    theme,
-    toggleTheme,
-  };
+  return { theme, toggleTheme };
 }
 
 export default function App() {
-  const { theme, toggleTheme } = useTheme();
-
   setBaseUrl(getApiBaseUrl());
   const basePath = import.meta.env.BASE_URL.replace(/\/$/, '');
   const hostname = window.location.hostname;
   const clerkHost =
-    hostname === "www.nobleluxe18.com.ng"
-      ? "nobleluxe18.com.ng"
-      : hostname;
+    hostname === 'www.nobleluxe18.com.ng' ? 'nobleluxe18.com.ng' : hostname;
   const clerkPubKey = publishableKeyFromHost(
     clerkHost,
     import.meta.env.VITE_CLERK_PUBLISHABLE_KEY,
   );
-
 
   if (!clerkPubKey) {
     throw new Error('Missing VITE_CLERK_PUBLISHABLE_KEY');
