@@ -235,17 +235,18 @@ function Header({
 
 function ProductCard({
   product,
+  cart,
   onAdd,
 }: {
   product: Product;
-
+  cart?: CartItem[];
   onAdd: (
     product: Product,
     size?: string,
     color?: string,
     colorFront?: string,
     colorBack?: string,
-  ) => void;
+  ) => any;
 }) {
   const catalogProduct =
     product as CatalogProduct;
@@ -402,27 +403,39 @@ function ProductCard({
             event.stopPropagation()
           }
         >
-      <button
-  disabled={product.inStock === false || (product as CatalogProduct).stock === 0}
-  onClick={() => {
-    if (product.inStock === false || (product as CatalogProduct).stock === 0) return;
+      {(() => {
+        const productStock = typeof (product as CatalogProduct).stock === 'number'
+          ? (product as CatalogProduct).stock
+          : (typeof (product as any).stock === 'number' ? (product as any).stock : 999);
+        const unitsInBag = (cart || [])
+          .filter((item) => item.id === product.id)
+          .reduce((sum, item) => sum + item.quantity, 0);
+        const isOutOfStock = product.inStock === false || productStock <= 0;
+        const isMaxInBag = !isOutOfStock && unitsInBag >= productStock;
 
-    onAdd(
-      product,
-      size,
-      selectedColor,
-      selectedImages.front,
-      selectedImages.back,
-    );
-  }}
-  className={`w-full rounded-none border px-4 py-3 text-[10px] font-semibold uppercase tracking-[0.25em] transition-all duration-300 ${
-    (product.inStock === false || (product as CatalogProduct).stock === 0)
-      ? 'cursor-not-allowed border-border bg-muted/40 text-muted-foreground/70'
-      : 'border-primary bg-primary text-primary-foreground hover:bg-transparent hover:text-primary'
-  }`}
->
-  {(product.inStock === false || (product as CatalogProduct).stock === 0) ? 'OUT OF STOCK' : 'ADD TO BAG'}
-</button>
+        return (
+          <button
+            disabled={isOutOfStock || isMaxInBag}
+            onClick={() => {
+              if (isOutOfStock || isMaxInBag) return;
+              onAdd(
+                product,
+                size,
+                selectedColor,
+                selectedImages.front,
+                selectedImages.back,
+              );
+            }}
+            className={`w-full rounded-none border px-4 py-3 text-[10px] font-semibold uppercase tracking-[0.25em] transition-all duration-300 ${
+              isOutOfStock || isMaxInBag
+                ? 'cursor-not-allowed border-border bg-muted/40 text-muted-foreground/70'
+                : 'border-primary bg-primary text-primary-foreground hover:bg-transparent hover:text-primary'
+            }`}
+          >
+            {isOutOfStock ? 'OUT OF STOCK' : isMaxInBag ? 'MAX IN BAG' : 'ADD TO BAG'}
+          </button>
+        );
+      })()}
         </div>
       </div>
 
@@ -687,18 +700,35 @@ function CartDrawer({
                         {item.quantity}
                       </span>
 
-                      <button
-                        className="p-1.5 text-muted-foreground hover:text-primary"
-                        onClick={() =>
-                          onUpdate(
-                            item.id,
-                            item.selectedSize,
-                            1,
-                          )
-                        }
-                      >
-                        <Plus className="h-3 w-3" />
-                      </button>
+                      {(() => {
+                        const totalForProd = cart
+                          .filter((c) => c.id === item.id)
+                          .reduce((sum, c) => sum + c.quantity, 0);
+                        const maxStock = typeof (item as any).stock === 'number' ? (item as any).stock : 999;
+                        const isAtMax = totalForProd >= maxStock;
+
+                        return (
+                          <button
+                            disabled={isAtMax}
+                            title={isAtMax ? `Only ${maxStock} available` : 'Add another'}
+                            className={`p-1.5 transition ${
+                              isAtMax
+                                ? 'cursor-not-allowed opacity-25 text-muted-foreground'
+                                : 'text-muted-foreground hover:text-primary'
+                            }`}
+                            onClick={() => {
+                              if (isAtMax) return;
+                              onUpdate(
+                                item.id,
+                                item.selectedSize,
+                                1,
+                              );
+                            }}
+                          >
+                            <Plus className="h-3 w-3" />
+                          </button>
+                        );
+                      })()}
                     </div>
 
                     <span className="font-mono-brand text-xs text-primary">
@@ -869,13 +899,24 @@ export default function Storefront({
     colorFront?: string,
     colorBack?: string,
   ) => {
-    onAdd(
+    const res = onAdd(
       product,
       size,
       color,
       colorFront,
       colorBack,
-    );
+    ) as any;
+
+    if (res && res.success === false) {
+      toast({
+        title: `Only ${res.maxStock} piece${res.maxStock === 1 ? '' : 's'} available`,
+        description: `You already have all ${res.maxStock} remaining unit${res.maxStock === 1 ? '' : 's'} in your bag.`,
+        variant: 'destructive',
+      });
+      setAddedMessage(`Maximum available stock (${res.maxStock}) already in bag`);
+      window.setTimeout(() => setAddedMessage(''), 3000);
+      return;
+    }
 
     toast({
       title: 'Added to bag',
@@ -1112,6 +1153,7 @@ export default function Storefront({
                   <ProductCard
                     key={product.id}
                     product={product}
+                    cart={cart}
                     onAdd={handleAdd}
                   />
                 ),
