@@ -276,9 +276,15 @@ export default function AdminInventory() {
     const finalColors = parsedColors.length > 0 ? parsedColors : ['Black'];
     const primaryColor = finalColors[0];
 
-    const nextColorImages: Record<string, any> = { ...(editingProduct.colorImages || {}) };
+    const nextColorImages: Record<string, any> = {};
+    const existingColorImages = editingProduct.colorImages || {};
     finalColors.forEach((color) => {
-      if (!nextColorImages[color]) {
+      if (existingColorImages[color]) {
+        nextColorImages[color] = {
+          ...existingColorImages[color],
+          name: color,
+        };
+      } else {
         nextColorImages[color] = {
           name: color,
           front: editingProduct.imageUrl,
@@ -286,11 +292,10 @@ export default function AdminInventory() {
         };
       }
     });
-    nextColorImages[primaryColor] = {
-      name: primaryColor,
-      front: editingProduct.imageUrl,
-      back: editingBackImageUrl.trim() ? editingBackImageUrl.trim() : undefined,
-    };
+    if (nextColorImages[primaryColor]) {
+      nextColorImages[primaryColor].front = editingProduct.imageUrl;
+      nextColorImages[primaryColor].back = editingBackImageUrl.trim() ? editingBackImageUrl.trim() : undefined;
+    }
 
     const updatedProduct: CatalogProduct = {
       ...editingProduct,
