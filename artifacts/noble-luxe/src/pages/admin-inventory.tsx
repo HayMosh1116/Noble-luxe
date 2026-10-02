@@ -38,7 +38,7 @@ import { useToast } from '@/hooks/use-toast';
 
 
 const MASTER_SESSION_PIN_KEY = 'noble_luxe_admin_verified_pin';
-const AUTO_LOCK_SECONDS = 30;
+const AUTO_LOCK_SECONDS = 60;
 
 export default function AdminInventory() {
   const [verifiedPin, setVerifiedPin] = useState<string>(() => {
