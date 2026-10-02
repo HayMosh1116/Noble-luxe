@@ -765,7 +765,7 @@ export const getProductColors = (
     return Object.values(catalogProduct.colorImages);
   }
 
-  return (product.colors || []).map((color) => ({
+  return (product.colors || []).map((color: string) => ({
     name: color,
     front: product.imageUrl || FALLBACK_PRODUCTS[0].imageUrl,
   }));
@@ -792,7 +792,7 @@ export const getColorImages = (
     };
   }
 
-  const first = Object.values(catalogProduct.colorImages)[0];
+  const first = Object.values(catalogProduct.colorImages)[0] as CatalogColor | undefined;
   if (first) {
     return {
       front: first.front,
