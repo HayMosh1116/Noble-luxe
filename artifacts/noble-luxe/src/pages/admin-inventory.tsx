@@ -1032,8 +1032,7 @@ export default function AdminInventory() {
                 </div>
               </div>
 
-              <div>
-                <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-[10px] font-mono-brand uppercase tracking-wider text-muted-foreground mb-1">
                     Available Sizes (comma-separated)
@@ -1076,59 +1075,6 @@ export default function AdminInventory() {
                         key={preset}
                         type="button"
                         onClick={() => setEditingColors(preset)}
-                        className="text-[9px] px-1 py-0.5 border border-border bg-secondary/60 hover:text-primary transition"
-                      >
-                        + {preset}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </div>
-
-              <div>
-                <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-[10px] font-mono-brand uppercase tracking-wider text-muted-foreground mb-1">
-                    Available Sizes (comma-separated)
-                  </label>
-                  <input
-                    type="text"
-                    value={newSizes}
-                    onChange={(e) => setNewSizes(e.target.value)}
-                    placeholder="e.g. S, M, L, XL, XXL"
-                    className="w-full bg-secondary border border-border p-2 text-xs"
-                  />
-                  <div className="flex flex-wrap gap-1 mt-1">
-                    {['S, M, L, XL, XXL', 'XL, XXL', 'One size'].map((preset) => (
-                      <button
-                        key={preset}
-                        type="button"
-                        onClick={() => setNewSizes(preset)}
-                        className="text-[9px] px-1 py-0.5 border border-border bg-secondary/60 hover:text-primary transition"
-                      >
-                        + {preset}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-[10px] font-mono-brand uppercase tracking-wider text-muted-foreground mb-1">
-                    Available Colors (comma-separated)
-                  </label>
-                  <input
-                    type="text"
-                    value={newColors}
-                    onChange={(e) => setNewColors(e.target.value)}
-                    placeholder="e.g. Black, White, Beige"
-                    className="w-full bg-secondary border border-border p-2 text-xs"
-                  />
-                  <div className="flex flex-wrap gap-1 mt-1">
-                    {['Black', 'Black, White', 'Black, White, Beige'].map((preset) => (
-                      <button
-                        key={preset}
-                        type="button"
-                        onClick={() => setNewColors(preset)}
                         className="text-[9px] px-1 py-0.5 border border-border bg-secondary/60 hover:text-primary transition"
                       >
                         + {preset}
@@ -1247,6 +1193,58 @@ export default function AdminInventory() {
                     placeholder="https://... (enables Tap to see back on store)"
                     className="w-full bg-secondary border border-border p-2 text-xs"
                   />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-[10px] font-mono-brand uppercase tracking-wider text-muted-foreground mb-1">
+                    Available Sizes (comma-separated)
+                  </label>
+                  <input
+                    type="text"
+                    value={newSizes}
+                    onChange={(e) => setNewSizes(e.target.value)}
+                    placeholder="e.g. S, M, L, XL, XXL"
+                    className="w-full bg-secondary border border-border p-2 text-xs"
+                  />
+                  <div className="flex flex-wrap gap-1 mt-1">
+                    {['S, M, L, XL, XXL', 'XL, XXL', 'One size'].map((preset) => (
+                      <button
+                        key={preset}
+                        type="button"
+                        onClick={() => setNewSizes(preset)}
+                        className="text-[9px] px-1 py-0.5 border border-border bg-secondary/60 hover:text-primary transition"
+                      >
+                        + {preset}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-[10px] font-mono-brand uppercase tracking-wider text-muted-foreground mb-1">
+                    Available Colors (comma-separated)
+                  </label>
+                  <input
+                    type="text"
+                    value={newColors}
+                    onChange={(e) => setNewColors(e.target.value)}
+                    placeholder="e.g. Black, White, Beige"
+                    className="w-full bg-secondary border border-border p-2 text-xs"
+                  />
+                  <div className="flex flex-wrap gap-1 mt-1">
+                    {['Black', 'Black, White', 'Black, White, Beige'].map((preset) => (
+                      <button
+                        key={preset}
+                        type="button"
+                        onClick={() => setNewColors(preset)}
+                        className="text-[9px] px-1 py-0.5 border border-border bg-secondary/60 hover:text-primary transition"
+                      >
+                        + {preset}
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </div>
 
