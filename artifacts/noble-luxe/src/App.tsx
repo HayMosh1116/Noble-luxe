@@ -106,8 +106,19 @@ function useAccountCart() {
     selectedColor?: string,
     selectedColorFront?: string,
     selectedColorBack?: string,
-  ) => {
+  ): { success: boolean; remaining: number; maxStock: number } => {
+    let result = { success: true, remaining: 0, maxStock: 0 };
     setCart((current) => {
+      const stock = typeof (product as any).stock === 'number' ? (product as any).stock : 999;
+      const currentCount = current
+        .filter((item) => item.id === product.id)
+        .reduce((sum, item) => sum + item.quantity, 0);
+
+      if (currentCount >= stock) {
+        result = { success: false, remaining: 0, maxStock: stock };
+        return current;
+      }
+
       const size = selectedSize || product.sizes?.[0] || 'One size';
       const color = selectedColor || product.colors?.[0] || 'Default';
 
@@ -121,7 +132,7 @@ function useAccountCart() {
       const next = existing
         ? current.map((item) =>
             item === existing
-              ? { ...item, quantity: item.quantity + 1 }
+              ? { ...item, quantity: item.quantity + 1, stock }
               : item,
           )
         : [
@@ -133,15 +144,28 @@ function useAccountCart() {
               selectedColorFront,
               selectedColorBack,
               quantity: 1,
+              stock,
             },
           ];
+      result = { success: true, remaining: Math.max(0, stock - (currentCount + 1)), maxStock: stock };
       persistCart(next);
       return next;
     });
+    return result;
   };
 
   const update = (id: string, size: string, delta: number) => {
     setCart((current) => {
+      if (delta > 0) {
+        const item = current.find((i) => i.id === id && i.selectedSize === size);
+        const stock = typeof (item as any)?.stock === 'number' ? (item as any).stock : 999;
+        const currentCount = current
+          .filter((i) => i.id === id)
+          .reduce((sum, i) => sum + i.quantity, 0);
+        if (currentCount >= stock) {
+          return current;
+        }
+      }
       const next = current.flatMap((item) =>
         item.id === id && item.selectedSize === size
           ? item.quantity + delta > 0
