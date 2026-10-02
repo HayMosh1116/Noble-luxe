@@ -264,17 +264,39 @@ export default function AdminInventory() {
     e.preventDefault();
     if (!editingProduct) return;
     setIsSaving(true);
-    const primaryColor = editingProduct.colors?.[0] || 'Black';
-    const updatedProduct: CatalogProduct = {
-      ...editingProduct,
-      colorImages: {
-        ...(editingProduct.colorImages || {}),
-        [primaryColor]: {
-          name: primaryColor,
+    const parsedSizes = editingSizes
+      .split(',')
+      .map((s) => s.trim())
+      .filter(Boolean);
+    const parsedColors = editingColors
+      .split(',')
+      .map((c) => c.trim())
+      .filter(Boolean);
+    const finalSizes = parsedSizes.length > 0 ? parsedSizes : ['XL', 'XXL'];
+    const finalColors = parsedColors.length > 0 ? parsedColors : ['Black'];
+    const primaryColor = finalColors[0];
+
+    const nextColorImages: Record<string, any> = { ...(editingProduct.colorImages || {}) };
+    finalColors.forEach((color) => {
+      if (!nextColorImages[color]) {
+        nextColorImages[color] = {
+          name: color,
           front: editingProduct.imageUrl,
           back: editingBackImageUrl.trim() ? editingBackImageUrl.trim() : undefined,
-        },
-      },
+        };
+      }
+    });
+    nextColorImages[primaryColor] = {
+      name: primaryColor,
+      front: editingProduct.imageUrl,
+      back: editingBackImageUrl.trim() ? editingBackImageUrl.trim() : undefined,
+    };
+
+    const updatedProduct: CatalogProduct = {
+      ...editingProduct,
+      sizes: finalSizes,
+      colors: finalColors,
+      colorImages: nextColorImages,
     };
     try {
       await apiUpdateProduct(verifiedPin, updatedProduct.id, updatedProduct);
@@ -311,6 +333,10 @@ export default function AdminInventory() {
     featured: true,
   });
   const [editingBackImageUrl, setEditingBackImageUrl] = useState<string>('');
+  const [editingSizes, setEditingSizes] = useState<string>('XL, XXL');
+  const [editingColors, setEditingColors] = useState<string>('Black');
+  const [newSizes, setNewSizes] = useState<string>('XL, XXL');
+  const [newColors, setNewColors] = useState<string>('Black');
 
   const handleCreateProduct = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -322,7 +348,27 @@ export default function AdminInventory() {
       });
       return;
     }
-    const primaryColor = newProduct.colors?.[0] || 'Black';
+    const parsedSizes = newSizes
+      .split(',')
+      .map((s) => s.trim())
+      .filter(Boolean);
+    const parsedColors = newColors
+      .split(',')
+      .map((c) => c.trim())
+      .filter(Boolean);
+    const finalSizes = parsedSizes.length > 0 ? parsedSizes : ['XL', 'XXL'];
+    const finalColors = parsedColors.length > 0 ? parsedColors : ['Black'];
+    const primaryColor = finalColors[0];
+
+    const colorImages: Record<string, any> = {};
+    finalColors.forEach((color) => {
+      colorImages[color] = {
+        name: color,
+        front: newProduct.imageUrl!,
+        back: newProduct.backImageUrl?.trim() ? newProduct.backImageUrl.trim() : undefined,
+      };
+    });
+
     const fullProduct: CatalogProduct = {
       id: newProduct.id || `nl-${Date.now().toString().slice(-4)}`,
       name: newProduct.name,
@@ -332,22 +378,18 @@ export default function AdminInventory() {
       stock: Number(newProduct.stock) || 10,
       imageUrl: newProduct.imageUrl,
       description: newProduct.description || '',
-      sizes: newProduct.sizes || ['XL', 'XXL'],
-      colors: newProduct.colors || ['Black'],
+      sizes: finalSizes,
+      colors: finalColors,
       featured: true,
-      colorImages: {
-        [primaryColor]: {
-          name: primaryColor,
-          front: newProduct.imageUrl!,
-          back: newProduct.backImageUrl?.trim() ? newProduct.backImageUrl.trim() : undefined,
-        },
-      },
+      colorImages,
     };
     try {
       await apiCreateProduct(verifiedPin, fullProduct);
       loadProducts();
       refreshCatalogEvent();
       setShowAddModal(false);
+      setNewSizes('XL, XXL');
+      setNewColors('Black');
       toast({
         title: 'Product Created in Database',
         description: `${fullProduct.name} has been added to ${fullProduct.collection}.`,
@@ -672,6 +714,20 @@ export default function AdminInventory() {
                         <div>
                           <p className="font-semibold text-foreground">{product.name}</p>
                           <p className="font-mono-brand text-[10px] text-muted-foreground uppercase">{product.id}</p>
+                          <div className="flex flex-wrap items-center gap-1 mt-1">
+                            <span className="text-[9px] font-mono-brand text-muted-foreground uppercase">Sizes:</span>
+                            {(product.sizes && product.sizes.length > 0 ? product.sizes : ['XL', 'XXL']).map((s) => (
+                              <span key={s} className="px-1 border border-border text-[9px] font-mono-brand bg-secondary/50 text-foreground">
+                                {s}
+                              </span>
+                            ))}
+                            <span className="text-[9px] font-mono-brand text-muted-foreground uppercase ml-1.5">Colors:</span>
+                            {(product.colors && product.colors.length > 0 ? product.colors : ['Black']).map((c) => (
+                              <span key={c} className="px-1 border border-border text-[9px] font-mono-brand bg-secondary/50 text-foreground">
+                                {c}
+                              </span>
+                            ))}
+                          </div>
                         </div>
                       </div>
                     </td>
@@ -749,7 +805,13 @@ export default function AdminInventory() {
                     <td className="py-3 px-4 text-right">
                       <div className="flex items-center justify-end gap-2">
                         <button
-                          onClick={() => setEditingProduct({ ...product })}
+                          onClick={() => {
+                          setEditingProduct({ ...product });
+                          const primCol = product.colors?.[0] || 'Black';
+                          setEditingBackImageUrl(product.colorImages?.[primCol]?.back || '');
+                          setEditingSizes((product.sizes && product.sizes.length > 0 ? product.sizes : ['XL', 'XXL']).join(', '));
+                          setEditingColors((product.colors && product.colors.length > 0 ? product.colors : ['Black']).join(', '));
+                        }}
                           className="p-1.5 border border-border hover:border-primary hover:text-primary transition"
                           title="Edit Product"
                         >
@@ -967,6 +1029,112 @@ export default function AdminInventory() {
                     placeholder="https://... (enables Tap to see back)"
                     className="w-full bg-secondary border border-border p-2 text-xs"
                   />
+                </div>
+              </div>
+
+              <div>
+                <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-[10px] font-mono-brand uppercase tracking-wider text-muted-foreground mb-1">
+                    Available Sizes (comma-separated)
+                  </label>
+                  <input
+                    type="text"
+                    value={editingSizes}
+                    onChange={(e) => setEditingSizes(e.target.value)}
+                    placeholder="e.g. S, M, L, XL, XXL"
+                    className="w-full bg-secondary border border-border p-2 text-xs"
+                  />
+                  <div className="flex flex-wrap gap-1 mt-1">
+                    {['S, M, L, XL, XXL', 'XL, XXL', 'One size'].map((preset) => (
+                      <button
+                        key={preset}
+                        type="button"
+                        onClick={() => setEditingSizes(preset)}
+                        className="text-[9px] px-1 py-0.5 border border-border bg-secondary/60 hover:text-primary transition"
+                      >
+                        + {preset}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-[10px] font-mono-brand uppercase tracking-wider text-muted-foreground mb-1">
+                    Available Colors (comma-separated)
+                  </label>
+                  <input
+                    type="text"
+                    value={editingColors}
+                    onChange={(e) => setEditingColors(e.target.value)}
+                    placeholder="e.g. Black, White, Beige"
+                    className="w-full bg-secondary border border-border p-2 text-xs"
+                  />
+                  <div className="flex flex-wrap gap-1 mt-1">
+                    {['Black', 'Black, White', 'Black, White, Beige'].map((preset) => (
+                      <button
+                        key={preset}
+                        type="button"
+                        onClick={() => setEditingColors(preset)}
+                        className="text-[9px] px-1 py-0.5 border border-border bg-secondary/60 hover:text-primary transition"
+                      >
+                        + {preset}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-[10px] font-mono-brand uppercase tracking-wider text-muted-foreground mb-1">
+                    Available Sizes (comma-separated)
+                  </label>
+                  <input
+                    type="text"
+                    value={newSizes}
+                    onChange={(e) => setNewSizes(e.target.value)}
+                    placeholder="e.g. S, M, L, XL, XXL"
+                    className="w-full bg-secondary border border-border p-2 text-xs"
+                  />
+                  <div className="flex flex-wrap gap-1 mt-1">
+                    {['S, M, L, XL, XXL', 'XL, XXL', 'One size'].map((preset) => (
+                      <button
+                        key={preset}
+                        type="button"
+                        onClick={() => setNewSizes(preset)}
+                        className="text-[9px] px-1 py-0.5 border border-border bg-secondary/60 hover:text-primary transition"
+                      >
+                        + {preset}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-[10px] font-mono-brand uppercase tracking-wider text-muted-foreground mb-1">
+                    Available Colors (comma-separated)
+                  </label>
+                  <input
+                    type="text"
+                    value={newColors}
+                    onChange={(e) => setNewColors(e.target.value)}
+                    placeholder="e.g. Black, White, Beige"
+                    className="w-full bg-secondary border border-border p-2 text-xs"
+                  />
+                  <div className="flex flex-wrap gap-1 mt-1">
+                    {['Black', 'Black, White', 'Black, White, Beige'].map((preset) => (
+                      <button
+                        key={preset}
+                        type="button"
+                        onClick={() => setNewColors(preset)}
+                        className="text-[9px] px-1 py-0.5 border border-border bg-secondary/60 hover:text-primary transition"
+                      >
+                        + {preset}
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </div>
 
