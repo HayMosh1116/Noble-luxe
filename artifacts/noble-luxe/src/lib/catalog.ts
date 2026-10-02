@@ -682,6 +682,29 @@ export const apiUpdateProduct = async (
   return data.product as CatalogProduct;
 };
 
+
+export interface InventoryLog {
+  id: string;
+  productId: string;
+  productName: string;
+  previousStock: number;
+  newStock: number;
+  changeType: string;
+  reason?: string | null;
+  createdAt: string;
+}
+
+export const apiFetchInventoryLogs = async (pin: string): Promise<InventoryLog[]> => {
+  const res = await fetch(apiUrl("/api/admin/inventory/logs"), {
+    headers: adminHeaders(pin),
+  });
+  const data = await res.json().catch(() => []);
+  if (!res.ok) {
+    throw new Error(data.error || "Failed to load inventory audit logs.");
+  }
+  return data as InventoryLog[];
+};
+
 export const apiDeleteProduct = async (
   pin: string,
   productId: string,

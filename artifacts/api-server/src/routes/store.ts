@@ -9,7 +9,7 @@ import {
   ListProductsResponse,
   CreateOrderResponse,
 } from "@workspace/api-zod";
-import { db, pool, ordersTable, productsTable, cartsTable, type InsertProductRow } from "@workspace/db";
+import { db, pool, ordersTable, productsTable, cartsTable, inventoryLogsTable, type InsertProductRow } from "@workspace/db";
 import { getAuth } from "@clerk/express";
 import { clerkClient } from "@clerk/express";
 import { eq, desc, sql } from "drizzle-orm";
@@ -646,6 +646,18 @@ async function ensureProductsSeeded() {
         items JSONB NOT NULL DEFAULT '[]'::jsonb,
         updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW() NOT NULL
       );
+      CREATE TABLE IF NOT EXISTS noble_luxe_inventory_logs (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        product_id TEXT NOT NULL,
+        product_name TEXT NOT NULL,
+        previous_stock INTEGER NOT NULL,
+        new_stock INTEGER NOT NULL,
+        change_type TEXT NOT NULL DEFAULT 'manual_update',
+        reason TEXT,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW() NOT NULL
+      );
+      CREATE INDEX IF NOT EXISTS idx_inventory_logs_created_at ON noble_luxe_inventory_logs(created_at DESC);
+      CREATE INDEX IF NOT EXISTS idx_inventory_logs_product_id ON noble_luxe_inventory_logs(product_id);
     `);
 
     console.log("[DB] Checking products table seed...");
@@ -668,6 +680,29 @@ async function ensureProductsSeeded() {
     hasCheckedSeed = true;
   } catch (err) {
     console.error("[DB] Table auto-provision or seed note:", err);
+  }
+}
+
+
+async function logInventoryChange(data: {
+  productId: string;
+  productName: string;
+  previousStock: number;
+  newStock: number;
+  changeType?: string;
+  reason?: string;
+}) {
+  try {
+    await db.insert(inventoryLogsTable).values({
+      productId: data.productId,
+      productName: data.productName,
+      previousStock: data.previousStock,
+      newStock: data.newStock,
+      changeType: data.changeType || "manual_update",
+      reason: data.reason || null,
+    });
+  } catch (err) {
+    console.error("[INVENTORY_LOG] Failed to record stock audit log:", err);
   }
 }
 
@@ -817,6 +852,12 @@ router.patch("/products/:id/stock", async (req, res): Promise<void> => {
   await ensureProductsSeeded();
 
   try {
+    const [existing] = await db
+      .select()
+      .from(productsTable)
+      .where(eq(productsTable.id, id));
+    const previousStock = existing ? existing.stock : (SEED_PRODUCTS.find((p) => p.id === id)?.stock ?? 0);
+
     let [updated] = await db
       .update(productsTable)
       .set({
@@ -853,6 +894,15 @@ router.patch("/products/:id/stock", async (req, res): Promise<void> => {
       res.status(404).json({ error: "Product not found in database." });
       return;
     }
+
+    await logInventoryChange({
+      productId: updated.id,
+      productName: updated.name,
+      previousStock,
+      newStock: updated.stock,
+      changeType: "manual_update",
+      reason: `Admin adjusted stock from ${previousStock} to ${updated.stock}`,
+    });
 
     res.json({
       success: true,
@@ -915,6 +965,15 @@ router.post("/products", async (req, res): Promise<void> => {
       })
       .returning();
 
+    await logInventoryChange({
+      productId: created.id,
+      productName: created.name,
+      previousStock: 0,
+      newStock: created.stock,
+      changeType: "product_created",
+      reason: "Initial stock upon product creation",
+    });
+
     res.status(201).json({
       success: true,
       product: {
@@ -955,6 +1014,11 @@ router.patch("/products/:id", async (req, res): Promise<void> => {
     if (data.colorImages !== undefined) updateData.colorImages = data.colorImages;
     if (data.featured !== undefined) updateData.featured = data.featured;
 
+    const [existing] = await db
+      .select()
+      .from(productsTable)
+      .where(eq(productsTable.id, id));
+
     const [updated] = await db
       .update(productsTable)
       .set(updateData)
@@ -964,6 +1028,17 @@ router.patch("/products/:id", async (req, res): Promise<void> => {
     if (!updated) {
       res.status(404).json({ error: "Product not found." });
       return;
+    }
+
+    if (existing && data.stock !== undefined && existing.stock !== updated.stock) {
+      await logInventoryChange({
+        productId: updated.id,
+        productName: updated.name,
+        previousStock: existing.stock,
+        newStock: updated.stock,
+        changeType: "manual_update",
+        reason: `Admin edited product details (stock: ${existing.stock} -> ${updated.stock})`,
+      });
     }
 
     res.json({
@@ -994,6 +1069,34 @@ router.delete("/products/:id", async (req, res): Promise<void> => {
   } catch (error) {
     req.log.error({ err: error, id }, "Failed to delete product from DB");
     res.status(500).json({ error: "Database error deleting product." });
+  }
+});
+
+
+/*
+ * =========================================================
+ * ADMIN INVENTORY AUDIT LOGS
+ * =========================================================
+ */
+router.get("/admin/inventory/logs", async (req, res): Promise<void> => {
+  if (!(await isConfiguredAdmin(req))) {
+    res.status(403).json({ error: "Admin access required." });
+    return;
+  }
+
+  await ensureProductsSeeded();
+
+  try {
+    const logs = await db
+      .select()
+      .from(inventoryLogsTable)
+      .orderBy(desc(inventoryLogsTable.createdAt))
+      .limit(100);
+
+    res.json(logs);
+  } catch (error: any) {
+    req.log.error({ err: error }, "Failed to fetch inventory audit logs");
+    res.status(500).json({ error: "Database error fetching audit logs." });
   }
 });
 
@@ -1316,6 +1419,15 @@ router.post("/orders", async (req, res): Promise<void> => {
         });
         return;
       }
+
+      await logInventoryChange({
+        productId: updatedProduct.id,
+        productName: updatedProduct.name,
+        previousStock: updatedProduct.stock + qty,
+        newStock: updatedProduct.stock,
+        changeType: "order_purchase",
+        reason: `Customer order decrement (-${qty} units)`,
+      });
     }
   } catch (err) {
     console.error("[ORDERS] Stock decrement check encountered issue:", err);

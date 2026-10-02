@@ -28,3 +28,21 @@ CREATE TABLE IF NOT EXISTS noble_luxe_carts (
 
 CREATE INDEX IF NOT EXISTS idx_products_collection ON noble_luxe_products(collection);
 CREATE INDEX IF NOT EXISTS idx_products_featured ON noble_luxe_products(featured);
+
+-- =========================================================
+-- NOBLE LUXE: INVENTORY AUDIT LOGS TABLE
+-- =========================================================
+
+CREATE TABLE IF NOT EXISTS noble_luxe_inventory_logs (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  product_id TEXT NOT NULL,
+  product_name TEXT NOT NULL,
+  previous_stock INTEGER NOT NULL,
+  new_stock INTEGER NOT NULL,
+  change_type TEXT NOT NULL DEFAULT 'manual_update',
+  reason TEXT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_inventory_logs_created_at ON noble_luxe_inventory_logs(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_inventory_logs_product_id ON noble_luxe_inventory_logs(product_id);

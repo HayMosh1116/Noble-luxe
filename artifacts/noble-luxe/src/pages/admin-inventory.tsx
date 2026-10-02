@@ -19,6 +19,10 @@ import {
   AlertTriangle,
   ArrowUpRight,
   TrendingDown,
+  History,
+  FileText,
+  ArrowUp,
+  ArrowDown,
 } from 'lucide-react';
 import {
   DEFAULT_PRODUCTS,
@@ -30,7 +34,9 @@ import {
   apiCreateProduct,
   apiUpdateProduct,
   apiDeleteProduct,
+  apiFetchInventoryLogs,
   formatCurrency,
+  type InventoryLog,
   type CatalogProduct,
   type CollectionName,
 } from '@/lib/catalog';
@@ -78,6 +84,7 @@ export default function AdminInventory() {
           description: 'Noble Luxe Stock Desk verified by server.',
         });
         loadProducts();
+        loadAuditLogs();
       } else {
         setPinError(res.error || 'Incorrect master passcode. Access denied.');
       }
@@ -158,6 +165,30 @@ export default function AdminInventory() {
     return () => window.removeEventListener('noble_luxe_catalog_updated', handleUpdate);
   }, []);
 
+  const [activeTab, setActiveTab] = useState<inventory | audit>(inventory);
+  const [logs, setLogs] = useState<InventoryLog[]>([]);
+  const [isLoadingLogs, setIsLoadingLogs] = useState(false);
+  const [logSearch, setLogSearch] = useState();
+
+  const loadAuditLogs = async () => {
+    if (!verifiedPin) return;
+    setIsLoadingLogs(true);
+    try {
+      const data = await apiFetchInventoryLogs(verifiedPin);
+      setLogs(Array.isArray(data) ? data : []);
+    } catch (err: any) {
+      console.error("Failed to load audit logs:", err);
+    } finally {
+      setIsLoadingLogs(false);
+    }
+  };
+
+  useEffect(() => {
+    if (isUnlocked && activeTab === audit) {
+      loadAuditLogs();
+    }
+  }, [isUnlocked, activeTab]);
+
   const [editingProduct, setEditingProduct] = useState<CatalogProduct | null>(null);
 
   const handleCommitStock = async (id: string) => {
@@ -176,6 +207,7 @@ export default function AdminInventory() {
         return next;
       });
       refreshCatalogEvent();
+      if (activeTab === 'audit') loadAuditLogs();
       toast({
         title: 'Stock Updated in Database',
         description: `${p.name} stock set to ${finalStock}.`,
@@ -358,6 +390,18 @@ export default function AdminInventory() {
   };
 
   // Filter products
+  
+  const filteredLogs = logs.filter((log) => {
+    if (!logSearch) return true;
+    const query = logSearch.toLowerCase();
+    return (
+      log.productName.toLowerCase().includes(query) ||
+      log.productId.toLowerCase().includes(query) ||
+      (log.reason && log.reason.toLowerCase().includes(query)) ||
+      log.changeType.toLowerCase().includes(query)
+    );
+  });
+
   const filtered = products.filter((p) => {
     const matchesCol =
       selectedCollection === 'All Pieces' || p.collection === selectedCollection;
@@ -507,6 +551,41 @@ export default function AdminInventory() {
       </header>
 
       <main className="mx-auto max-w-7xl px-4 sm:px-6 pt-8">
+        
+        {/* Navigation Tabs */}
+        <div className="flex items-center gap-2 border-b border-border mb-6">
+          <button
+            onClick={() => setActiveTab("inventory")}
+            className={`inline-flex items-center gap-2 pb-3 px-3 text-xs font-mono-brand uppercase tracking-wider border-b-2 transition ${
+              activeTab === "inventory"
+                ? "border-primary text-primary font-semibold"
+                : "border-transparent text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <Package className="h-4 w-4" />
+            Stock & Catalog
+          </button>
+          <button
+            onClick={() => {
+              setActiveTab("audit");
+              loadAuditLogs();
+            }}
+            className={`inline-flex items-center gap-2 pb-3 px-3 text-xs font-mono-brand uppercase tracking-wider border-b-2 transition ${
+              activeTab === "audit"
+                ? "border-primary text-primary font-semibold"
+                : "border-transparent text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <History className="h-4 w-4" />
+            Audit Log
+            {logs.length > 0 && (
+              <span className="ml-1 px-1.5 py-0.2 bg-secondary border border-border text-[10px] text-muted-foreground">
+                {logs.length}
+              </span>
+            )}
+          </button>
+        </div>
+
         {/* Metric Cards */}
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-4 mb-8">
           <div className="border border-border bg-card p-4">
@@ -527,7 +606,11 @@ export default function AdminInventory() {
           </div>
         </div>
 
-        {/* Filters and Actions */}
+        
+        {activeTab === "inventory" ? (
+          <>
+            {/* Filters and Actions */}
+
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-6">
           <div className="flex flex-wrap gap-1.5">
             {NOBLE_COLLECTIONS.map((col) => (
@@ -697,6 +780,122 @@ export default function AdminInventory() {
             </tbody>
           </table>
         </div>
+          </>
+        ) : (
+          <div className="space-y-4">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between bg-card border border-border p-4">
+              <div>
+                <h2 className="font-display text-base tracking-wider text-foreground uppercase">Inventory Audit Trail</h2>
+                <p className="text-xs text-muted-foreground">Every stock adjustment, admin edit, and purchase decrement recorded in real-time.</p>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <div className="relative w-full sm:w-64">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                  <input
+                    type="text"
+                    placeholder="Search audit trail..."
+                    value={logSearch}
+                    onChange={(e) => setLogSearch(e.target.value)}
+                    className="w-full pl-9 pr-3 py-1.5 bg-secondary/50 border border-border text-xs focus:border-primary outline-none"
+                  />
+                </div>
+                <button
+                  onClick={loadAuditLogs}
+                  disabled={isLoadingLogs}
+                  className="px-3 py-1.5 border border-border text-xs font-mono-brand uppercase tracking-wider text-muted-foreground hover:border-primary hover:text-primary transition flex items-center gap-1.5 shrink-0"
+                >
+                  <RefreshCw className={`h-3.5 w-3.5 ${isLoadingLogs ? "animate-spin text-primary" : ""}`} />
+                  Refresh
+                </button>
+              </div>
+            </div>
+
+            <div className="overflow-x-auto border border-border bg-card">
+              <table className="w-full text-left text-xs">
+                <thead>
+                  <tr className="border-b border-border bg-secondary/30 font-mono-brand text-[10px] uppercase tracking-wider text-muted-foreground">
+                    <th className="py-3 px-4">Timestamp</th>
+                    <th className="py-3 px-4">Product</th>
+                    <th className="py-3 px-4 text-center">Previous Qty</th>
+                    <th className="py-3 px-4 text-center">New Qty</th>
+                    <th className="py-3 px-4 text-center">Net Change</th>
+                    <th className="py-3 px-4">Reason / Event</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border">
+                  {filteredLogs.length === 0 ? (
+                    <tr>
+                      <td colSpan={6} className="py-12 text-center text-muted-foreground">
+                        <FileText className="mx-auto h-8 w-8 opacity-30 mb-2" />
+                        <p className="font-mono-brand text-xs uppercase tracking-wider">No audit log entries found</p>
+                        <p className="text-[11px] text-muted-foreground/70 mt-1">
+                          Stock adjustments and order deductions will appear here automatically.
+                        </p>
+                      </td>
+                    </tr>
+                  ) : (
+                    filteredLogs.map((entry) => {
+                      const diff = entry.newStock - entry.previousStock;
+                      const dateObj = new Date(entry.createdAt);
+                      const formattedDate = isNaN(dateObj.getTime())
+                        ? entry.createdAt
+                        : dateObj.toLocaleDateString("en-US", {
+                            month: "short",
+                            day: "numeric",
+                            year: "numeric",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                            second: "2-digit",
+                          });
+
+                      return (
+                        <tr key={entry.id} className="hover:bg-secondary/20 transition">
+                          <td className="py-3 px-4 font-mono-brand text-[11px] text-muted-foreground whitespace-nowrap">
+                            {formattedDate}
+                          </td>
+                          <td className="py-3 px-4">
+                            <div>
+                              <p className="font-semibold text-foreground">{entry.productName}</p>
+                              <p className="font-mono-brand text-[10px] text-muted-foreground uppercase">{entry.productId}</p>
+                            </div>
+                          </td>
+                          <td className="py-3 px-4 text-center font-mono-brand text-xs text-muted-foreground">
+                            {entry.previousStock}
+                          </td>
+                          <td className="py-3 px-4 text-center font-mono-brand font-semibold text-xs text-foreground">
+                            {entry.newStock}
+                          </td>
+                          <td className="py-3 px-4 text-center">
+                            {diff > 0 ? (
+                              <span className="inline-flex items-center gap-0.5 px-2 py-0.5 bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 font-mono-brand text-[10px] font-bold">
+                                <ArrowUp className="h-3 w-3" /> +{diff}
+                              </span>
+                            ) : diff < 0 ? (
+                              <span className="inline-flex items-center gap-0.5 px-2 py-0.5 bg-rose-500/10 text-rose-400 border border-rose-500/30 font-mono-brand text-[10px] font-bold">
+                                <ArrowDown className="h-3 w-3" /> {diff}
+                              </span>
+                            ) : (
+                              <span className="inline-block px-2 py-0.5 bg-secondary text-muted-foreground border border-border font-mono-brand text-[10px]">
+                                0
+                              </span>
+                            )}
+                          </td>
+                          <td className="py-3 px-4">
+                            <span className="inline-block px-2 py-0.5 bg-secondary/80 border border-border font-mono-brand text-[10px] uppercase tracking-wider text-muted-foreground mr-2">
+                              {entry.changeType.replace(/_/g, " ")}
+                            </span>
+                            <span className="text-[11px] text-muted-foreground">{entry.reason || "Stock adjusted"}</span>
+                          </td>
+                        </tr>
+                      );
+                    })
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
       </main>
 
       {/* Edit Product Modal */}
