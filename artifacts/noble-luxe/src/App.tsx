@@ -230,6 +230,7 @@ function Router() {
           )}
         />
 
+        <Route path="/confirmation" component={Confirmation} />
         <Route path="/confirmation/:orderId" component={Confirmation} />
         <Route path="/contact" component={Contact} />
         <Route path="/account" component={Account} />
