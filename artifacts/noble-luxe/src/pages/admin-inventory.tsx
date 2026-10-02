@@ -5,6 +5,7 @@ import {
   Package,
   Lock,
   Unlock,
+  Clock,
   Key,
   Eye,
   EyeOff,
@@ -37,6 +38,7 @@ import { useToast } from '@/hooks/use-toast';
 
 
 const MASTER_SESSION_PIN_KEY = 'noble_luxe_admin_verified_pin';
+const AUTO_LOCK_SECONDS = 30;
 
 export default function AdminInventory() {
   const [verifiedPin, setVerifiedPin] = useState<string>(() => {
@@ -47,6 +49,7 @@ export default function AdminInventory() {
     }
   });
   const isUnlocked = Boolean(verifiedPin);
+  const [secondsLeft, setSecondsLeft] = useState(AUTO_LOCK_SECONDS);
   const [pinInput, setPinInput] = useState('');
   const [showPin, setShowPin] = useState(false);
   const [pinError, setPinError] = useState('');
@@ -85,14 +88,45 @@ export default function AdminInventory() {
     }
   };
 
-  const handleLock = () => {
+  const handleLock = (reason?: string) => {
     sessionStorage.removeItem(MASTER_SESSION_PIN_KEY);
     setVerifiedPin('');
+    setSecondsLeft(AUTO_LOCK_SECONDS);
     toast({
       title: 'Desk Locked',
-      description: 'Stock manager has been locked.',
+      description: reason || 'Stock manager has been locked.',
     });
   };
+
+  // 30-second inactivity auto-lock effect
+  useEffect(() => {
+    if (!isUnlocked) return;
+
+    setSecondsLeft(AUTO_LOCK_SECONDS);
+
+    const resetTimer = () => {
+      setSecondsLeft(AUTO_LOCK_SECONDS);
+    };
+
+    const interval = setInterval(() => {
+      setSecondsLeft((prev) => {
+        if (prev <= 1) {
+          clearInterval(interval);
+          handleLock('Auto-locked after 30 seconds of inactivity.');
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    const activityEvents = ['mousemove', 'mousedown', 'keydown', 'scroll', 'touchstart'];
+    activityEvents.forEach((evt) => window.addEventListener(evt, resetTimer, { passive: true }));
+
+    return () => {
+      clearInterval(interval);
+      activityEvents.forEach((evt) => window.removeEventListener(evt, resetTimer));
+    };
+  }, [isUnlocked]);
 
   const handleChangePin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -446,9 +480,16 @@ export default function AdminInventory() {
             >
               Customer Orders
             </Link>
+            <div
+              title="Auto-locks after 30 seconds of inactivity"
+              className="flex items-center gap-1.5 px-2.5 py-1.5 bg-muted/30 border border-border text-[11px] font-mono-brand text-muted-foreground"
+            >
+              <Clock className="h-3.5 w-3.5 text-primary animate-pulse" />
+              <span>Auto-lock: {secondsLeft}s</span>
+            </div>
             <button
-              onClick={handleLock}
-              title="Lock Desk"
+              onClick={() => handleLock()}
+              title="Lock Desk Immediately"
               className="inline-flex items-center gap-1.5 px-3 py-1.5 border border-border text-xs font-mono-brand uppercase tracking-wider hover:border-destructive hover:text-destructive transition"
             >
               <Lock className="h-3.5 w-3.5" />
