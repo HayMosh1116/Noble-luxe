@@ -57,6 +57,7 @@ export default function Checkout({
     'OPay' | 'PalmPay' | null
   >(null);
   const fileRef = useRef<HTMLInputElement>(null);
+  const isOrderPlacedRef = useRef(false);
   const createOrder = useCreateOrder();
   const total = useMemo(
     () =>
@@ -79,7 +80,7 @@ export default function Checkout({
       ? createOrder.error.message
       : "Please check your details and try again.";
   useEffect(() => {
-    if (!cart.length) {
+    if (!cart.length && !isOrderPlacedRef.current) {
       setLocation('/');
     }
   }, [cart.length, isSignedIn, setLocation]);
@@ -165,17 +166,30 @@ export default function Checkout({
       { data: payload },
       {
         onSuccess: (confirmation) => {
-          // Stock is atomically decremented in database on backend
+          isOrderPlacedRef.current = true;
+          const orderId = confirmation?.orderId;
+          try {
+            if (orderId) {
+              sessionStorage.setItem(
+                `noble-luxe-order-${orderId}`,
+                JSON.stringify(confirmation),
+              );
+              sessionStorage.setItem(
+                'noble-luxe-latest-order',
+                JSON.stringify(confirmation),
+              );
+            }
+          } catch (e) {
+            console.error('Session storage error:', e);
+          }
           onClear();
-          sessionStorage.setItem(
-            `noble-luxe-order-${confirmation.orderId}`,
-            JSON.stringify(confirmation),
-          );
-          setLocation(
-            `/confirmation/${confirmation.orderId}`,
-          );
+          if (orderId) {
+            setLocation(`/confirmation/${orderId}`);
+          } else {
+            setLocation('/confirmation');
+          }
         },
-    },
+      },
     );
   };
   return (
