@@ -165,10 +165,10 @@ export default function AdminInventory() {
     return () => window.removeEventListener('noble_luxe_catalog_updated', handleUpdate);
   }, []);
 
-  const [activeTab, setActiveTab] = useState<inventory | audit>(inventory);
+  const [activeTab, setActiveTab] = useState<'inventory' | 'audit'>('inventory');
   const [logs, setLogs] = useState<InventoryLog[]>([]);
   const [isLoadingLogs, setIsLoadingLogs] = useState(false);
-  const [logSearch, setLogSearch] = useState();
+  const [logSearch, setLogSearch] = useState<string>('');
 
   const loadAuditLogs = async () => {
     if (!verifiedPin) return;
@@ -184,7 +184,7 @@ export default function AdminInventory() {
   };
 
   useEffect(() => {
-    if (isUnlocked && activeTab === audit) {
+    if (isUnlocked && activeTab === 'audit') {
       loadAuditLogs();
     }
   }, [isUnlocked, activeTab]);
@@ -224,20 +224,9 @@ export default function AdminInventory() {
   const handleStockChange = (id: string, delta: number) => {
     const p = products.find((item) => item.id === id);
     if (!p) return;
-    const newStock = Math.max(0, (p.stock ?? 0) + delta);
-    updateProductStock(id, newStock);
+    const current = draftStocks[id] !== undefined ? draftStocks[id] : (p.stock ?? 0);
+    const newStock = Math.max(0, current + delta);
     setDraftStocks((prev) => ({ ...prev, [id]: newStock }));
-    setProducts((prev) => prev.map((item) => (item.id === id ? { ...item, stock: newStock } : item)));
-    toast({
-      title: 'Stock Updated',
-      description: `${p.name} stock set to ${newStock}`,
-    });
-  };
-
-  const handleSetStockDirect = (id: string, val: string) => {
-    const num = parseInt(val, 10);
-    if (isNaN(num) || num < 0) return;
-    updateProductStock(id, num);
   };
 
   const handleDelete = async (id: string, name: string) => {
@@ -261,11 +250,12 @@ export default function AdminInventory() {
   };
 
   const handleReset = () => {
-    if (confirm('Reset all stock and products back to the original default catalogue?')) {
-      resetCatalogToDefault();
+    if (confirm('Refresh all stock and products from the database?')) {
+      loadProducts();
+      if (activeTab === 'audit') loadAuditLogs();
       toast({
-        title: 'Catalogue Reset',
-        description: 'All products and stock levels restored to defaults.',
+        title: 'Catalog Refreshed',
+        description: 'Products and stock levels synchronized with database.',
       });
     }
   };
