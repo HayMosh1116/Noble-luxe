@@ -23,19 +23,17 @@ export default function Confirmation() {
   }>();
 
   const order = useMemo(() => {
-    if (!params.orderId) {
-      return null;
-    }
-
     try {
-      return JSON.parse(
-        sessionStorage.getItem(
-          `noble-luxe-order-${params.orderId}`,
-        ) || "null",
-      ) as StoredConfirmation | null;
+      if (params.orderId) {
+        const stored = sessionStorage.getItem(`noble-luxe-order-${params.orderId}`);
+        if (stored) return JSON.parse(stored) as StoredConfirmation;
+      }
+      const latest = sessionStorage.getItem('noble-luxe-latest-order');
+      if (latest) return JSON.parse(latest) as StoredConfirmation;
     } catch {
       return null;
     }
+    return null;
   }, [params.orderId]);
 
   const total = order?.total || 0;
