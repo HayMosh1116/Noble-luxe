@@ -4,6 +4,7 @@ import type { Product } from '@workspace/api-client-react';
 
 export type CartItem = Product & {
   selectedSize: string;
+  stock?: number;
   selectedColor?: string;
   selectedColorFront?: string;
   selectedColorBack?: string;
