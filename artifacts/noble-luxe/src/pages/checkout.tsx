@@ -675,20 +675,37 @@ export default function Checkout({
                             <span className="w-6 text-center font-mono-brand text-[10px]">
                               {item.quantity}
                             </span>
-                            <button
-                              type="button"
-                              className="p-1 text-muted-foreground hover:text-primary"
-                              onClick={() =>
-                                onUpdate(
-                                  item.id,
-                                  item.selectedSize,
-                                  1,
-                                )
-                              }
-                              data-testid={`button-checkout-increase-${item.id}`}
-                            >
-                              <Plus className="h-3 w-3" />
-                            </button>
+                            {(() => {
+                              const totalInCart = cart
+                                .filter((c) => c.id === item.id)
+                                .reduce((sum, c) => sum + c.quantity, 0);
+                              const maxStock = typeof (item as any).stock === 'number' ? (item as any).stock : 999;
+                              const isAtMax = totalInCart >= maxStock;
+
+                              return (
+                                <button
+                                  type="button"
+                                  disabled={isAtMax}
+                                  title={isAtMax ? `Only ${maxStock} in stock` : 'Increase quantity'}
+                                  className={`p-1 transition ${
+                                    isAtMax
+                                      ? 'cursor-not-allowed opacity-25 text-muted-foreground'
+                                      : 'text-muted-foreground hover:text-primary'
+                                  }`}
+                                  onClick={() => {
+                                    if (isAtMax) return;
+                                    onUpdate(
+                                      item.id,
+                                      item.selectedSize,
+                                      1,
+                                    );
+                                  }}
+                                  data-testid={`button-checkout-increase-${item.id}`}
+                                >
+                                  <Plus className="h-3 w-3" />
+                                </button>
+                              );
+                            })()}
                           </div>
                           <span className="font-mono-brand text-[10px] text-primary">
                             {formatCurrency(
