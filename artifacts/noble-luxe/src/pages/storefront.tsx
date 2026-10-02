@@ -281,6 +281,12 @@ function ProductCard({
     );
 
   useEffect(() => {
+    if (availableColors.length > 0 && !availableColors.some((c) => c.name === selectedColor)) {
+      setSelectedColor(availableColors[0].name);
+    }
+  }, [availableColors, selectedColor]);
+
+  useEffect(() => {
     setShowBack(false);
     setShowTapHint(true);
 
