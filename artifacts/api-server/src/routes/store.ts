@@ -9,7 +9,7 @@ import {
   ListProductsResponse,
   CreateOrderResponse,
 } from "@workspace/api-zod";
-import { db, ordersTable, productsTable, cartsTable, type InsertProductRow } from "@workspace/db";
+import { db, pool, ordersTable, productsTable, cartsTable, type InsertProductRow } from "@workspace/db";
 import { getAuth } from "@clerk/express";
 import { clerkClient } from "@clerk/express";
 import { eq, desc, sql } from "drizzle-orm";
@@ -622,30 +622,52 @@ let hasCheckedSeed = false;
 async function ensureProductsSeeded() {
   if (hasCheckedSeed) return;
   try {
-    const existing = await db.select({ id: productsTable.id }).from(productsTable).limit(1);
-    if (existing.length === 0) {
-      console.log("[DB] Seeding default products to noble_luxe_products...");
-      for (const p of SEED_PRODUCTS) {
-        await db.insert(productsTable).values({
-          id: p.id,
-          name: p.name,
-          collection: p.collection || "Round Necks",
-          category: p.category || "T-Shirts",
-          price: p.price.toString(),
-          stock: typeof p.stock === "number" ? p.stock : 10,
-          imageUrl: p.imageUrl,
-          description: p.description || "",
-          sizes: p.sizes || ["XL", "XXL"],
-          colors: p.colors || ["Black"],
-          colorImages: p.colorImages || null,
-          featured: p.featured ?? true,
-        }).onConflictDoNothing();
-      }
-      console.log("[DB] Default products seeded successfully.");
+    // Automatically provision products and carts tables in Postgres if not already present
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS noble_luxe_products (
+        id TEXT PRIMARY KEY,
+        name TEXT NOT NULL,
+        collection TEXT NOT NULL DEFAULT 'Round Necks',
+        category TEXT NOT NULL DEFAULT 'T-Shirts',
+        price NUMERIC(10, 2) NOT NULL,
+        stock INTEGER NOT NULL DEFAULT 0,
+        image_url TEXT NOT NULL,
+        description TEXT DEFAULT '',
+        sizes JSONB DEFAULT '[]'::jsonb,
+        colors JSONB DEFAULT '[]'::jsonb,
+        color_images JSONB,
+        featured BOOLEAN DEFAULT true,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW() NOT NULL,
+        updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW() NOT NULL
+      );
+      CREATE TABLE IF NOT EXISTS noble_luxe_carts (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        user_id TEXT NOT NULL UNIQUE,
+        items JSONB NOT NULL DEFAULT '[]'::jsonb,
+        updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW() NOT NULL
+      );
+    `);
+
+    console.log("[DB] Checking products table seed...");
+    for (const p of SEED_PRODUCTS) {
+      await db.insert(productsTable).values({
+        id: p.id,
+        name: p.name,
+        collection: p.collection || "Round Necks",
+        category: p.category || "T-Shirts",
+        price: p.price.toString(),
+        stock: typeof p.stock === "number" ? p.stock : 10,
+        imageUrl: p.imageUrl,
+        description: p.description || "",
+        sizes: p.sizes || ["XL", "XXL"],
+        colors: p.colors || ["Black"],
+        colorImages: p.colorImages || null,
+        featured: p.featured ?? true,
+      }).onConflictDoNothing();
     }
     hasCheckedSeed = true;
   } catch (err) {
-    console.error("[DB] Note: Could not auto-seed products table (it may need migration to run first):", err);
+    console.error("[DB] Table auto-provision or seed note:", err);
   }
 }
 
@@ -792,8 +814,10 @@ router.patch("/products/:id/stock", async (req, res): Promise<void> => {
     return;
   }
 
+  await ensureProductsSeeded();
+
   try {
-    const [updated] = await db
+    let [updated] = await db
       .update(productsTable)
       .set({
         stock: newStock,
@@ -801,6 +825,29 @@ router.patch("/products/:id/stock", async (req, res): Promise<void> => {
       })
       .where(eq(productsTable.id, id))
       .returning();
+
+    if (!updated) {
+      const seedItem = SEED_PRODUCTS.find((p) => p.id === id);
+      if (seedItem) {
+        [updated] = await db
+          .insert(productsTable)
+          .values({
+            id: seedItem.id,
+            name: seedItem.name,
+            collection: seedItem.collection || "Round Necks",
+            category: seedItem.category || "T-Shirts",
+            price: seedItem.price.toString(),
+            stock: newStock,
+            imageUrl: seedItem.imageUrl,
+            description: seedItem.description || "",
+            sizes: seedItem.sizes || ["XL", "XXL"],
+            colors: seedItem.colors || ["Black"],
+            colorImages: seedItem.colorImages || null,
+            featured: seedItem.featured ?? true,
+          })
+          .returning();
+      }
+    }
 
     if (!updated) {
       res.status(404).json({ error: "Product not found in database." });
@@ -814,9 +861,9 @@ router.patch("/products/:id/stock", async (req, res): Promise<void> => {
         price: Number(updated.price),
       },
     });
-  } catch (error) {
+  } catch (error: any) {
     req.log.error({ err: error, id }, "Failed to update product stock in DB");
-    res.status(500).json({ error: "Database error while updating stock." });
+    res.status(500).json({ error: error?.message || "Database error while updating stock." });
   }
 });
 
