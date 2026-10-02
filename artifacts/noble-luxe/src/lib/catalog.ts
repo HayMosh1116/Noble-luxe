@@ -762,6 +762,17 @@ export const getProductColors = (
 ): CatalogColor[] => {
   const catalogProduct = product as CatalogProduct;
 
+  if (Array.isArray(catalogProduct.colors) && catalogProduct.colors.length > 0) {
+    return catalogProduct.colors.map((colorName: string) => {
+      const match = catalogProduct.colorImages?.[colorName];
+      if (match) return match;
+      return {
+        name: colorName,
+        front: catalogProduct.imageUrl || FALLBACK_PRODUCTS[0].imageUrl,
+      };
+    });
+  }
+
   if (catalogProduct.colorImages) {
     return Object.values(catalogProduct.colorImages);
   }
