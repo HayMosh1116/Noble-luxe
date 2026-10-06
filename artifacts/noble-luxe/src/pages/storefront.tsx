@@ -28,6 +28,7 @@ import {
   FALLBACK_PRODUCTS,
   NOBLE_COLLECTIONS,
   DEFAULT_PRODUCTS,
+  getCachedCatalog,
   fetchLiveCatalog,
   formatCurrency,
   getColorImages,
@@ -794,7 +795,7 @@ export default function Storefront({
     useState('');
 
   const [category, setCategory] = useState<string>('All Pieces');
-  const [liveCatalog, setLiveCatalog] = useState<CatalogProduct[]>(DEFAULT_PRODUCTS);
+  const [liveCatalog, setLiveCatalog] = useState<CatalogProduct[]>(() => getCachedCatalog() || DEFAULT_PRODUCTS);
 
   useEffect(() => {
     let mounted = true;
@@ -881,11 +882,8 @@ export default function Storefront({
   const products =
     localProducts;
 
-  const featured =
-    FALLBACK_PRODUCTS.filter(
-      (product) =>
-        product.featured,
-    );
+  const featuredLive = liveCatalog.filter((product) => product.featured);
+  const featured = featuredLive.length > 0 ? featuredLive : liveCatalog;
 
   const isLoading =
     productQuery.isLoading &&
