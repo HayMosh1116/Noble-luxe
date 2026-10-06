@@ -38,6 +38,7 @@ import {
   type CatalogColor,
   type CatalogProduct,
 } from '@/lib/catalog';
+import { LogoIntroOverlay } from '@/components/logo-intro-overlay';
 
 function WhatsAppSticky() {
   const phone = '2347026987674';
@@ -952,6 +953,7 @@ export default function Storefront({
 
   return (
     <div className="noble-noise min-h-[100dvh] pt-[74px]">
+      <LogoIntroOverlay />
       {addedMessage && (
         <div className="fixed right-5 top-24 z-50 border border-primary bg-card px-5 py-4 font-mono-brand text-[10px] uppercase tracking-[.14em] text-primary shadow-2xl">
           {addedMessage}
