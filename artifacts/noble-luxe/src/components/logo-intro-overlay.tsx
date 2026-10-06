@@ -36,12 +36,12 @@ export function LogoIntroOverlay({ onComplete }: LogoIntroOverlayProps) {
     }
   });
 
-  // Phases:
-  // 1. 'entering': 0.0s - 1.2s: gentle emergence from noir black, subtle scaling up from 0.88 -> 1.0
-  // 2. 'shimmer':  1.2s - 2.8s: luxury golden/warm ambient bloom and specular diagonal light sweep
-  // 3. 'brand':    2.8s - 4.4s: fine couture wordmark reveal, tracking expansion, hairline gold rule
-  // 4. 'radiance': 4.4s - 5.4s: harmonic crest breathing, subtle slow drift, peak elegance
-  // 5. 'exiting':  5.4s - 6.3s: graceful cinematic dissolve/melt into storefront
+  // Phases across the 10-second luxury choreography:
+  // 1. 'entering': 0.0s - 2.0s: gentle emergence from noir black, subtle scaling up from 0.86 -> 1.0
+  // 2. 'shimmer':  2.0s - 4.5s: luxury golden specular reflection sweeps across the emblem + warm halo
+  // 3. 'brand':    4.5s - 7.2s: haute couture typography reveal, tracking expansion, hairline gold rule
+  // 4. 'radiance': 7.2s - 8.8s: harmonic crest breathing, subtle slow drift, peak elegance
+  // 5. 'exiting':  8.8s - 10.0s: graceful cinematic dissolve/melt into storefront
   const [phase, setPhase] = useState<'entering' | 'shimmer' | 'brand' | 'radiance' | 'exiting'>('entering');
   const [progress, setProgress] = useState<number>(0);
   const timersRef = useRef<number[]>([]);
@@ -65,9 +65,21 @@ export function LogoIntroOverlay({ onComplete }: LogoIntroOverlayProps) {
       setIsVisible(false);
       markCompleted();
       onComplete?.();
-    }, 600);
+    }, 500);
     timersRef.current.push(dismissTimer);
   }, [markCompleted, onComplete]);
+
+  // Support Escape key to skip intro
+  useEffect(() => {
+    if (!isVisible) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' || e.key === ' ') {
+        handleDismiss();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isVisible, handleDismiss]);
 
   // Monitor tab visibility and inactivity while on the site
   useEffect(() => {
@@ -85,7 +97,6 @@ export function LogoIntroOverlay({ onComplete }: LogoIntroOverlayProps) {
         try {
           const lastActive = parseInt(localStorage.getItem(STORAGE_LAST_ACTIVE_KEY) || '0', 10);
           if (lastActive && Date.now() - lastActive > INACTIVITY_TIMEOUT_MS) {
-            // User was away for too long and came back!
             clearAllTimers();
             setPhase('entering');
             setProgress(0);
@@ -106,7 +117,7 @@ export function LogoIntroOverlay({ onComplete }: LogoIntroOverlayProps) {
     };
   }, []);
 
-  // Main 6-second luxury animation sequence
+  // Main 10-second luxury animation sequence
   useEffect(() => {
     if (!isVisible) return;
 
@@ -120,36 +131,36 @@ export function LogoIntroOverlay({ onComplete }: LogoIntroOverlayProps) {
     }, 50);
     timersRef.current.push(progressTimer);
 
-    // 1.2s: Shimmer & ambient expansion
+    // 2.0s: Shimmer & ambient expansion
     const shimmerTimer = window.setTimeout(() => {
       setPhase('shimmer');
-    }, 1200);
+    }, 2000);
     timersRef.current.push(shimmerTimer);
 
-    // 2.8s: Haute couture brand typography & divider reveal
+    // 4.5s: Haute couture brand typography & divider reveal
     const brandTimer = window.setTimeout(() => {
       setPhase('brand');
-    }, 2800);
+    }, 4500);
     timersRef.current.push(brandTimer);
 
-    // 4.4s: Radiance & pinnacle crest breathing
+    // 7.2s: Radiance & pinnacle crest breathing
     const radianceTimer = window.setTimeout(() => {
       setPhase('radiance');
-    }, 4400);
+    }, 7200);
     timersRef.current.push(radianceTimer);
 
-    // 5.4s: Graceful fade-out into storefront
+    // 8.8s: Graceful fade-out into storefront
     const exitTimer = window.setTimeout(() => {
       setPhase('exiting');
-    }, 5400);
+    }, 8800);
     timersRef.current.push(exitTimer);
 
-    // 6.3s: Fully unmount after at least 6+ seconds
+    // 10.0s: Fully unmount after 10 seconds
     const finishTimer = window.setTimeout(() => {
       setIsVisible(false);
       markCompleted();
       onComplete?.();
-    }, 6300);
+    }, 10000);
     timersRef.current.push(finishTimer);
 
     return () => {
@@ -171,7 +182,7 @@ export function LogoIntroOverlay({ onComplete }: LogoIntroOverlayProps) {
     <div
       role="status"
       aria-label="Noble Luxe Experience"
-      className={`fixed inset-0 z-[100] flex flex-col items-center justify-center overflow-hidden bg-[#050505] transition-all duration-[900ms] ease-out select-none ${
+      className={`fixed inset-0 z-[100] flex flex-col items-center justify-center overflow-hidden bg-[#050505] transition-all duration-[1200ms] ease-out select-none ${
         isExiting ? 'opacity-0 scale-105 pointer-events-none' : 'opacity-100 scale-100'
       }`}
       style={{
@@ -188,19 +199,21 @@ export function LogoIntroOverlay({ onComplete }: LogoIntroOverlayProps) {
         }}
       />
 
-      {/* Top Bar with Brand Monogram & Discreet Skip Action */}
-      <div className="absolute top-0 inset-x-0 flex items-center justify-between p-6 sm:p-8 z-10 pointer-events-auto">
+      {/* Top Bar with Brand Monogram & High-Contrast Skip Action */}
+      <div className="absolute top-0 inset-x-0 flex items-center justify-between p-6 sm:p-8 z-20 pointer-events-auto">
         <div className="text-[10px] tracking-[0.3em] font-mono-brand uppercase text-zinc-500 font-light opacity-80">
           EDITION 2026
         </div>
+
+        {/* Clear Luxury Skip Button */}
         <button
           type="button"
           onClick={handleDismiss}
-          className="group flex items-center gap-2 px-3 py-1.5 rounded-full border border-white/10 bg-white/[0.03] backdrop-blur-sm text-[10px] tracking-[0.25em] font-mono-brand uppercase text-zinc-400 hover:text-white hover:border-white/30 transition-all duration-300 active:scale-95 cursor-pointer"
+          className="group flex items-center gap-2.5 px-4 py-2 rounded-full border border-amber-400/30 bg-black/40 hover:bg-white/[0.08] backdrop-blur-md text-[11px] tracking-[0.25em] font-mono-brand uppercase text-zinc-200 hover:text-white hover:border-amber-400/60 shadow-lg shadow-black/40 transition-all duration-300 active:scale-95 cursor-pointer"
           aria-label="Skip introduction"
         >
-          <span>ENTER</span>
-          <span className="text-[8px] text-zinc-500 group-hover:translate-x-0.5 transition-transform duration-300">
+          <span className="font-medium text-amber-200/90 group-hover:text-amber-100">SKIP</span>
+          <span className="text-[10px] text-zinc-400 group-hover:text-white group-hover:translate-x-1 transition-transform duration-300">
             →
           </span>
         </button>
@@ -210,7 +223,7 @@ export function LogoIntroOverlay({ onComplete }: LogoIntroOverlayProps) {
       <div className="relative flex flex-col items-center justify-center px-6 max-w-sm sm:max-w-md w-full">
         {/* Multilayer Ambient Warmth & Halo */}
         <div
-          className={`absolute -top-12 h-64 w-64 sm:h-80 sm:w-80 rounded-full bg-gradient-to-tr from-amber-600/15 via-amber-500/10 to-yellow-500/5 blur-3xl pointer-events-none transition-all duration-[1600ms] ease-out ${
+          className={`absolute -top-12 h-64 w-64 sm:h-80 sm:w-80 rounded-full bg-gradient-to-tr from-amber-600/15 via-amber-500/10 to-yellow-500/5 blur-3xl pointer-events-none transition-all duration-[2000ms] ease-out ${
             phase === 'entering'
               ? 'scale-75 opacity-0'
               : isRadiance
@@ -220,16 +233,16 @@ export function LogoIntroOverlay({ onComplete }: LogoIntroOverlayProps) {
         />
 
         <div
-          className={`absolute h-40 w-40 rounded-full bg-white/5 blur-2xl pointer-events-none transition-all duration-1000 ease-out ${
+          className={`absolute h-40 w-40 rounded-full bg-white/5 blur-2xl pointer-events-none transition-all duration-[1500ms] ease-out ${
             isAtLeastShimmer ? 'opacity-80 scale-110' : 'opacity-0 scale-50'
           }`}
         />
 
         {/* Logo Card with Precision Frame & Shimmer Sweep */}
         <div
-          className={`relative overflow-hidden rounded-3xl p-1 shadow-2xl transition-all duration-[1200ms] ease-[cubic-bezier(0.16,1,0.3,1)] ${
+          className={`relative overflow-hidden rounded-3xl p-1 shadow-2xl transition-all duration-[1500ms] ease-[cubic-bezier(0.16,1,0.3,1)] ${
             phase === 'entering'
-              ? 'opacity-0 scale-[0.88] translate-y-3'
+              ? 'opacity-0 scale-[0.86] translate-y-3'
               : isRadiance
               ? 'opacity-100 scale-[1.025] translate-y-0'
               : 'opacity-100 scale-100 translate-y-0'
@@ -251,7 +264,7 @@ export function LogoIntroOverlay({ onComplete }: LogoIntroOverlayProps) {
 
             {/* Specular Diagonal Light Sheen */}
             <div
-              className={`absolute inset-0 pointer-events-none bg-gradient-to-tr from-transparent via-white/25 to-transparent transition-transform duration-[1800ms] ease-in-out ${
+              className={`absolute inset-0 pointer-events-none bg-gradient-to-tr from-transparent via-white/25 to-transparent transition-transform duration-[2200ms] ease-in-out ${
                 isAtLeastShimmer ? 'translate-x-[200%]' : '-translate-x-[200%]'
               }`}
             />
@@ -262,7 +275,7 @@ export function LogoIntroOverlay({ onComplete }: LogoIntroOverlayProps) {
         <div className="mt-8 flex flex-col items-center text-center">
           {/* Brand Wordmark with Smooth Tracking Expansion */}
           <div
-            className={`font-display text-sm sm:text-base md:text-lg font-semibold uppercase text-zinc-100 transition-all duration-[1200ms] ease-[cubic-bezier(0.16,1,0.3,1)] ${
+            className={`font-display text-sm sm:text-base md:text-lg font-semibold uppercase text-zinc-100 transition-all duration-[1500ms] ease-[cubic-bezier(0.16,1,0.3,1)] ${
               isAtLeastBrand
                 ? 'opacity-100 tracking-[0.38em] translate-y-0'
                 : 'opacity-0 tracking-[0.22em] translate-y-2'
@@ -280,7 +293,7 @@ export function LogoIntroOverlay({ onComplete }: LogoIntroOverlayProps) {
 
           {/* Subtitle / Couture Identity */}
           <div
-            className={`tracking-[0.28em] text-[10px] sm:text-[11px] uppercase text-zinc-400 font-light transition-all duration-[1000ms] delay-150 ease-out ${
+            className={`tracking-[0.28em] text-[10px] sm:text-[11px] uppercase text-zinc-400 font-light transition-all duration-[1200ms] delay-150 ease-out ${
               isAtLeastBrand
                 ? 'opacity-90 translate-y-0'
                 : 'opacity-0 translate-y-1'
@@ -291,24 +304,24 @@ export function LogoIntroOverlay({ onComplete }: LogoIntroOverlayProps) {
         </div>
       </div>
 
-      {/* Luxury Progress Indicator (Runs smoothly across the 6-second cadence) */}
+      {/* Luxury Progress Indicator (Runs smoothly across the 10-second cadence) */}
       <div className="absolute bottom-0 inset-x-0 h-[2px] bg-white/[0.04]">
         <div
           className="h-full bg-gradient-to-r from-amber-500/20 via-amber-400/80 to-amber-200 transition-all ease-linear"
           style={{
             width: `${progress}%`,
-            transitionDuration: '5400ms',
+            transitionDuration: '8800ms',
           }}
         />
       </div>
 
       {/* Subtle Bottom Ambient Tagline */}
       <div
-        className={`absolute bottom-6 text-[9px] tracking-[0.35em] uppercase text-zinc-600 font-mono-brand transition-opacity duration-1000 ${
-          isAtLeastBrand ? 'opacity-70' : 'opacity-0'
+        className={`absolute bottom-6 text-[9px] tracking-[0.35em] uppercase text-zinc-500 font-mono-brand transition-opacity duration-1000 ${
+          isAtLeastBrand ? 'opacity-80' : 'opacity-0'
         }`}
       >
-        DEFINING LUXURY SINCE 2024
+        DEFINING LEGACY SINCE 2026
       </div>
     </div>
   );
