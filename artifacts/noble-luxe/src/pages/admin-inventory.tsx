@@ -27,6 +27,7 @@ import {
 import {
   DEFAULT_PRODUCTS,
   NOBLE_COLLECTIONS,
+  getCachedCatalog,
   fetchLiveCatalog,
   refreshCatalogEvent,
   verifyAdminPin,
@@ -140,7 +141,7 @@ export default function AdminInventory() {
     setChangePinError('Admin PIN is verified server-side. Set ADMIN_INVENTORY_PIN in your Vercel Environment Variables to change it.');
   };
 
-  const [products, setProducts] = useState<CatalogProduct[]>(DEFAULT_PRODUCTS);
+  const [products, setProducts] = useState<CatalogProduct[]>(() => getCachedCatalog() || DEFAULT_PRODUCTS);
   const [selectedCollection, setSelectedCollection] = useState<string>('All Pieces');
   const [search, setSearch] = useState('');
   const [draftStocks, setDraftStocks] = useState<Record<string, number>>({});
