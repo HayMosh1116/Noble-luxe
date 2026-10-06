@@ -624,6 +624,11 @@ async function ensureProductsSeeded() {
   try {
     // Automatically provision products and carts tables in Postgres if not already present
     await pool.query(`
+      CREATE TABLE IF NOT EXISTS noble_luxe_meta (
+        key TEXT PRIMARY KEY,
+        value TEXT NOT NULL,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW() NOT NULL
+      );
       CREATE TABLE IF NOT EXISTS noble_luxe_products (
         id TEXT PRIMARY KEY,
         name TEXT NOT NULL,
@@ -660,7 +665,23 @@ async function ensureProductsSeeded() {
       CREATE INDEX IF NOT EXISTS idx_inventory_logs_product_id ON noble_luxe_inventory_logs(product_id);
     `);
 
-    console.log("[DB] Checking products table seed...");
+    // Persistent guard: only seed ONCE in the lifetime of the database.
+    // If the catalog has ever been initialized or already has products, never re-insert old seeds on serverless cold starts.
+    const metaCheck = await pool.query("SELECT 1 FROM noble_luxe_meta WHERE key = 'catalog_seeded'");
+    if (metaCheck.rowCount && metaCheck.rowCount > 0) {
+      hasCheckedSeed = true;
+      return;
+    }
+
+    const countCheck = await pool.query("SELECT count(*) FROM noble_luxe_products");
+    const productCount = parseInt(countCheck.rows[0]?.count || '0', 10);
+    if (productCount > 0) {
+      await pool.query("INSERT INTO noble_luxe_meta (key, value) VALUES ('catalog_seeded', 'true') ON CONFLICT DO NOTHING");
+      hasCheckedSeed = true;
+      return;
+    }
+
+    console.log("[DB] Initializing first-time catalog seed...");
     for (const p of SEED_PRODUCTS) {
       await db.insert(productsTable).values({
         id: p.id,
@@ -677,6 +698,7 @@ async function ensureProductsSeeded() {
         featured: p.featured ?? true,
       }).onConflictDoNothing();
     }
+    await pool.query("INSERT INTO noble_luxe_meta (key, value) VALUES ('catalog_seeded', 'true') ON CONFLICT DO NOTHING");
     hasCheckedSeed = true;
   } catch (err) {
     console.error("[DB] Table auto-provision or seed note:", err);
