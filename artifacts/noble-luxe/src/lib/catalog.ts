@@ -600,14 +600,31 @@ export const FALLBACK_PRODUCTS: CatalogProduct[] = DEFAULT_PRODUCTS;
  * related is stored in localStorage anymore.
  */
 
+export const getCachedCatalog = (): CatalogProduct[] | null => {
+  if (typeof window === 'undefined') return null;
+  try {
+    const raw = localStorage.getItem('noble_luxe_cached_catalog');
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+    }
+  } catch {}
+  return null;
+};
+
 export const fetchLiveCatalog = async (): Promise<CatalogProduct[]> => {
   const res = await fetch(apiUrl('/api/products'));
   if (!res.ok) throw new Error('Failed to load products');
   const data = (await res.json()) as CatalogProduct[];
-  if (!Array.isArray(data) || data.length === 0) {
-    return DEFAULT_PRODUCTS;
+  if (Array.isArray(data)) {
+    if (data.length > 0 && typeof window !== 'undefined') {
+      try {
+        localStorage.setItem('noble_luxe_cached_catalog', JSON.stringify(data));
+      } catch {}
+    }
+    return data.length > 0 ? data : (getCachedCatalog() || DEFAULT_PRODUCTS);
   }
-  return data;
+  return getCachedCatalog() || DEFAULT_PRODUCTS;
 };
 
 export const refreshCatalogEvent = (): void => {
